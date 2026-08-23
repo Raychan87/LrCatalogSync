@@ -15,6 +15,7 @@ namespace LRCatalogSync.UI
         private Icon iconMagenta;                               // Status: Remote Lockfile aktiv
         private Icon iconLightBlue;                                  // Status: Crash-Recovery aktiv
         private readonly SynchronizationContext? uiContext = null!;      // Für Thread-sichere UI-Updates
+        private readonly List<Stream> iconStreams = new();
         // ==================== KONSTRUKTOR ====================
         // Initialisiert TrayManager mit Icons und Tray-Icon
         public TrayManager()
@@ -27,7 +28,7 @@ namespace LRCatalogSync.UI
             iconRed = LoadIcon("tray_red.ico");             // Fehler
             iconOrange = LoadIcon("tray_orange.ico");       // Syncing
             iconYellow = LoadIcon("tray_yellow.ico");       // Syncing
-            iconLightBlue = LoadIcon("tray_lightblue.ico"); // Lockfile erkannt
+            iconLightBlue = LoadIcon("tray_lightBlue.ico"); // Lockfile erkannt
             iconWhite = LoadIcon("tray_white.ico");         // Keine Samba-Verbindung
             iconMagenta = LoadIcon("tray_violet.ico");      // Remote Lockfile aktiv
             iconBlue = LoadIcon("tray_blue.ico");           // Crash-Recovery aktiv
@@ -132,13 +133,13 @@ namespace LRCatalogSync.UI
             }
         }
 
-        private static Icon LoadIcon(string fileName)
+        private Icon LoadIcon(string fileName)
         {
             var resourceName = $"LRCatalogSync.Resources.Icons.{fileName}";
-            using var stream = typeof(TrayManager).Assembly.GetManifestResourceStream(resourceName)
+            var stream = typeof(TrayManager).Assembly.GetManifestResourceStream(resourceName)
                 ?? throw new InvalidOperationException($"Icon-Ressource nicht gefunden: {resourceName}");
-            using var icon = new Icon(stream);
-            return new Icon(icon, icon.Width, icon.Height);
+            iconStreams.Add(stream);
+            return new Icon(stream);
         }
 
         // Gibt alle verwalteten Ressourcen frei
@@ -153,6 +154,9 @@ namespace LRCatalogSync.UI
             iconWhite?.Dispose();
             iconMagenta?.Dispose();
             iconBlue?.Dispose();
+            foreach (var stream in iconStreams)
+                stream.Dispose();
+            iconStreams.Clear();
 
             // Tray-Icon entfernen und freigeben
             trayIcon?.Dispose();
