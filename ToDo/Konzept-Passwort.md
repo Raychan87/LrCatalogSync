@@ -102,7 +102,7 @@
 
 ✅ **Build erfolgreich** (2.6s)
 - Ziel: net10.0-windows
-- Ausgabe: `bin\Debug\net10.0-windows\LRCatalogSync.dll`
+- Ausgabe: `bin\Debug\net10.0-windows\LrCatalogSync.dll`
 - Keine Kompilierungsfehler
 
 ## Test Status

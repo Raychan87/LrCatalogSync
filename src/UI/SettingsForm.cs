@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using System.Reflection;
 
-using LRCatalogSync.Infrastructure;
+using LrCatalogSync.Infrastructure;
 
-namespace LRCatalogSync.UI
+namespace LrCatalogSync.UI
 {
     public partial class SettingsForm : Form
     {
@@ -27,8 +27,8 @@ namespace LRCatalogSync.UI
         // ==================== EINRICHTUNG DER FORMULAR-CONTROLS ====================
         private void SetupControls()
         {
-            this.Text = $"LRCatalogSync v{appVersion} - Fototour-und-Technik.de";
-            this.Icon = LoadIcon("LRCatalogSync.Resources.app_icon.ico");
+            this.Text = $"LrCatalogSync v{appVersion} - Fototour-und-Technik.de";
+            this.Icon = LoadIcon("LrCatalogSync.Resources.app_icon.ico");
             this.Size = new System.Drawing.Size(510, 650); // Setze die Größe des Formulars (Breite, Höhe)
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -50,7 +50,7 @@ namespace LRCatalogSync.UI
             const int lineHeightToHeading = 8;
             const int lineHeight = 25;
 
-            AddInfoText(scrollPanel, "LRCatalogSync - Einstellungen", ref yPos, 10);
+            AddInfoText(scrollPanel, "LrCatalogSync - Einstellungen", ref yPos, 10);
             yPos += lineHeightToHeading;
             AddInfoText(scrollPanel, "_________________________________________________________________________", ref yPos, 10);
             yPos += lineHeight-20;
@@ -113,7 +113,7 @@ namespace LRCatalogSync.UI
             this.Controls.Add(btnPanel);
 
             // Links auf der linken Seite
-            AddLinkLabel(btnPanel, "GitHub Project", "https://github.com/Raychan87/LRCatalogSync", 10, 15);
+            AddLinkLabel(btnPanel, "GitHub Project", "https://github.com/Raychan87/LrCatalogSync", 10, 15);
             AddLinkLabel(btnPanel, "© Fototour und Technik", "https://Fototour-und-Technik.de", 10, 35);
 
             // Buttons auf der rechten Seite
@@ -289,7 +289,7 @@ namespace LRCatalogSync.UI
         {
             return controlName switch
             {
-                "chkAutoRun" => "Startet LRCatalogSync automatisch beim Windows-Systemstart.",
+                "chkAutoRun" => "Startet LrCatalogSync automatisch beim Windows-Systemstart.",
                 "txtRcloneFolder" => "Pfad zur rclone-Installation oder zum rclone-Verzeichnis.",
                 "txtGlobalCycleInterval" => "Zeit in Sekunden zwischen den automatischen Synchronisationszyklen (1 bis 999).",
                 "chkSyncPreviewData" => "Wenn aktiv, wird zusätzlich der Ordner *Previews.lrdata des Lightroom-Katalogs synchronisiert.",
@@ -585,7 +585,7 @@ namespace LRCatalogSync.UI
                     Directory.CreateDirectory(configDir);
                 }
 
-                config.Save(GlobalData.LRCatSyncConfigPath);
+                config.Save(GlobalData.LrCatSyncConfigPath);
                 SaveRcloneConfig();
 
                 // Autorun aktualisieren

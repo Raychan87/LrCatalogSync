@@ -1,4 +1,4 @@
-# Konzept: Mehrsprachigkeit für LRCatalogSync
+# Konzept: Mehrsprachigkeit für LrCatalogSync
 
 > **Entscheidungen (Stand 2026-06-28)**
 >
@@ -33,7 +33,7 @@
 │  Abonnenten (= UI-Bereiche):                                 │
 │    ├─ TrayManager    → setzt Tray.Text neu                   │
 │    ├─ SettingsForm   → ruft ApplyLocalization() neu          │
-│    └─ LRCatSync      → baut Menü neu auf                     │
+│    └─ LrCatSync      → baut Menü neu auf                     │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -146,7 +146,7 @@ Jede Sprache ist eine JSON-Datei mit zwei Sektionen: `meta` (Anzeigename, Code) 
 |---|---|
 | Log-Strings (`Log.Debug/Info/Notic/Error`) | Debugging stabil, einheitlich für Support |
 | Interne Status-Keys (`"Standby"`, `"Error"`, …) | Werden als Schlüssel benutzt, sprachneutral |
-| Fenstertitel `LRCatalogSync v…` | Branding, bleibt |
+| Fenstertitel `LrCatalogSync v…` | Branding, bleibt |
 | Webseiten-Linkbeschriftungen im SettingsForm | Branding (`GitHub Project`, `© Fototour und Technik`) |
 | Technische Bezeichner | `.lrcat`, `rclone.exe`, `Samba`, ... |
 
@@ -201,7 +201,7 @@ UI-Bereiche abonnieren `LanguageChanged` einmalig beim Start und reagieren selbs
 |---|---|
 | `TrayManager` | `tray.Text` wird beim nächsten `UpdateStatus` neu gesetzt |
 | `SettingsForm` | ruft `ApplyLocalization()` neu auf |
-| `LRCatSync.SetupContextMenu()` | Menu wird beim Sprachwechsel neu aufgebaut |
+| `LrCatSync.SetupContextMenu()` | Menu wird beim Sprachwechsel neu aufgebaut |
 
 ---
 

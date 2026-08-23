@@ -6,7 +6,7 @@ using System;
 using SMBLibrary;
 using SMBLibrary.Client;
 
-namespace LRCatalogSync.Infrastructure;
+namespace LrCatalogSync.Infrastructure;
 
 // SMB-Client für den Zugriff auf Remote-Freigaben
 public class SmbClient

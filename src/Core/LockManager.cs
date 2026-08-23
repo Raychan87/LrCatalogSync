@@ -1,13 +1,13 @@
 using System.Diagnostics;
 using System.Text;
 
-using LRCatalogSync.Infrastructure;    // ← für Log, AppConfig, SMBConnectionManager
-using LRCatalogSync.UI;
+using LrCatalogSync.Infrastructure;    // ← für Log, AppConfig, SMBConnectionManager
+using LrCatalogSync.UI;
 
-namespace LRCatalogSync.Core
+namespace LrCatalogSync.Core
 {
     // LockManager für atomare Lock-Akquise lokal + remote
-    // Verwaltet LRCatSync.lock Datei für Synchronisation
+    // Verwaltet LrCatSync.lock Datei für Synchronisation
     public class LockManager : IDisposable
     {
         // ==================== EIGENSCHAFTEN ====================
@@ -35,7 +35,7 @@ namespace LRCatalogSync.Core
         }
 
         // ==================== CRASH-RECOVERY ====================
-        // Prüft ob ein LRCatSync Crash vorlag 
+        // Prüft ob ein LrCatSync Crash vorlag 
         // Remote und Lokal Lock müssen vorhanden sein und SyncGuid muss übereinstimmen
         // Wenn ja, führt Crash-Recovery ein rclone Sync durch, so wie vor den letzten Crash
         public static bool CheckRecovery(AppConfig config, TrayManager trayManager)
@@ -88,7 +88,7 @@ namespace LRCatalogSync.Core
                             }
 
                             trayManager.UpdateStatus("CrashRecovery");
-                            Log.Error($"LockManager: LRCatSync Crash erkannt - Recovery gestartet - rclone (Direction: {direction})");
+                            Log.Error($"LockManager: LrCatSync Crash erkannt - Recovery gestartet - rclone (Direction: {direction})");
 
                             // ========== RCLONE SYNC  ==========
                             bool recoveryOk = CatalogManager.RunRcloneSync(config, direction, false); // false = rclone copy überspringen beim Crash-Recovery
@@ -375,7 +375,7 @@ namespace LRCatalogSync.Core
                 if (!File.Exists(config.CatalogLockFile))
                     return false;
                 string content = File.ReadAllText(config.CatalogLockFile);
-                return content.StartsWith("LRCatSync=");
+                return content.StartsWith("LrCatSync=");
             }
             catch { return false; }
         }

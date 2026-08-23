@@ -1,5 +1,5 @@
 ﻿
-namespace LRCatalogSync.Infrastructure
+namespace LrCatalogSync.Infrastructure
 {
     // Konfigurationsklasse für das Lightroom Sync Programm.
     // Speichert alle Einstellungen wie Pfade, Intervalle usw.
@@ -76,12 +76,12 @@ namespace LRCatalogSync.Infrastructure
         // Beispiel: "C:/Benutzer/[Benutzername]/Bilder/Lightroom/[Katalogname].lrcat.lock"
         public string CatalogLockFile => Path.Combine(CatalogLocalPath, $"{CatalogName}.lrcat.lock");
 
-        // Vollständiger Pfad zur lokalen LRCatSync Lock-Datei (LocalPath + Dateiname)
-        // Beispiel: "C:/Benutzer/[Benutzername]/Bilder/Lightroom/LRCatSync.lock"
+        // Vollständiger Pfad zur lokalen LrCatSync Lock-Datei (LocalPath + Dateiname)
+        // Beispiel: "C:/Benutzer/[Benutzername]/Bilder/Lightroom/LrCatSync.lock"
         public string SyncLocalLockFile => Path.Combine(CatalogLocalPath, GlobalConst.LOCK_FILE);
 
-        // Vollständiger Pfad zur remote LRCatSync Lock-Datei (RemotePath + Dateiname)
-        // Beispiel: "/SambaOrdner/LRCatSync.lock"
+        // Vollständiger Pfad zur remote LrCatSync Lock-Datei (RemotePath + Dateiname)
+        // Beispiel: "/SambaOrdner/LrCatSync.lock"
         public string SyncRemoteLockFile => Path.Combine(CatalogRemotePath, GlobalConst.LOCK_FILE);
 
         // ==================== METHODEN ====================

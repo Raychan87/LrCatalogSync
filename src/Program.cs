@@ -1,6 +1,6 @@
-﻿using LRCatalogSync.Core;    // ← für LRCatSync
+﻿using LrCatalogSync.Core;    // ← für LrCatSync
 
-namespace LRCatalogSync
+namespace LrCatalogSync
 {
     static class Program
     {
@@ -15,7 +15,7 @@ namespace LRCatalogSync
             Application.SetCompatibleTextRenderingDefault(false);
 
             // Startet die Anwendung mit unserem TrayIcon
-            Application.Run(new LRCatSync());
+            Application.Run(new LrCatSync());
         }
     }
 }

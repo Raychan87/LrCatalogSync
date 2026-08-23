@@ -1,9 +1,9 @@
 using System.Diagnostics;
 
-using LRCatalogSync.Infrastructure;    // ← für Log, AppConfig, GlobalData
-using LRCatalogSync.UI;                // ← für TrayManager
+using LrCatalogSync.Infrastructure;    // ← für Log, AppConfig, GlobalData
+using LrCatalogSync.UI;                // ← für TrayManager
 
-namespace LRCatalogSync.Core
+namespace LrCatalogSync.Core
 {
     // CatalogManager für die Katalog-Synchronisation
     // Führt sequenziell Backup, rclone sync und Cleanup aus
@@ -108,7 +108,7 @@ namespace LRCatalogSync.Core
         
         // geprüft!!
         // Löscht die von uns erstellte Lightroom-Lock-Datei
-        // Erkennung NUR am Inhalt: Unsere enthält "LRCatSync=", Lightrooms enthält Prozesspfad
+        // Erkennung NUR am Inhalt: Unsere enthält "LrCatSync=", Lightrooms enthält Prozesspfad
         public static void CleanupLightroomLocks(AppConfig config)
         {
             try
@@ -116,10 +116,10 @@ namespace LRCatalogSync.Core
                 if (File.Exists(config.CatalogLockFile))
                 {
                     string content = File.ReadAllText(config.CatalogLockFile);
-                    if (content.StartsWith("LRCatSync="))
+                    if (content.StartsWith("LrCatSync="))
                     {
                         File.Delete(config.CatalogLockFile);
-                        Log.Debug($"CatalogManager: LRCatSync Lock-Datei gelöscht: {config.CatalogLockFile}");
+                        Log.Debug($"CatalogManager: LrCatSync Lock-Datei gelöscht: {config.CatalogLockFile}");
                     }
                     else
                     {
@@ -281,7 +281,7 @@ namespace LRCatalogSync.Core
             try
             {
                 // Schreibe Sync-Info in Lock-Datei (Lightroom ignoriert Inhalt, prüft nur Existenz)
-                File.WriteAllText(config.CatalogLockFile, $"LRCatSync={DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}\nSyncGuid={Guid.NewGuid():N}");
+                File.WriteAllText(config.CatalogLockFile, $"LrCatSync={DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}\nSyncGuid={Guid.NewGuid():N}");
                 
                 Log.Debug($"CatalogManager: Lightroom-Lock erstellt: {config.CatalogLockFile}");
             }

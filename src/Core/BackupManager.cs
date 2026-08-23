@@ -1,10 +1,10 @@
 using System.ComponentModel;
 using System.Diagnostics;
 
-using LRCatalogSync.Infrastructure;    // ← für Log, AppConfig, GlobalData
-using LRCatalogSync.UI;                // ← für TrayManager
+using LrCatalogSync.Infrastructure;    // ← für Log, AppConfig, GlobalData
+using LrCatalogSync.UI;                // ← für TrayManager
 
-namespace LRCatalogSync.Core
+namespace LrCatalogSync.Core
 {
     // Manager für alle Backup-Operationen (Check, Sync, Statistiken)
     public static class BackupManager

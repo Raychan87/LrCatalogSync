@@ -1,5 +1,5 @@
 
-namespace LRCatalogSync.UI
+namespace LrCatalogSync.UI
 {
     // Manager für Tray-Icon Verwaltung und Status-Updates
     public class TrayManager
@@ -83,51 +83,51 @@ namespace LRCatalogSync.UI
             {
                 case "NoCfg":
                     trayIcon.Icon = iconWhite;
-                    trayIcon.Text = "LRCatSync: Konfigurationsdateien fehlen!";
+                    trayIcon.Text = "LrCatSync: Konfigurationsdateien fehlen!";
                     break;
                 case "Standby":
                     trayIcon.Icon = iconGreen;
-                    trayIcon.Text = "LRCatSync: wartet auf Änderungen...";
+                    trayIcon.Text = "LrCatSync: wartet auf Änderungen...";
                     break;
                 case "BSyncing":
                     trayIcon.Icon = iconOrange;
-                    trayIcon.Text = "LRCatSync: synchronisiere Lightroom Sicherungsordner.";
+                    trayIcon.Text = "LrCatSync: synchronisiere Lightroom Sicherungsordner.";
                     break;
                 case "LSyncing":
                     trayIcon.Icon = iconYellow;
-                    trayIcon.Text = "LRCatSync: synchronisiere Lightroom Katalog.";
+                    trayIcon.Text = "LrCatSync: synchronisiere Lightroom Katalog.";
                     break;
                 case "RcloneCfg":
                     trayIcon.Icon = iconRed;
-                    trayIcon.Text = "LRCatSync: rclone Konfigurationsdatei fehlt!";
+                    trayIcon.Text = "LrCatSync: rclone Konfigurationsdatei fehlt!";
                     break;
                 case "RcloneExe":
                     trayIcon.Icon = iconRed;
-                    trayIcon.Text = "LRCatSync: rclone.exe fehlt!";
+                    trayIcon.Text = "LrCatSync: rclone.exe fehlt!";
                     break;
                 case "Error":
                     trayIcon.Icon = iconRed;
-                    trayIcon.Text = "LRCatSync: Interner Programm fehler, bitte Log überprüfen!";
+                    trayIcon.Text = "LrCatSync: Interner Programm fehler, bitte Log überprüfen!";
                     break;
                 case "Lockfile":
                     trayIcon.Icon = iconLightBlue;
-                    trayIcon.Text = "LRCatSync: Lightroom Classic ist aktiv.";
+                    trayIcon.Text = "LrCatSync: Lightroom Classic ist aktiv.";
                     break;
                 case "NoSamba":
                     trayIcon.Icon = iconRed;
-                    trayIcon.Text = "LRCatSync: Keine Verbindung zum Samba Server!";
+                    trayIcon.Text = "LrCatSync: Keine Verbindung zum Samba Server!";
                     break;
                 case "RemoteLockfile":
                     trayIcon.Icon = iconMagenta;
-                    trayIcon.Text = "LRCatSync: Remote Sync ist aktiv.";
+                    trayIcon.Text = "LrCatSync: Remote Sync ist aktiv.";
                     break;
                 case "LockfileErr":
                     trayIcon.Icon = iconRed;
-                    trayIcon.Text = "LRCatSync: Veralteter Remote Sync Prozess erkannt, bitte Remotepfad prüfen!";
+                    trayIcon.Text = "LrCatSync: Veralteter Remote Sync Prozess erkannt, bitte Remotepfad prüfen!";
                     break;
                 case "CrashRecovery":
                     trayIcon.Icon = iconBlue;
-                    trayIcon.Text = "LRCatSync: Crash-Recovery läuft...";
+                    trayIcon.Text = "LrCatSync: Crash-Recovery läuft...";
                     break;
                 
             }
@@ -135,7 +135,7 @@ namespace LRCatalogSync.UI
 
         private Icon LoadIcon(string fileName)
         {
-            var resourceName = $"LRCatalogSync.Resources.Icons.{fileName}";
+            var resourceName = $"LrCatalogSync.Resources.Icons.{fileName}";
             var stream = typeof(TrayManager).Assembly.GetManifestResourceStream(resourceName)
                 ?? throw new InvalidOperationException($"Icon-Ressource nicht gefunden: {resourceName}");
             iconStreams.Add(stream);

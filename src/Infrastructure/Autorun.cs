@@ -1,12 +1,12 @@
 using Microsoft.Win32;
 
-namespace LRCatalogSync.Infrastructure
+namespace LrCatalogSync.Infrastructure
 {
     // Verwaltet die Autorun-Einstellung für den Windows-Start
     public static class Autorun
     {
         private const string RegistryKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-        private const string RegistryValueName = "LRCatalogSync";
+        private const string RegistryValueName = "LrCatalogSync";
 
         // Aktiviert den automatischen Start beim Systemstart
         public static void Enable(string exePath)

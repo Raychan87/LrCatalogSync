@@ -1,9 +1,9 @@
-﻿namespace LRCatalogSync
+﻿namespace LrCatalogSync
 {
     public static class GlobalData
     {
         public static string BaseDir { get; private set; } = AppDomain.CurrentDomain.BaseDirectory;
-        public static string LRCatSyncConfigPath { get; private set; } = Path.Combine(GlobalData.BaseDir, "data", "config", "LRCatSync.conf");
+        public static string LrCatSyncConfigPath { get; private set; } = Path.Combine(GlobalData.BaseDir, "data", "config", "LrCatSync.conf");
         public static string RcloneConfigPath { get; private set; } = Path.Combine(GlobalData.BaseDir, "data", "config", "rclone.conf");
     }
 
@@ -21,7 +21,7 @@
         public const string RCLONE_CONNECT_TIMEOUT = "30s";
         
         // Lock-Dateinamen für Synchronisation
-        public const string LOCK_FILE = "LRCatSync.lock";
+        public const string LOCK_FILE = "LrCatSync.lock";
     }    
 }
 

@@ -1,7 +1,7 @@
-using LRCatalogSync.Infrastructure;
-using LRCatalogSync.UI;
+using LrCatalogSync.Infrastructure;
+using LrCatalogSync.UI;
 
-namespace LRCatalogSync.Core
+namespace LrCatalogSync.Core
 {
     // Koordinator für sequenzielle Ausführung von Backup und Katalog-Sync
     // Stellt sicher dass BackupManager und CatalogManager NACHEINANDER laufen
@@ -15,7 +15,7 @@ namespace LRCatalogSync.Core
         private static bool catalogSyncSucceeded = false;
 
         // Führt kompletten Sync-Zyklus aus: Backup → Katalog-Sync
-        // Wird vom Timer in LRCatSync aufgerufen
+        // Wird vom Timer in LrCatSync aufgerufen
         public static void RunCoordinator(AppConfig config, TrayManager trayManager)
         {
             // Verhindere parallele Ausführung
@@ -32,7 +32,7 @@ namespace LRCatalogSync.Core
             {
                 // ========== VALIDIERUNGEN ==========
                 // Prüfe zuerst ob Config-Datei existiert (wichtig für ersten Start)
-                if (!File.Exists(GlobalData.LRCatSyncConfigPath))
+                if (!File.Exists(GlobalData.LrCatSyncConfigPath))
                 {
                     Log.Error("Coordinator: Konfigurationsdatei fehlt! Bitte Einstellungen prüfen.");
                     trayManager.UpdateStatus("NoCfg");
@@ -53,7 +53,7 @@ namespace LRCatalogSync.Core
                     return;
                 }
 
-                // ========== PRÜFUNG: Ob ein anderer LRCatalogSync läuft (Anderer Rechner) ==========
+                // ========== PRÜFUNG: Ob ein anderer LrCatalogSync läuft (Anderer Rechner) ==========
                 // Remote Lockfile vom Samba-Server prüfen
                 // Rückgabewerte: 0=Fehler, 1=Kein Lock, 2=Lock aktiv, 3=Lock veraltet
                 int remoteLockStatus = LockManager.CheckRemoteLock(config, trayManager);

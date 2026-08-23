@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace LRCatalogSync.Infrastructure;
+namespace LrCatalogSync.Infrastructure;
 
 // Statische Klasse für AES-256-Verschlüsselung und -Entschlüsselung
 // Wird verwendet, um Samba-Passwörter sicher in der Konfigurationsdatei zu speichern.

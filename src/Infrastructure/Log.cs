@@ -1,5 +1,5 @@
 ﻿
-namespace LRCatalogSync.Infrastructure
+namespace LrCatalogSync.Infrastructure
 {
     // Logging-Funktion für die Anwendung
     // Schreibt in Log-Datei im Programm-Verzeichnis mit automatischer Rotation
@@ -30,7 +30,7 @@ namespace LRCatalogSync.Infrastructure
             }
 
             // Log-Datei mit Datum im Namen
-            string logFileName = $"LRCatalogSync_{DateTime.UtcNow:yyyy-MM-dd}.log";
+            string logFileName = $"LrCatalogSync_{DateTime.UtcNow:yyyy-MM-dd}.log";
             logFilePath = Path.Combine(logsDir, logFileName);
             
             // Prüfe am Start ob Rotation nötig ist
@@ -84,7 +84,7 @@ namespace LRCatalogSync.Infrastructure
             {
                 lock (lockObj)
                 {
-                    string currentBaseLogName = Path.Combine(logsDir, $"LRCatalogSync_{DateTime.UtcNow:yyyy-MM-dd}");
+                    string currentBaseLogName = Path.Combine(logsDir, $"LrCatalogSync_{DateTime.UtcNow:yyyy-MM-dd}");
                     
                     // Verschiebe alte Backups (Ringspeicher: .log.1 -> .log.2, aber max 3 alte Dateien)
                     for (int i = MAX_BACKUP_FILES - 1; i >= 1; i--)
@@ -116,7 +116,7 @@ namespace LRCatalogSync.Infrastructure
                     File.Move(logFilePath, firstBackupPath);
                     
                     // Aktualisiere logFilePath für die neue Datei
-                    logFilePath = Path.Combine(logsDir, $"LRCatalogSync_{DateTime.UtcNow:yyyy-MM-dd}.log");
+                    logFilePath = Path.Combine(logsDir, $"LrCatalogSync_{DateTime.UtcNow:yyyy-MM-dd}.log");
                 }
             }
             catch

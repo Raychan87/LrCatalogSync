@@ -92,7 +92,7 @@ Wenn die im nächsten zug immer noch da sind wieder überspringen bis keine der 
 
 **❗ Wichtig:** nur die von Lightroom erzeugte .lrcat.lock nicht die von Catalogmanager.cs erzeugte Datei.
 
-** Hinweis:** Trayicon auf Blau, wenn erkannt wird, das eine .lrcat.lock Datei schon da liegt, die von Lightroom erzeugt wurde. Damit nutzer sieht, das LRCatSync paussiert ist. Gib auch ein DEBUG log aus das Programm auf Lightroom wartet bis Lock entfernt wird.
+** Hinweis:** Trayicon auf Blau, wenn erkannt wird, das eine .lrcat.lock Datei schon da liegt, die von Lightroom erzeugt wurde. Damit nutzer sieht, das LrCatSync paussiert ist. Gib auch ein DEBUG log aus das Programm auf Lightroom wartet bis Lock entfernt wird.
 
 ### 🔵 Phase 1: Versionsvergleich (mit rclone)
 
@@ -126,8 +126,8 @@ Wenn die im nächsten zug immer noch da sind wieder überspringen bis keine der 
 ### 🔵 Phase 2: Lock-Akquise (Atomar!)
 
 ```
-2.1 → Versuche LRCatSync.lock auf LOKAL zu erstellen (atomar mit FileShare.None)
-      Pfad: [CatalogLocalPath]/LRCatSync.lock
+2.1 → Versuche LrCatSync.lock auf LOKAL zu erstellen (atomar mit FileShare.None)
+      Pfad: [CatalogLocalPath]/LrCatSync.lock
       Inhalt: {
         "client": "PC1",
         "started": "2026-01-15T14:30:00Z",
@@ -139,8 +139,8 @@ Wenn die im nächsten zug immer noch da sind wieder überspringen bis keine der 
       WICHTIG: File.Open(lockPath, FileMode.Create, FileAccess.Write, FileShare.None)
       → Wenn IOException → Lock existiert bereits (von anderer Instanz)
       
-2.2 → Wenn lokale LRCatSync.lock erfolgreich → Versuche LRCatSync.lock auf NAS zu erstellen
-      Pfad: [CatalogRemotePath]/LRCatSync.lock
+2.2 → Wenn lokale LrCatSync.lock erfolgreich → Versuche LrCatSync.lock auf NAS zu erstellen
+      Pfad: [CatalogRemotePath]/LrCatSync.lock
       Inhalt: {
         "client": "PC1",
         "started": "2026-01-15T14:30:00Z",
@@ -149,7 +149,7 @@ Wenn die im nächsten zug immer noch da sind wieder überspringen bis keine der 
         "side": "remote"
       }
       
-      WICHTIG: Wenn NAS-LRCatSync.lock bereits existiert:
+      WICHTIG: Wenn NAS-LrCatSync.lock bereits existiert:
       - Prüfe Alter der Datei
       - Wenn älter als SYNC_LOCK_TIMEOUT_MIN (30 Min) 
         → Stale Lock! Überschreiben mit Warnung im Log
@@ -165,7 +165,7 @@ Wenn die im nächsten zug immer noch da sind wieder überspringen bis keine der 
       → Verhindert dass Lightroom Katalog während Sync öffnet
       
 2.5 → Heartbeat-Thread starten (alle 2-3 Minuten)
-      - Aktualisiert Timestamp in BEIDEN LRCatSync.lock Dateien
+      - Aktualisiert Timestamp in BEIDEN LrCatSync.lock Dateien
       - Verhindert Timeout bei langen Syncs (>20 Min)
       - Läuft parallel zum Sync-Prozess
       - WICHTIG: Thread-Referenz speichern für Cleanup!
@@ -220,12 +220,12 @@ Wenn die im nächsten zug immer noch da sind wieder überspringen bis keine der 
         --exclude "*.lrcat-wal"
         --exclude "[Katalogname] Previews.lrdata/"
         --exclude "[BackupsLocalPath]/**" (wenn BackupsLocalPath UNTER CatalogLocalPath)
-        --exclude "LRCatSync_last_katalog.zip"
+        --exclude "LrCatSync_last_katalog.zip"
       
       HINWEIS: [BackupsLocalPath] ist der relative Pfad vom Katalog zum Backup-Ordner
       (wird dynamisch aus Config.BackupsLocalPath berechnet)
           
-      WICHTIG: --exclude "LRCatSync_last_katalog.zip" schützt das ZIP-Backup vor Löschung!
+      WICHTIG: --exclude "LrCatSync_last_katalog.zip" schützt das ZIP-Backup vor Löschung!
 
 4.2 → Extra Rclone sync für "[Katalogname] Previews.lrdata/"
 
@@ -241,12 +241,12 @@ Wenn die im nächsten zug immer noch da sind wieder überspringen bis keine der 
         --exclude "[Katalogname] Sync.lrdata/"
         --exclude "[Katalogname] Smart Previews.lrdata/"
         --exclude "[BackupsLocalPath]/**" (wenn BackupsLocalPath UNTER CatalogLocalPath)
-        --exclude "LRCatSync_last_katalog.zip"
+        --exclude "LrCatSync_last_katalog.zip"
       
 4.3 → Transfer-Überwachung:
       - Log-Ausgabe parsen (wie BackupManager.WriteRcloneStats())
       - Bei Fehler → KEIN automatisches Rollback!
-      - User muss manuell LRCatSync_last_katalog.zip zurückkopieren
+      - User muss manuell LrCatSync_last_katalog.zip zurückkopieren
 ```
 
 ---
@@ -259,13 +259,13 @@ Wenn die im nächsten zug immer noch da sind wieder überspringen bis keine der 
       - Thread sauber beenden
       - Verhindert Schreibzugriffe auf gelöschte Lock-Dateien
       
-5.2 → Lösche BEIDE LRCatSync.lock Dateien:
-      - Lokal: [CatalogLocalPath]/LRCatSync.lock
-      - Remote: [CatalogRemotePath]/LRCatSync.lock
+5.2 → Lösche BEIDE LrCatSync.lock Dateien:
+      - Lokal: [CatalogLocalPath]/LrCatSync.lock
+      - Remote: [CatalogRemotePath]/LrCatSync.lock
       
 5.3 → Lösche lokale .lrcat.lock Datei (vom Programm erstellt in 2.4)
       
-5.4 → LRCatSync_last_katalog.zip BLEIBT auf NAS (1 Version permanent)
+5.4 → LrCatSync_last_katalog.zip BLEIBT auf NAS (1 Version permanent)
       → Ringspeicher mit 1 Slot (keine Historie)
       
 5.5 → SyncCoordinator.EndCatalogSync() aufrufen
@@ -342,10 +342,10 @@ Problem: Programm stürzt ab, .lrcat.lock bleibt bestehen
 Risiko: User kann Katalog nicht öffnen, Sync hängt
 
 Lösung:
-1. Beim Programm-Start: Prüfe ob eigene .lrcat.lock und LRCatSync.lock existiert
-2. Wenn ja und die LRCatSync.lock älter als 30min ist → beide lock Files Löschen 
-3. LRCatSync.lock auf NAS hat 30-Min-Timeout → Automatisch bereinigt
-4. LRCatSync_last_katalog.zip bleibt als manuelle Recovery-Option
+1. Beim Programm-Start: Prüfe ob eigene .lrcat.lock und LrCatSync.lock existiert
+2. Wenn ja und die LrCatSync.lock älter als 30min ist → beide lock Files Löschen 
+3. LrCatSync.lock auf NAS hat 30-Min-Timeout → Automatisch bereinigt
+4. LrCatSync_last_katalog.zip bleibt als manuelle Recovery-Option
 
 WICHTIG: Lock-Cleanup in try-finally Block implementieren!
 → Auch bei Programm-Fehler werden Locks sicher entfernt
@@ -359,8 +359,8 @@ WICHTIG: Lock-Cleanup in try-finally Block implementieren!
 |---|--------------|-----------|
 | 1 | **Sync-History auf NAS?** ❌ Nein | Nur lokales Log (DEBUG-Level) |
 | 2 | **Tray-Status für Katalog-Sync?** 🟡 Gleiche Icons wie BackupManager.cs | Grün=Standby, Gelb=rclone läuft (Phase 4), Rot=Error, weiß=keine verbindung| blau=Lightroom läuft (lock gefunden) |
-| 3 | **Logging?** 📄 Zusammengeführt | Alles in `LRCatalogSync.log` | Sinnvolle Aufteilung in DEBUG, INFO, NOTICE, ERROR (Wichtig log.cs verwenden) |
-| 4 | **Rollback?** ✋ Manuell | User kopiert LRCatSync_last_katalog.zip bei Bedarf zurück |
+| 3 | **Logging?** 📄 Zusammengeführt | Alles in `LrCatalogSync.log` | Sinnvolle Aufteilung in DEBUG, INFO, NOTICE, ERROR (Wichtig log.cs verwenden) |
+| 4 | **Rollback?** ✋ Manuell | User kopiert LrCatSync_last_katalog.zip bei Bedarf zurück |
 | 5 | **GUID-Tracking?** ✅ Ja | Pro Sync-Durchlauf neue GUID generieren, im DEBUG-Log speichern |
 
 ---
