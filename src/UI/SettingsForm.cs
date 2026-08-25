@@ -438,6 +438,14 @@ namespace LrCatalogSync.UI
                 config.LogLevel = GetControlValue("cmbLogLevel");
                 config.AutoRun = GetCheckBoxValue("chkAutoRun");
 
+                // Validierung der Remote-Pfade
+                if (!ValidateRemotePath(ref config.CatalogRemotePath, "Remote Katalog Pfad") ||
+                    !ValidateRemotePath(ref config.BackupsRemotePath, "Remote Backup Pfad"))
+                {
+                    return;
+                }
+
+                //
                 if (!int.TryParse(GetControlValue("txtGlobalCycleInterval"), out int globalCycleInterval) || globalCycleInterval <= 0)
                 {
                     MessageBox.Show(
@@ -628,6 +636,36 @@ namespace LrCatalogSync.UI
             if (control.Length > 0 && control[0] is CheckBox cb)
                 return cb.Checked;
             return false;
+        }
+
+        private bool ValidateRemotePath(ref string remotePath, string fieldName)
+        {
+            string trimmedRemotePath = remotePath.Trim().Replace('\\', '/');
+
+            if (trimmedRemotePath.Length >= 2 &&
+                char.IsLetter(trimmedRemotePath[0]) &&
+                trimmedRemotePath[1] == ':')
+            {
+                MessageBox.Show(
+                    $"Das Feld \"{fieldName}\" enthält einen Windows-Laufwerksbuchstaben (z.B. X:, D:, F:), der hier nicht erlaubt ist.\n\n" +
+                    "Tragen Sie hier den Ordnerpfad innerhalb Ihrer Samba-Freigabe ein, z.B.:\n" +
+                    "  /SambaOrdner/\n" +
+                    "  /SambaOrdner/Lightroom/\n\n" +
+                    "Der Samba-Server (IP oder Hostname) wird separat im Feld \"Server IP/Name\" eingetragen.\n\n" +
+                    $"Aus den beiden Feldern wird der vollständige Netzwerkpfad zusammengesetzt:\n" +
+                    $"  \\\\{{Server IP/Name}}{{{fieldName}}}\n" +
+                    $"  Beispiel: \\\\192.168.1.100/SambaOrdner/",
+                    "Ungültiger Remote-Pfad",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                return false;
+            }
+
+            remotePath = trimmedRemotePath.StartsWith('/')
+                ? trimmedRemotePath
+                : $"/{trimmedRemotePath}";
+
+            return true;
         }
 
         private string ObscurePassword(string? password, string rcloneExePath)
