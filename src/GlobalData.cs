@@ -9,7 +9,7 @@
 
     public static class GlobalConst
     {
-        public const string REMOTE_NAME = "synology";
+        public const string REMOTE_NAME = "LrCatalogSync";
         
         // Sync-Lock Timeout - wann ein Lock als "Veraltet" gilt (30 Minuten)
         public const int SYNC_LOCK_TIMEOUT_MIN = 30;
