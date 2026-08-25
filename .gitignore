@@ -433,3 +433,5 @@ FodyWeavers.xsd
 
 # Ignore Github Copilot configuration files
 .copilotignore
+
+Bugs und ToDo.md
