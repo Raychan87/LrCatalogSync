@@ -59,6 +59,45 @@ namespace LrCatalogSync.Core
                         {
                             string logContent = string.Join("\n", lines);
 
+                            // Ein abgebrochener rclone-Prozess kann ein verwaistes Lockfile hinterlassen.
+                            if (logContent.Contains("prior lock file found", StringComparison.OrdinalIgnoreCase))
+                            {
+                                if (CleanupRcloneLockFile(logContent))
+                                {
+                                    Log.Debug("BackupManager: Verwaistes Lockfile gelöscht, starte Bisync erneut");
+
+                                    var retryPsi = new ProcessStartInfo
+                                    {
+                                        FileName = config.RclonePath,
+                                        Arguments = $"--config \"{GlobalData.RcloneConfigPath}\" bisync \"{config.BackupsLocalPath}\" {remoteFullPath} --compare modtime,size --metadata --log-file \"{tempLog}\" --log-level {config.LogLevel} --contimeout {GlobalConst.RCLONE_CONNECT_TIMEOUT}",
+                                        UseShellExecute = false,
+                                        RedirectStandardOutput = true,
+                                        RedirectStandardError = true,
+                                        CreateNoWindow = true
+                                    };
+
+                                    using (var retryProc = Process.Start(retryPsi))
+                                    {
+                                        if (retryProc == null)
+                                            return false;
+
+                                        retryProc.WaitForExit();
+                                        if (retryProc.ExitCode == 0)
+                                        {
+                                            WriteRcloneStats(tempLog);
+                                            Log.Debug("BackupManager: Bisync nach Lockfile-Bereinigung erfolgreich");
+                                            return true;
+                                        }
+
+                                        Log.Error($"BackupManager: Bisync nach Lockfile-Bereinigung fehlgeschlagen (ExitCode: {retryProc.ExitCode})");
+                                        return false;
+                                    }
+                                }
+
+                                Log.Error("BackupManager: Das von rclone gemeldete Lockfile konnte nicht bereinigt werden");
+                                return false;
+                            }
+
                             // Prüfe auf spezifischen Fehler
                             if (logContent.Contains("cannot find prior Path1 or Path2 listings"))
                             {
@@ -190,6 +229,52 @@ namespace LrCatalogSync.Core
             catch (Exception ex)
             {
                 Log.Debug($"BackupManager: - rclone: {ex.Message}");
+            }
+        }
+
+        private static bool CleanupRcloneLockFile(string logContent)
+        {
+            const string lockFileMarker = "prior lock file found:";
+            int markerIndex = logContent.IndexOf(lockFileMarker, StringComparison.OrdinalIgnoreCase);
+            if (markerIndex < 0)
+                return false;
+
+            int pathStart = markerIndex + lockFileMarker.Length;
+            int pathEnd = logContent.IndexOf(".lck", pathStart, StringComparison.OrdinalIgnoreCase);
+            if (pathEnd < 0)
+                return false;
+
+            string lockFilePath = logContent[pathStart..(pathEnd + ".lck".Length)].Trim().Trim('"');
+            string bisyncDirectory = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "rclone",
+                "bisync");
+
+            if (!Path.GetFullPath(lockFilePath).StartsWith(
+                    Path.GetFullPath(bisyncDirectory) + Path.DirectorySeparatorChar,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                Log.Error($"BackupManager: Unsicherer Lockfile-Pfad abgelehnt: {lockFilePath}");
+                return false;
+            }
+
+            if (!File.Exists(lockFilePath))
+                return false;
+
+            try
+            {
+                File.Delete(lockFilePath);
+                return !File.Exists(lockFilePath);
+            }
+            catch (IOException ex)
+            {
+                Log.Error($"BackupManager: Lockfile konnte nicht gelöscht werden: {ex.Message}");
+                return false;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Log.Error($"BackupManager: Zugriff auf Lockfile verweigert: {ex.Message}");
+                return false;
             }
         }
 
