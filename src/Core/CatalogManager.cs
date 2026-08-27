@@ -17,6 +17,15 @@ namespace LrCatalogSync.Core
             Upload,    // Lokal → NAS
             Download   // NAS → Lokal
         }
+        // Enum für Status der Remote-Datei
+        private enum RemoteFileStatus
+        {
+            Found,
+            Missing,
+            Unavailable
+        }
+
+        private readonly record struct RemoteFileLookupResult(RemoteFileStatus Status, DateTime? ModificationTime);
         
         // geprüft!!
         // Führt die Katalog-Synchronisation aus
@@ -39,6 +48,11 @@ namespace LrCatalogSync.Core
                 string tempLog = Path.Combine(GlobalData.BaseDir, "data", "logs", "rclone_catalog_check.log");
                 
                 syncDirection = CheckSyncDirection(config);
+
+                if (hasError)
+                {
+                    return false;
+                }
                 
                 if (syncDirection == SyncDirection.None)
                 {
@@ -148,16 +162,25 @@ namespace LrCatalogSync.Core
                 }
                 
                 // Hole Änderungsdatum der remote Datei via rclone lsl
-                DateTime? remoteModTime = GetRemoteFileModificationTime(config);
-                if (remoteModTime == null)
+                RemoteFileLookupResult remoteFile = GetRemoteFileModificationTime(config);
+                if (remoteFile.Status == RemoteFileStatus.Unavailable)
+                {
+                    hasError = true;
+                    Log.Error("CatalogManager: Remote-Katalog konnte wegen eines Verbindungs- oder rclone-Fehlers nicht abgefragt werden; Sync wird abgebrochen");
+                    return SyncDirection.None;
+                }
+
+                if (remoteFile.Status == RemoteFileStatus.Missing)
                 {
                     // Remote-Datei existiert nicht -> Upload
                     Log.Debug($"CatalogManager: Remote-Katalog nicht vorhanden → UPLOAD");
                     return SyncDirection.Upload;
                 }
+
+                DateTime remoteModTime = remoteFile.ModificationTime!.Value;
                 
                 // Vergleiche Änderungsdatumen
-                TimeSpan difference = localModTime.Value - remoteModTime.Value;
+                TimeSpan difference = localModTime.Value - remoteModTime;
                 
                 if (Math.Abs(difference.TotalSeconds) < 2)
                 {
@@ -202,7 +225,7 @@ namespace LrCatalogSync.Core
         
         // geprüft!! 2026.07.05
         // Holt das Änderungsdatum einer remote Datei via rclone lsl
-        private static DateTime? GetRemoteFileModificationTime(AppConfig config)
+        private static RemoteFileLookupResult GetRemoteFileModificationTime(AppConfig config)
         {
             try
             {
@@ -219,16 +242,23 @@ namespace LrCatalogSync.Core
                 using (var p = Process.Start(psi))
                 {
                     if (p == null)
-                        return null;
+                        return new RemoteFileLookupResult(RemoteFileStatus.Unavailable, null);
                     
                     p.WaitForExit();
                     string output = p.StandardOutput.ReadToEnd().Trim();
+                    string error = p.StandardError.ReadToEnd().Trim();
                     
                     // Format von rclone lsl:
                     // "5042262016 2026-05-29 14:06:35.534552200 Lightroom-Katalog-v15.lrcat"
                     
-                    if (p.ExitCode != 0 || string.IsNullOrEmpty(output))
-                        return null;
+                    if (p.ExitCode != 0)
+                    {
+                        Log.Error($"CatalogManager: rclone lsl fehlgeschlagen (ExitCode {p.ExitCode}): {error}");
+                        return new RemoteFileLookupResult(RemoteFileStatus.Unavailable, null);
+                    }
+
+                    if (string.IsNullOrEmpty(output))
+                        return new RemoteFileLookupResult(RemoteFileStatus.Missing, null);
                     
                     // Splitte Output in Teile (Größe Datum Zeit Dateiname)
                     string[] parts = output.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
@@ -255,21 +285,23 @@ namespace LrCatalogSync.Core
                                 System.Globalization.DateTimeStyles.AssumeUniversal,
                                 out DateTime result))
                             {
-                                return result.ToUniversalTime();
+                                return new RemoteFileLookupResult(RemoteFileStatus.Found, result.ToUniversalTime());
                             }
                         }
                         
                         // Fallback: Standard Parse
                         if (DateTime.TryParse(dateStr, out DateTime fallbackResult))
-                            return fallbackResult.ToUniversalTime();
+                            return new RemoteFileLookupResult(RemoteFileStatus.Found, fallbackResult.ToUniversalTime());
                     }
                     
-                    return null;
+                    Log.Error($"CatalogManager: Ausgabe von rclone lsl konnte nicht gelesen werden: {output}");
+                    return new RemoteFileLookupResult(RemoteFileStatus.Unavailable, null);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                return null;
+                Log.Error($"CatalogManager: Fehler beim Abfragen des Remote-Katalogs: {ex.Message}");
+                return new RemoteFileLookupResult(RemoteFileStatus.Unavailable, null);
             }
         }
         
