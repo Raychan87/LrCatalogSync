@@ -11,6 +11,7 @@ namespace LrCatalogSync.Core
         // ==================== EIGENSCHAFTEN ====================
         private AppConfig config;                           // Konfigurationsdaten laden/speichern
         private TrayManager trayManager;                    // Manager für Tray-Icon und Status
+        private SettingsForm? settingsForm;                 // Bereits geöffnetes Einstellungsfenster
         private System.Threading.Timer? MainCycleTimer;     // Timer für Sync-Zyklus (Backup + Katalog)
 
         // ==================== KONSTRUKTOR - HAUPTEINSTIEGSPUNKT ====================
@@ -76,10 +77,16 @@ namespace LrCatalogSync.Core
             var settingsItem = new ToolStripMenuItem("Einstellungen");
             settingsItem.Click += (s, e) =>
             {
-                // Zeige Einstellungs-Dialog
-                using (var form = new SettingsForm(config))
+                if (settingsForm is { IsDisposed: false })
                 {
-                    if (form.ShowDialog() == DialogResult.OK)
+                    settingsForm.Activate();
+                    return;
+                }
+
+                // Zeige Einstellungs-Dialog
+                using (settingsForm = new SettingsForm(config))
+                {
+                    if (settingsForm.ShowDialog() == DialogResult.OK)
                     {
                         // Config neu laden (wenn in SettingsForm gespeichert wurde)
                         config = AppConfig.LoadFromFile(GlobalData.LrCatSyncConfigPath, GlobalData.BaseDir);
@@ -88,6 +95,8 @@ namespace LrCatalogSync.Core
                         Log.Info("Config: Einstellungen aktualisiert");
                     }
                 }
+
+                settingsForm = null;
             };
             menu.Items.Add(settingsItem);
 
