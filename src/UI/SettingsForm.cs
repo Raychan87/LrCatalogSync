@@ -647,7 +647,7 @@ namespace LrCatalogSync.UI
                 trimmedRemotePath[1] == ':')
             {
                 MessageBox.Show(
-                    $"Das Feld <b>{fieldName}</b> enthält einen Windows-Laufwerksbuchstaben (z.B. X:, D:, F:), der hier nicht erlaubt ist.\n\n" +
+                    $"Das Feld \"{fieldName}\" enthält einen Windows-Laufwerksbuchstaben (z.B. X:, D:, F:), der hier nicht erlaubt ist.\n\n" +
                     "Tragen Sie hier den Ordnerpfad innerhalb Ihrer Samba-Freigabe ein, z.B.:\n" +
                     "  /SambaOrdner/\n" +
                     "  /SambaOrdner/Lightroom/\n\n" +
@@ -655,7 +655,7 @@ namespace LrCatalogSync.UI
                     $"Aus den beiden Feldern wird der vollständige Netzwerkpfad zusammengesetzt:\n" +
                     $"  \\\\{{Server IP/Name}}{{{fieldName}}}\n" +
                     $"  Beispiel: \\\\192.168.1.100/SambaOrdner/",
-                    $"<b>Ungültiger Pfad in {fieldName}</b>",
+                    $"Ungültiger Pfad in {fieldName}",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
                 return false;

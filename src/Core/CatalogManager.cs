@@ -20,14 +20,13 @@ namespace LrCatalogSync.Core
         // Enum für Status der Remote-Datei
         private enum RemoteFileStatus
         {
-            Found,
-            Missing,
-            Unavailable
+            Found, // Datei existiert und wurde gefunden
+            Missing, // z.B. wenn die Datei noch nie hochgeladen wurde
+            Unavailable // z.B. bei Verbindungsproblemen oder rclone-Fehlern
         }
 
         private readonly record struct RemoteFileLookupResult(RemoteFileStatus Status, DateTime? ModificationTime);
         
-        // geprüft!!
         // Führt die Katalog-Synchronisation aus
         // Phase 0: Prüfe ob Lightroom läuft (.lrcat.lock vorhanden?) – VOR try!
         // Phase 1: rclone check – Versionsvergleich lokal vs remote + Upload/Download Entscheidung
@@ -119,8 +118,7 @@ namespace LrCatalogSync.Core
                 }
             }
         }
-        
-        // geprüft!!
+ 
         // Löscht die von uns erstellte Lightroom-Lock-Datei
         // Erkennung NUR am Inhalt: Unsere enthält "LrCatSync=", Lightrooms enthält Prozesspfad
         public static void CleanupLightroomLocks(AppConfig config)
@@ -163,13 +161,14 @@ namespace LrCatalogSync.Core
                 
                 // Hole Änderungsdatum der remote Datei via rclone lsl
                 RemoteFileLookupResult remoteFile = GetRemoteFileModificationTime(config);
+                // Prüfe ob remote Datei verfügbar ist
                 if (remoteFile.Status == RemoteFileStatus.Unavailable)
                 {
                     hasError = true;
-                    Log.Error("CatalogManager: Remote-Katalog konnte wegen eines Verbindungs- oder rclone-Fehlers nicht abgefragt werden; Sync wird abgebrochen");
+                    Log.Debug("CatalogManager: Remote-Katalog konnte wegen eines Verbindungs- oder rclone-Fehlers nicht abgefragt werden; Sync wird abgebrochen");
                     return SyncDirection.None;
                 }
-
+                // Prüfe ob remote Datei existiert
                 if (remoteFile.Status == RemoteFileStatus.Missing)
                 {
                     // Remote-Datei existiert nicht -> Upload
@@ -206,7 +205,6 @@ namespace LrCatalogSync.Core
             }
         }
         
-        // geprüft!! 2026.07.05
         // Holt das Änderungsdatum einer lokalen Datei (OS-Zeit)
         private static DateTime? GetFileModificationTime(string filePath)
         {
@@ -223,7 +221,6 @@ namespace LrCatalogSync.Core
             }
         }
         
-        // geprüft!! 2026.07.05
         // Holt das Änderungsdatum einer remote Datei via rclone lsl
         private static RemoteFileLookupResult GetRemoteFileModificationTime(AppConfig config)
         {
@@ -241,25 +238,26 @@ namespace LrCatalogSync.Core
                 
                 using (var p = Process.Start(psi))
                 {
+                    // Prüfe ob der Prozess gestartet wurde
                     if (p == null)
                         return new RemoteFileLookupResult(RemoteFileStatus.Unavailable, null);
                     
                     p.WaitForExit();
                     string output = p.StandardOutput.ReadToEnd().Trim();
                     string error = p.StandardError.ReadToEnd().Trim();
-                    
-                    // Format von rclone lsl:
-                    // "5042262016 2026-05-29 14:06:35.534552200 Lightroom-Katalog-v15.lrcat"
-                    
+
+                    // Prüfe ExitCode von rclone lsl    
                     if (p.ExitCode != 0)
                     {
-                        Log.Error($"CatalogManager: rclone lsl fehlgeschlagen (ExitCode {p.ExitCode}): {error}");
+                        Log.Debug($"CatalogManager: rclone lsl fehlgeschlagen (ExitCode {p.ExitCode}): {error}");
                         return new RemoteFileLookupResult(RemoteFileStatus.Unavailable, null);
                     }
 
                     if (string.IsNullOrEmpty(output))
                         return new RemoteFileLookupResult(RemoteFileStatus.Missing, null);
                     
+                    // Format von rclone lsl:
+                    // "5042262016 2026-05-29 14:06:35.534552200 Lightroom-Katalog-v15.lrcat"
                     // Splitte Output in Teile (Größe Datum Zeit Dateiname)
                     string[] parts = output.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
                     if (parts.Length >= 3)
@@ -294,18 +292,17 @@ namespace LrCatalogSync.Core
                             return new RemoteFileLookupResult(RemoteFileStatus.Found, fallbackResult.ToUniversalTime());
                     }
                     
-                    Log.Error($"CatalogManager: Ausgabe von rclone lsl konnte nicht gelesen werden: {output}");
+                    Log.Debug($"CatalogManager: Ausgabe von rclone lsl konnte nicht gelesen werden: {output}");
                     return new RemoteFileLookupResult(RemoteFileStatus.Unavailable, null);
                 }
             }
             catch (Exception ex)
             {
-                Log.Error($"CatalogManager: Fehler beim Abfragen des Remote-Katalogs: {ex.Message}");
+                Log.Debug($"CatalogManager: Fehler beim Abfragen des Remote-Katalogs: {ex.Message}");
                 return new RemoteFileLookupResult(RemoteFileStatus.Unavailable, null);
             }
         }
-        
-        // geprüft!!
+
         // Erstellt Lightroom-Lock-Datei um Lightroom zu blockieren
         // Verwendet festen Namen [Katalogname].lrcat.lock
         public static void CreateLightroomLock(AppConfig config)
@@ -319,11 +316,10 @@ namespace LrCatalogSync.Core
             }
             catch (Exception ex)
             {
-                Log.Error($"CatalogManager: Fehler beim Erstellen der Lightroom-Lock: {ex.Message}");
+                Log.Debug($"CatalogManager: Fehler beim Erstellen der Lightroom-Lock: {ex.Message}");
             }
         }
         
-        // geprüft!! 2026.07.24
         // Führt rclone sync aus (Upload oder Download) mit dynamischen Excludes
         public static bool RunRcloneSync(AppConfig config, SyncDirection direction, bool EnableRcloneCopy)
         {
@@ -571,7 +567,6 @@ namespace LrCatalogSync.Core
             }
         }
         
-        // geprüft!!
         // Parst Transfer-Statistiken aus rclone Output
         private static (int Files, long Bytes) ParseRcloneStats(string output)
         {
@@ -624,7 +619,6 @@ namespace LrCatalogSync.Core
             return (files, bytes);
         }
         
-        // geprüft!!
         // Führt separaten Sync für Previews.lrdata durch (nur wenn SyncPreviewData=true)
         private static void SyncPreviewsData(AppConfig config)
         {

@@ -23,7 +23,7 @@ namespace LrCatalogSync.Core
             {
                 if (isCycleRunning)
                 {
-                    Log.Debug("Coordinator: Zyklus läuft bereits - überspringe");
+                    // Log.Debug("Coordinator: Zyklus läuft bereits - überspringe");
                     return;
                 }                
                 isCycleRunning = true;
