@@ -13,6 +13,7 @@ namespace LrCatalogSync.Core
         private static bool hasError = false;
         private static bool backupSyncSucceeded = false;
         private static bool catalogSyncSucceeded = false;
+        private static bool cfgFileLost = false;
 
         // Führt kompletten Sync-Zyklus aus: Backup → Katalog-Sync
         // Wird vom Timer in LrCatSync aufgerufen
@@ -36,6 +37,7 @@ namespace LrCatalogSync.Core
                 {
                     Log.Error("Coordinator: Konfigurationsdatei fehlt! Bitte Einstellungen prüfen.");
                     trayManager.UpdateStatus("NoCfg");
+                    cfgFileLost = true;
                     return;
                 }
                 // Prüfe ob rclone.conf existiert
@@ -43,7 +45,16 @@ namespace LrCatalogSync.Core
                 {
                     Log.Error("Coordinator: rclone.conf fehlt. Bitte Einstellungen prüfen.");
                     trayManager.UpdateStatus("RcloneCfg");
+                    cfgFileLost = true;
                     return;
+                }
+                // Lade Config neu (falls in SettingsForm gespeichert wurde)
+                if (cfgFileLost)
+                {
+                    Log.Info("Coordinator: Konfigurationsdatei wiederhergestellt - Zyklus wird fortgesetzt");
+                    config = AppConfig.LoadFromFile(GlobalData.LrCatSyncConfigPath, GlobalData.BaseDir);
+                    Log.SetLogLevel(config.LogLevel);
+                    cfgFileLost = false;
                 }
                 // Prüfe ob rclone.exe existiert    
                 if (!File.Exists(config.RclonePath))

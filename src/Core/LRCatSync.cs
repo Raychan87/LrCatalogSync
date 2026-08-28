@@ -39,17 +39,7 @@ namespace LrCatalogSync.Core
 
             // ========== KONTEXTMENÜ AUFBAUEN ==========
             SetupContextMenu();
-
-            // ========== PRÜFUNG: Config-Datei vorhanden? ==========
-            // Wenn Config-Datei fehlt, zeige weißen Status an und BEENDHE Konstruktor
-            // Damit ist das Tray-Menü sofort bedienbar - der Nutzer kann eine Config anlegen
-            if (!File.Exists(GlobalData.LrCatSyncConfigPath))
-            {
-                Log.Error("LrCatSync: Konfigurationsdatei fehlt - erstelle Standard-Konfiguration");
-                trayManager.UpdateStatus("NoCfg");
-                return;
-            }
-
+            
             // ========== CRASH-RECOVERY: Verwaiste Locks bereinigen ==========
             // Nur ausführen, wenn Config existiert (sonst keine SMB-Verbindung nötig)
             if (LockManager.CheckRecovery(config, trayManager))
@@ -65,7 +55,7 @@ namespace LrCatalogSync.Core
             // Stoppe vorherigen Timer (falls vorhanden)
             MainCycleTimer?.Dispose();    
             Log.Debug($"LrCatSync: Initialisiere Main-Zyklus mit ({config.GlobalCycleInterval}sec Intervall)");   
-            // Timer führt alle GlobalCycleInterval Sekunden kompletten Zyklus aus (Backup → Katalog)            
+            // Timer führt alle GlobalCycleInterval Sekunden kompletten Zyklus aus (Backup → Katalog)     
             MainCycleTimer = new System.Threading.Timer(MainCycle, null, 0, config.GlobalCycleInterval * 1000);
         }
 
@@ -77,6 +67,7 @@ namespace LrCatalogSync.Core
             if (!LrCatSyncEnabled)
             {
                 Log.Debug("LrCatSync: Coordinator ist deaktiviert - Zyklus übersprungen");
+                trayManager.UpdateStatus("SyncDisabled");
                 return;
             }
 
@@ -104,6 +95,9 @@ namespace LrCatalogSync.Core
             toggleItem = new ToolStripMenuItem("Ausschalten");
             toggleItem.Click += (s, e) => OnOffCoordinator(toggleItem!);
             menu.Items.Add(toggleItem);
+
+            // ========== MENÜ-TRENNLINIE ==========
+            menu.Items.Add(new ToolStripSeparator());
 
             // ========== MENÜ-EINTRAG: Einstellungen öffnen ==========
             var settingsItem = new ToolStripMenuItem("Einstellungen");
@@ -156,8 +150,7 @@ namespace LrCatalogSync.Core
             {
                 // ========== AUSSCHALTEN ==========
                 LrCatSyncEnabled = false;
-                toggleItem.Text = "Einschalten";
-                trayManager.UpdateStatus("SyncDisabled");
+                toggleItem.Text = "Einschalten";                
                 Log.Info("LrCatSync: manuell gestoppt");
             }
             else
@@ -169,7 +162,7 @@ namespace LrCatalogSync.Core
                 Log.Info("LrCatSync: manuell gestartet");
             }
         }
-
+        
         // ==================== BEREINIGUNG ====================
         // Cleanup: Beende Timer und gebe Ressourcen frei
         protected override void Dispose(bool disposing)

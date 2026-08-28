@@ -392,7 +392,6 @@ namespace LrCatalogSync.UI
         }
 
         // ==================== HILFSMETHODEN FÜR DATEI- UND ORDNERDIALOGE ====================
-
         private string BrowseFolder()
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
