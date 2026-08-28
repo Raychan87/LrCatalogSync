@@ -14,6 +14,7 @@ namespace LrCatalogSync.UI
         private Icon iconWhite;                                 // Status: Keine Samba-Verbindung
         private Icon iconMagenta;                               // Status: Remote Lockfile aktiv
         private Icon iconLightBlue;                                  // Status: Crash-Recovery aktiv
+        private Icon iconApp;                                     // Sync deaktiviert (Programm-Icon)
         private readonly SynchronizationContext? uiContext = null!;      // Für Thread-sichere UI-Updates
         private readonly List<Stream> iconStreams = new();
         // ==================== KONSTRUKTOR ====================
@@ -32,6 +33,7 @@ namespace LrCatalogSync.UI
             iconWhite = LoadIcon("tray_white.ico");         // Keine Samba-Verbindung
             iconMagenta = LoadIcon("tray_violet.ico");      // Remote Lockfile aktiv
             iconBlue = LoadIcon("tray_blue.ico");           // Crash-Recovery aktiv
+            iconApp = LoadIcon("app_icon.ico");             // Sync deaktiviert (Programm-Icon)
 
             // ========== TRAY-ICON EINRICHTEN ==========
             trayIcon = new NotifyIcon()
@@ -129,7 +131,10 @@ namespace LrCatalogSync.UI
                     trayIcon.Icon = iconBlue;
                     trayIcon.Text = "LrCatSync: Crash-Recovery läuft...";
                     break;
-                
+                case "SyncDisabled":
+                    trayIcon.Icon = iconApp;
+                    trayIcon.Text = "LrCatSync: ist Ausgeschaltet.";
+                    break;
             }
         }
 

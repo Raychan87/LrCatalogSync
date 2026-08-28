@@ -12,7 +12,7 @@
 		  <NoWarn>$(NoWarn);CA1416</NoWarn> <!--Ignorieren weil Windows only-->	
       	
       <!-- Application Icon -->
-      <ApplicationIcon>src\Resources\app_icon.ico</ApplicationIcon>
+      <ApplicationIcon>src\Resources\Icons\app_icon.ico</ApplicationIcon>
       
       <!-- Self-Contained Deployment - .NET in die EXE integriert -->
       <PublishSingleFile>true</PublishSingleFile>
@@ -63,9 +63,6 @@
   <ItemGroup>
     <EmbeddedResource Include="src\Resources\Icons\*.ico">
       <LogicalName>LrCatalogSync.Resources.Icons.%(Filename).ico</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="src\Resources\app_icon.ico">
-      <LogicalName>LrCatalogSync.Resources.app_icon.ico</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 

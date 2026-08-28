@@ -28,7 +28,7 @@ namespace LrCatalogSync.UI
         private void SetupControls()
         {
             this.Text = $"LrCatalogSync v{appVersion} - Fototour-und-Technik.de";
-            this.Icon = LoadIcon("LrCatalogSync.Resources.app_icon.ico");
+            this.Icon = LoadIcon("LrCatalogSync.Resources.Icons.app_icon.ico");
             this.Size = new System.Drawing.Size(510, 650); // Setze die Größe des Formulars (Breite, Höhe)
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;

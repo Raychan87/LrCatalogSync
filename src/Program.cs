@@ -15,7 +15,7 @@ namespace LrCatalogSync
             Application.SetCompatibleTextRenderingDefault(false);
 
             // Startet die Anwendung mit unserem TrayIcon
-            Application.Run(new LrCatSync());
+            Application.Run(new LrCatSyncInit());
         }
     }
 }

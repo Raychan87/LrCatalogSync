@@ -6,17 +6,19 @@ namespace LrCatalogSync.Core
     // Hauptklasse: Startet und verwaltet die Anwendung
     // Delegiert Backup-Logik an BackupManager und UI an TrayManager
     // Startet automatischen Backup-Zyklus
-    public class LrCatSync : ApplicationContext
+    public class LrCatSyncInit : ApplicationContext
     {
         // ==================== EIGENSCHAFTEN ====================
         private AppConfig config;                           // Konfigurationsdaten laden/speichern
         private TrayManager trayManager;                    // Manager für Tray-Icon und Status
         private SettingsForm? settingsForm;                 // Bereits geöffnetes Einstellungsfenster
         private System.Threading.Timer? MainCycleTimer;     // Timer für Sync-Zyklus (Backup + Katalog)
+        private bool LrCatSyncEnabled = true;               // Sync aktiv (beim Start immer an)
+        private ToolStripMenuItem? toggleItem;              // Menü-Eintrag für Sync ein/aus
 
         // ==================== KONSTRUKTOR - HAUPTEINSTIEGSPUNKT ====================
         // Initialisiert die Anwendung: Logs, Config, Tray und Menü
-        public LrCatSync()
+        public LrCatSyncInit()
         {
             // ========== INITIALISIERUNG ==========
             // Logs im Verzeichnis data/logs erstellen
@@ -53,9 +55,33 @@ namespace LrCatalogSync.Core
             if (LockManager.CheckRecovery(config, trayManager))
                 Log.Debug("LrCatSync: Crash-Recovery abgeschlossen - nächster Zyklus startet Sync neu");
 
-            // ==================== STARTE SYNC-ZYKLUS ====================
+            // ========== INITIALISIERE MAIN-CYCLE-TIMER ==========          
+            InitMain();
+        }
+
+        // ==================== INITIALISIERE MAIN-CYCLE-TIMER ===================
+        private void InitMain()
+        {
+            // Stoppe vorherigen Timer (falls vorhanden)
+            MainCycleTimer?.Dispose();    
+            Log.Debug($"LrCatSync: Initialisiere Main-Zyklus mit ({config.GlobalCycleInterval}sec Intervall)");   
             // Timer führt alle GlobalCycleInterval Sekunden kompletten Zyklus aus (Backup → Katalog)            
-            MainCycle();
+            MainCycleTimer = new System.Threading.Timer(MainCycle, null, 0, config.GlobalCycleInterval * 1000);
+        }
+
+        // ==================== MAIN-CYCLE ====================
+        // Ein Zyklus des Programms: Backup → Katalog-Sync
+        private void MainCycle(object? state)
+        {
+            // ========== PRÜFUNG: LrCatSync aktiviert? ==========
+            if (!LrCatSyncEnabled)
+            {
+                Log.Debug("LrCatSync: Coordinator ist deaktiviert - Zyklus übersprungen");
+                return;
+            }
+
+            // Coordinator übernimmt die sequenzielle Ausführung
+            Coordinator.RunCoordinator(config, trayManager);
         }
 
         // ==================== MENÜ-SETUP ====================
@@ -72,6 +98,12 @@ namespace LrCatalogSync.Core
 //            };
 //            menu.Items.Add(statusItem);
 //            menu.Items.Add(new ToolStripSeparator());
+
+            // ========== MENÜ-EINTRAG: Sync ein/aus (über Einstellungen) ==========
+            // Zeigt "Ausschalten" wenn Sync läuft, "Einschalten" wenn er aus ist
+            toggleItem = new ToolStripMenuItem("Ausschalten");
+            toggleItem.Click += (s, e) => OnOffCoordinator(toggleItem!);
+            menu.Items.Add(toggleItem);
 
             // ========== MENÜ-EINTRAG: Einstellungen öffnen ==========
             var settingsItem = new ToolStripMenuItem("Einstellungen");
@@ -91,7 +123,7 @@ namespace LrCatalogSync.Core
                         // Config neu laden (wenn in SettingsForm gespeichert wurde)
                         config = AppConfig.LoadFromFile(GlobalData.LrCatSyncConfigPath, GlobalData.BaseDir);
                         Log.SetLogLevel(config.LogLevel);
-                        MainCycle();
+                        InitMain();
                         Log.Info("Config: Einstellungen aktualisiert");
                     }
                 }
@@ -116,21 +148,26 @@ namespace LrCatalogSync.Core
             trayManager.GetTrayIcon().ContextMenuStrip = menu;
         }
 
-        // ==================== TIMER-CALLBACK FÜR COORDINATOR ====================
-        // Ein Zyklus des Programms: Backup → Katalog-Sync
-        private void MainCycleCallback(object? state)
+        // ==================== SYNC EIN/AUS SCHALTEN ====================
+        // Schaltet den Sync-Zyklus ein oder aus
+        private void OnOffCoordinator(ToolStripMenuItem toggleItem)
         {
-            // Coordinator übernimmt die sequenzielle Ausführung
-            Coordinator.RunCoordinator(config, trayManager);
-        }
-        // ==================== STARTE SYNC-ZYKLUS ====================
-        private void MainCycle()
-        {
-            // Stoppe vorherigen Timer (falls vorhanden) und starte neuen Timer mit aktuellem Intervall
-            MainCycleTimer?.Dispose();    
-            Log.Debug($"LrCatSync: Starte Sync-Zyklus ({config.GlobalCycleInterval}sec Intervall)");   
-            // Timer führt alle GlobalCycleInterval Sekunden kompletten Zyklus aus (Backup → Katalog)     
-            MainCycleTimer = new System.Threading.Timer(MainCycleCallback, null, 0, config.GlobalCycleInterval * 1000);
+            if (LrCatSyncEnabled)
+            {
+                // ========== AUSSCHALTEN ==========
+                LrCatSyncEnabled = false;
+                toggleItem.Text = "Einschalten";
+                trayManager.UpdateStatus("SyncDisabled");
+                Log.Info("LrCatSync: manuell gestoppt");
+            }
+            else
+            {
+                // ========== EINSCHALTEN ==========
+                LrCatSyncEnabled = true;
+                toggleItem.Text = "Ausschalten";
+                trayManager.UpdateStatus("standby");
+                Log.Info("LrCatSync: manuell gestartet");
+            }
         }
 
         // ==================== BEREINIGUNG ====================
