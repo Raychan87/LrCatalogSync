@@ -310,7 +310,7 @@ namespace LrCatalogSync.Core
             try
             {
                 // Schreibe Sync-Info in Lock-Datei (Lightroom ignoriert Inhalt, prüft nur Existenz)
-                File.WriteAllText(config.CatalogLockFile, $"LrCatSync={DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}\nSyncGuid={Guid.NewGuid():N}");
+                File.WriteAllText(config.CatalogLockFile, $"LrCatSync={DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}\nSyncGuid={config.SyncGuid}");
                 
                 Log.Debug($"CatalogManager: Lightroom-Lock erstellt: {config.CatalogLockFile}");
             }

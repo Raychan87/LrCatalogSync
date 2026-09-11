@@ -12,7 +12,7 @@ namespace LrCatalogSync.Core
     {
         // ==================== EIGENSCHAFTEN ====================
         // Eindeutige Sync-GUID für Tracking
-        public string SyncGuid { get; private set; } = Guid.NewGuid().ToString();
+        public string SyncGuid { get; private set; }
 
         // Lokale Lock-Datei
         private FileStream? _localLockStream;
@@ -32,6 +32,7 @@ namespace LrCatalogSync.Core
         public LockManager(AppConfig config)
         {
             _config = config;
+            SyncGuid = config.SyncGuid;
         }
 
         // ==================== CRASH-RECOVERY ====================

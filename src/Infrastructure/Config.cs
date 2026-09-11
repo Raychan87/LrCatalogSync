@@ -7,6 +7,9 @@ namespace LrCatalogSync.Infrastructure
     {
         // ==================== EIGENSCHAFTEN ====================
 
+        // Eindeutige Geräte-ID für alle Sync-Locks dieses Rechners
+        public string SyncGuid { get; set; } = Guid.NewGuid().ToString("N");
+
         // Lokaler Pfad zur Lightroom Katalog-Datei (.lrcat)
         public string CatalogLocalFile = "C:/Benutzer/[Benutzername]/Bilder/Lightroom/[Katalogname].lrcat";
 
@@ -110,6 +113,7 @@ namespace LrCatalogSync.Infrastructure
 
                         // Weise die Werte den Eigenschaften zu
                         if (key == "CatalogLocalFile") CatalogLocalFile = value;
+                        if (key == "SyncGuid" && Guid.TryParse(value, out Guid syncGuid)) SyncGuid = syncGuid.ToString("N");
                         // Migration: Altes CatalogLocalPath zu CatalogLocalFile konvertieren
                         if (key == "CatalogLocalPath") 
                         {
@@ -171,9 +175,15 @@ namespace LrCatalogSync.Infrastructure
         // path --> Ziel-Pfad
         public void Save(string path)
         {
+            if (!Guid.TryParse(SyncGuid, out Guid syncGuid))
+                SyncGuid = Guid.NewGuid().ToString("N");
+            else
+                SyncGuid = syncGuid.ToString("N");
+
             // Erstelle Array mit allen Einstellungen
             string[] lines = new string[]
             {
+                "SyncGuid=" + SyncGuid,
                 "CatalogLocalFile=" + CatalogLocalFile,
                 "BackupsLocalPath=" + BackupsLocalPath,
                 "BackupsRemotePath=" + BackupsRemotePath,
