@@ -538,8 +538,6 @@ public sealed class SMBConnectionManager
                 try
                 {
                     _client.ListShares(out NTStatus status);
-                    Log.Debug($"SMB: ListShares-Status = {status}");
-
                     if (status != NTStatus.STATUS_SUCCESS)
                     {
                         Log.Debug($"SMB: ListShares ungültig ({status}), starte Reset und Reconnect.");

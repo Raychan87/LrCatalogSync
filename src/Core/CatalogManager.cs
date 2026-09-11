@@ -119,8 +119,9 @@ namespace LrCatalogSync.Core
             }
         }
  
-        // Löscht die von uns erstellte Lightroom-Lock-Datei
-        // Erkennung NUR am Inhalt: Unsere enthält "LrCatSync=", Lightrooms enthält Prozesspfad
+        // Löscht ausschließlich die von diesem Client erstellte Lightroom-Lock-Datei.
+        // Die Kombination aus LrCatSync-Markierung und eigener SyncGuid verhindert,
+        // dass eine echte Lightroom-Datei oder die Datei eines anderen Clients entfernt wird.
         public static void CleanupLightroomLocks(AppConfig config)
         {
             try
@@ -128,7 +129,12 @@ namespace LrCatalogSync.Core
                 if (File.Exists(config.CatalogLockFile))
                 {
                     string content = File.ReadAllText(config.CatalogLockFile);
-                    if (content.StartsWith("LrCatSync="))
+                    string syncGuidLine = content
+                        .Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
+                        .FirstOrDefault(line => line.StartsWith("SyncGuid=", StringComparison.OrdinalIgnoreCase)) ?? string.Empty;
+                    string fileSyncGuid = syncGuidLine.Substring("SyncGuid=".Length).Trim();
+
+                    if (content.StartsWith("LrCatSync=") && fileSyncGuid == config.SyncGuid)
                     {
                         File.Delete(config.CatalogLockFile);
                         Log.Debug($"CatalogManager: LrCatSync Lock-Datei gelöscht: {config.CatalogLockFile}");
@@ -305,18 +311,32 @@ namespace LrCatalogSync.Core
 
         // Erstellt Lightroom-Lock-Datei um Lightroom zu blockieren
         // Verwendet festen Namen [Katalogname].lrcat.lock
-        public static void CreateLightroomLock(AppConfig config)
+        public static bool CreateLightroomLock(AppConfig config)
         {
             try
             {
+                if (File.Exists(config.CatalogLockFile))
+                {
+                    string existingContent = File.ReadAllText(config.CatalogLockFile);
+                    bool isOwnLock = existingContent.StartsWith("LrCatSync=", StringComparison.OrdinalIgnoreCase) &&
+                                     existingContent.Contains($"SyncGuid={config.SyncGuid}", StringComparison.Ordinal);
+                    if (isOwnLock)
+                    {
+                        return false;
+                    }
+                    return false;
+                }
+
                 // Schreibe Sync-Info in Lock-Datei (Lightroom ignoriert Inhalt, prüft nur Existenz)
                 File.WriteAllText(config.CatalogLockFile, $"LrCatSync={DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}\nSyncGuid={config.SyncGuid}");
                 
                 Log.Debug($"CatalogManager: Lightroom-Lock erstellt: {config.CatalogLockFile}");
+                return true;
             }
             catch (Exception ex)
             {
                 Log.Debug($"CatalogManager: Fehler beim Erstellen der Lightroom-Lock: {ex.Message}");
+                return false;
             }
         }
         

@@ -14,6 +14,9 @@ namespace LrCatalogSync.Core
         private static bool backupSyncSucceeded = false;
         private static bool catalogSyncSucceeded = false;
         private static bool cfgFileLost = false;
+        // Bleibt über mehrere Prüfzyklen bestehen, damit der Lightroom-Status
+        // durchgehend per Heartbeat auf dem Remote-System gehalten wird.
+        private static LockManager? lightroomLockManager;
 
         // Führt kompletten Sync-Zyklus aus: Backup → Katalog-Sync
         // Wird vom Timer in LrCatSync aufgerufen
@@ -67,22 +70,41 @@ namespace LrCatalogSync.Core
                 // ========== PRÜFUNG: Ob ein anderer LrCatalogSync läuft (Anderer Rechner) ==========
                 // Remote Lockfile vom Samba-Server prüfen
                 // Rückgabewerte: 0=Fehler, 1=Kein Lock, 2=Lock aktiv, 3=Lock veraltet
-                int remoteLockStatus = LockManager.CheckRemoteLock(config, trayManager);
+                int remoteLockStatus = LockManager.CheckLock(config, trayManager);
                 
                 // Wenn Lockfile erkannt, Fehlerhaft oder veraltet ist, dann Zyklus überspringen und roten Status anzeigen
                 if (remoteLockStatus != 1)
                 {
                     return;
-                }
+                }   
 
                 // ========== PRÜFUNG: LIGHTROOM LÄUFT? ==========
                 // Prüfe ob Lightroom geöffnet ist (Lock-Dateien erkennen)
                 // Wenn ja überspringe Backup und Katalog-Sync, zeige roten Status an
                 if (IsLightroomRunning(config))
                 {
+                    // Erst jetzt wird der lokale Zustand auch für andere Clients sichtbar.
+                    // Ein vorhandener eigener Status wird von CheckLock bewusst akzeptiert.
+                    lightroomLockManager ??= new LockManager(config);
+                    if (!lightroomLockManager.AcquireLightroomLock(config, trayManager))
+                    {
+                        Log.Debug("Coordinator: Lightroom läuft, Remote-Status konnte nicht gesetzt werden");
+                        trayManager.UpdateStatus("NoSamba");
+                        return;
+                    }
+
                     Log.Debug("Coordinator: Lightroom läuft - Backup und Katalog-Sync übersprungen");
                     trayManager.UpdateStatus("Lockfile");
                     return;
+                }
+
+                // Lightroom wurde seit dem letzten Prüfzyklus geschlossen. Der eigene
+                // Remote-Status darf jetzt entfernt werden; fremde Locks bleiben geschützt.
+                if (lightroomLockManager != null)
+                {
+                    lightroomLockManager.ReleaseLightroomLock(config);
+                    lightroomLockManager = null;
+                    Log.Debug("Coordinator: Lightroom geschlossen - Remote-Status entfernt");
                 }
 
                 // ========== PRÜFUNG: BACKUP AKTIV? ==========
@@ -165,7 +187,7 @@ namespace LrCatalogSync.Core
                     isCycleRunning = false;
                 }
             }
-        }
+        }        
 
         // Prüft ob Lightroom läuft (sucht nach Lock-Dateien)
         private static bool IsLightroomRunning(AppConfig config)
@@ -183,7 +205,7 @@ namespace LrCatalogSync.Core
                     string fullPath = Path.Combine(config.CatalogLocalPath, lockFile);
                     if (File.Exists(fullPath))
                     {
-                        Log.Notice($"Coordinator: Lightroom-Lock erkannt: {fullPath}");
+                        Log.Debug($"Coordinator: Lightroom-Lock erkannt: {fullPath}");
                         return true;
                     }
                 }

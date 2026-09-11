@@ -29,6 +29,10 @@
         
         // Lock-Dateinamen für Synchronisation
         public const string LOCK_FILE = "LrCatSync.lock";
+
+        // Eindeutiger Lock-Typ für einen lokal laufenden Lightroom-Prozess.
+        // Upload und Download bleiben ausschließlich für Katalog-Synchronisationen reserviert.
+        public const string LIGHTROOM_LOCK_TYPE = "Lightroom";
     }    
 }
 

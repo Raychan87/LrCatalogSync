@@ -5,16 +5,16 @@ namespace LrCatalogSync.UI
     public class TrayManager
     {
         // ==================== EIGENSCHAFTEN ====================
-        private NotifyIcon trayIcon;                           // Tray-Icon in der Taskleiste
+        private NotifyIcon trayIcon;                            // Tray-Icon in der Taskleiste
         private Icon iconGreen;                                 // Status: Standby
         private Icon iconRed;                                   // Status: Fehler
-        private Icon iconOrange;                               // Status: Syncing
+        private Icon iconOrange;                                // Status: Syncing
         private Icon iconYellow;                                // Status: Syncing
         private Icon iconBlue;                                  // Status: Lockfile erkannt
         private Icon iconWhite;                                 // Status: Keine Samba-Verbindung
-        private Icon iconMagenta;                               // Status: Remote Lockfile aktiv
-        private Icon iconLightBlue;                                  // Status: Crash-Recovery aktiv
-        private Icon iconApp;                                     // Sync deaktiviert (Programm-Icon)
+        private Icon iconLightBlue;                             // Status: Crash-Recovery aktiv
+        private Icon iconViolet;                                // Status: Remote Lockfile aktiv
+        private Icon iconApp;                                   // Sync deaktiviert (Programm-Icon)
         private readonly SynchronizationContext? uiContext = null!;      // Für Thread-sichere UI-Updates
         private readonly List<Stream> iconStreams = new();
         // ==================== KONSTRUKTOR ====================
@@ -31,7 +31,7 @@ namespace LrCatalogSync.UI
             iconYellow = LoadIcon("tray_yellow.ico");       // Syncing
             iconLightBlue = LoadIcon("tray_lightBlue.ico"); // Lockfile erkannt
             iconWhite = LoadIcon("tray_white.ico");         // Keine Samba-Verbindung
-            iconMagenta = LoadIcon("tray_violet.ico");      // Remote Lockfile aktiv
+            iconViolet = LoadIcon("tray_violet.ico");       // Remote Lockfile aktiv (Katalog-Sync)
             iconBlue = LoadIcon("tray_blue.ico");           // Crash-Recovery aktiv
             iconApp = LoadIcon("app_icon.ico");             // Sync deaktiviert (Programm-Icon)
 
@@ -119,9 +119,17 @@ namespace LrCatalogSync.UI
                     trayIcon.Icon = iconRed;
                     trayIcon.Text = "LrCatSync: Keine Verbindung zum Samba Server!";
                     break;
-                case "RemoteLockfile":
-                    trayIcon.Icon = iconMagenta;
-                    trayIcon.Text = "LrCatSync: Remote Sync ist aktiv.";
+                case "RemoteLockfileDown":
+                    trayIcon.Icon = iconViolet;
+                    trayIcon.Text = "LrCatSync: Remote Sync ist aktiv und macht ein Download.";
+                    break;
+                case "RemoteLockfileUp":
+                    trayIcon.Icon = iconViolet;
+                    trayIcon.Text = "LrCatSync: Remote Sync ist aktiv und macht ein Upload.";
+                    break;
+                case "RemoteLightroom":
+                    trayIcon.Icon = iconViolet;
+                    trayIcon.Text = "LrCatSync: Lightroom Classic läuft auf einem anderen Rechner.";
                     break;
                 case "LockfileErr":
                     trayIcon.Icon = iconRed;
@@ -157,7 +165,7 @@ namespace LrCatalogSync.UI
             iconYellow?.Dispose();
             iconLightBlue?.Dispose();
             iconWhite?.Dispose();
-            iconMagenta?.Dispose();
+            iconViolet?.Dispose();
             iconBlue?.Dispose();
             foreach (var stream in iconStreams)
                 stream.Dispose();

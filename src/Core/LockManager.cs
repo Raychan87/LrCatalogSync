@@ -135,10 +135,12 @@ namespace LrCatalogSync.Core
         // - Wenn Remote Lock mit Upload: Erstellt Lightroom-Lock lokal
         // - Wenn Remote Lock mit Download: Erstellt KEIN Lightroom-Lock
         // - Wenn Remote Lock verschwindet (war vorher da): Löscht Lightroom-Lock
-        public static int CheckRemoteLock(AppConfig config, TrayManager trayManager)
+        public static int CheckLock(AppConfig config, TrayManager trayManager)
         {
             try
             {
+                bool CreateLRLockFile = false;
+
                 // ========== VALIDIERUNG: SMB-Config vollständig? ==========
                 if (string.IsNullOrEmpty(config.RemoteIP) || string.IsNullOrEmpty(config.SambaUser))
                 {
@@ -164,7 +166,7 @@ namespace LrCatalogSync.Core
                     // Wenn es vorher da war → Cleanup durchführen
                     if (wasRemoteLockPresent)
                     {
-                        Log.Debug("LockManager: Remote Lock ist verschwunden - räume Lightroom-Lock auf");
+                        Log.Debug("LockManager: Remote Lock ist verschwunden");
                         CatalogManager.CleanupLightroomLocks(config);
                         wasRemoteLockPresent = false;
                     }
@@ -183,6 +185,8 @@ namespace LrCatalogSync.Core
 
                 string lockContent = Encoding.UTF8.GetString(lockData);
                 DateTime lastHeartbeat = ExtractLatestTimestamp(lockContent);
+                string remoteSyncGuid = ExtractValue(lockContent, "SyncGuid");
+                string lockType = ExtractValue(lockContent, "LockType");
 
                 if (lastHeartbeat == DateTime.MinValue)
                 {
@@ -196,6 +200,16 @@ namespace LrCatalogSync.Core
 
                 if (lockAge.TotalMinutes > GlobalConst.SYNC_LOCK_TIMEOUT_MIN)
                 {
+                    // Ein veralteter eigener Lightroom-Status kann sicher entfernt werden:
+                    // Er gehört nicht zu einem laufenden Sync und Lightroom läuft lokal nicht mehr.
+                    if (lockType == GlobalConst.LIGHTROOM_LOCK_TYPE && remoteSyncGuid == config.SyncGuid)
+                    {
+                        SMBConnectionManager.Instance.DeleteFile(GlobalConst.LOCK_FILE);
+                        wasRemoteLockPresent = false;
+                        Log.Debug("LockManager: Veralteten eigenen Lightroom-Status entfernt");
+                        return 1;
+                    }
+
                     // Lock ist älter als Timeout → Warnung ausgeben
                     Log.Error($"LockManager: Remote Lock ist älter als {GlobalConst.SYNC_LOCK_TIMEOUT_MIN} min ({lockAge.TotalMinutes:F0} min alt). " +
                               $"Ein anderer Client könnte gecrasht sein. Bitte manuell prüfen!");
@@ -204,23 +218,50 @@ namespace LrCatalogSync.Core
                     return 3; // Lock veraltet
                 }
 
-                // ========== LOCK IST AKTIV - PRÜFE DIRECTION ==========
+                // Der eigene Lightroom-Status ist kein Grund, den eigenen Client zu blockieren.
+                // Ein eigener Upload-/Download-Lock darf dagegen nur während des laufenden Syncs existieren.
+                if (lockType == GlobalConst.LIGHTROOM_LOCK_TYPE && remoteSyncGuid == config.SyncGuid)
+                {
+                    wasRemoteLockPresent = true;
+                    Log.Debug("LockManager: Eigenes Lightroom Lockfile erkannt.");
+                    return 1;
+                }
+
+                // ========== REMOTE LOCK IST AKTIV - PRÜFE DIRECTION ==========
                 CatalogManager.SyncDirection direction = ExtractDirection(lockContent);
                 
-                if (direction == CatalogManager.SyncDirection.Upload)
+                if (direction == CatalogManager.SyncDirection.Download)
                 {
-                    // Remote Lock ist Upload → Erstelle Lightroom-Lock lokal
-                    Log.Debug("LockManager: Remote Lock ist UPLOAD - erstelle Lightroom-Lock");
-                    CatalogManager.CreateLightroomLock(config);
-                }
-                else if (direction == CatalogManager.SyncDirection.Download)
-                {
-                    // Remote Lock ist Download → Kein Lightroom-Lock nötig
+                    // Ein Remote-Download verändert den lokalen Katalog nicht.
+                    // Deshalb weder Lightroom-Lock erzeugen noch vorhandene Locks löschen.
                     Log.Debug("LockManager: Remote Lock ist DOWNLOAD - kein Lightroom-Lock nötig");
+                    trayManager.UpdateStatus("RemoteLockfileDown");
                 }
+                else if (lockType == GlobalConst.LIGHTROOM_LOCK_TYPE)
+                {
+                    // Ein anderer Client hat Lightroom geöffnet. Erzeuge deshalb
+                    // lokal eine von LrCatalogSync markierte Lightroom-Lock-Datei,
+                    // damit Lightroom den synchronisierten Katalog nicht öffnen kann.
+                    
+                    CreateLRLockFile = CatalogManager.CreateLightroomLock(config);
+                    trayManager.UpdateStatus("RemoteLightroom");
+                    if (CreateLRLockFile)
+                    {
+                        Log.Debug("LockManager: Remote Lightroom ist aktiv - erstelle Lightroom-Lock");
+                    }                    
+                }
+                else if (direction == CatalogManager.SyncDirection.Upload)
+                {
+                    // Remote Lock ist Upload → Erstelle Lightroom-Lock lokal                    
+                    CreateLRLockFile = CatalogManager.CreateLightroomLock(config);
+                    trayManager.UpdateStatus("RemoteLockfileUp");
+                    if (CreateLRLockFile)
+                    {
+                        Log.Debug("LockManager: Remote Lock ist UPLOAD - erstelle Lightroom-Lock");
+                    }
+                    }
+                Log.Debug($"LockManager: Remote Lock von anderem Client aktiv ({lockAge.TotalMinutes:F1} min alt, {direction}). Warte auf Freigabe...");
                 
-                Log.Notice($"LockManager: Remote Lock von anderem Client aktiv ({lockAge.TotalMinutes:F1} min alt, {direction}). Warte auf Freigabe...");
-                trayManager.UpdateStatus("RemoteLockfile");
                 wasRemoteLockPresent = true; // Merken dass wir ein aktives Remote Lock haben
                 return 2; // Lock aktiv und aktuell
             }
@@ -259,6 +300,25 @@ namespace LrCatalogSync.Core
             {
                 return DateTime.MinValue;
             }
+        }
+
+        // Liest einen einzelnen Schlüssel aus dem zeilenbasierten Lockfile-Format.
+        // Die Methode toleriert unbekannte oder fehlende Schlüssel, damit alte Lockfiles
+        // weiterhin als normale Upload-/Download-Locks verarbeitet werden können.
+        private static string ExtractValue(string lockContent, string key)
+        {
+            try
+            {
+                var lines = lockContent.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                string prefix = key + "=";
+                foreach (var line in lines)
+                {
+                    if (line.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                        return line.Substring(prefix.Length).Trim();
+                }
+            }
+            catch { }
+            return string.Empty;
         }
 
         // Extrahiert die Direction aus Lock-Datei (Upload oder Download)
@@ -304,7 +364,7 @@ namespace LrCatalogSync.Core
                     return false;
                 }
 
-                int remoteLockStatus = CheckRemoteLock(config, trayManager);
+                int remoteLockStatus = CheckLock(config, trayManager);
                 
                 // Wenn Lockfile erkannt, Fehlerhaft oder veraltet ist, dann Zyklus überspringen und roten Status anzeigen
                 if (remoteLockStatus != 1)
@@ -346,8 +406,8 @@ namespace LrCatalogSync.Core
                 _localLockStream = new FileStream(config.SyncLocalLockFile, FileMode.CreateNew, FileAccess.Write, FileShare.None);
                 
                 // Schreibe Sync-GUID in Lock-Datei für Tracking (Direction nur im Remote Lock!)
-                // WICHTIG: StreamWriter disposed nicht den underlying Stream!
-                var writer = new StreamWriter(_localLockStream);
+                // Der Writer darf den exklusiven Lock-Stream beim Freigeben nicht schließen.
+                var writer = new StreamWriter(_localLockStream, Encoding.UTF8, 1024, leaveOpen: true);
                 writer.WriteLine($"SyncGuid={SyncGuid}");
                 writer.WriteLine($"Timestamp={DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}");
                 writer.Flush();
@@ -367,8 +427,60 @@ namespace LrCatalogSync.Core
                 return false;
             }
         }
+
+        // Veröffentlicht, dass Lightroom auf diesem Client aktiv ist.
+        // Der Status nutzt dieselbe Remote-Datei und dieselben Timeout-Regeln wie ein Sync,
+        // enthält aber keinen künstlichen Upload-/Download-Richtungseintrag.
+        public bool AcquireLightroomLock(AppConfig config, TrayManager trayManager)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(config.RemoteIP) || string.IsNullOrEmpty(config.SambaUser) ||
+                    !SMBConnectionManager.Instance.EnsureConnected(config))
+                {
+                    Log.Debug("LockManager: Lightroom-Status kann mangels SMB-Verbindung nicht veröffentlicht werden");
+                    return false;
+                }
+
+                // CheckLock verhindert, dass ein fremder aktiver Sync oder Lightroom-Status
+                // durch diesen Client überschrieben wird. Der eigene Lightroom-Status ist erlaubt.
+                if (CheckLock(config, trayManager) != 1)
+                    return false;
+
+                byte[]? existingData = SMBConnectionManager.Instance.ReadFile(GlobalConst.LOCK_FILE);
+                if (existingData != null)
+                {
+                    string existingContent = Encoding.UTF8.GetString(existingData);
+                    if (ExtractValue(existingContent, "SyncGuid") == SyncGuid &&
+                        ExtractValue(existingContent, "LockType") == GlobalConst.LIGHTROOM_LOCK_TYPE)
+                    {
+                        StartHeartbeat();
+                        return true;
+                    }
+                }
+
+                byte[] lockBytes = Encoding.UTF8.GetBytes(
+                    $"SyncGuid={SyncGuid}\nLockType={GlobalConst.LIGHTROOM_LOCK_TYPE}\nTimestamp={DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}");
+
+                if (!SMBConnectionManager.Instance.WriteFile(GlobalConst.LOCK_FILE, lockBytes))
+                {
+                    Log.Error("LockManager: Lightroom-Status konnte nicht geschrieben werden");
+                    return false;
+                }
+
+                StartHeartbeat();
+                Log.Debug($"LockManager: Lightroom-Status veröffentlicht (SyncGuid: {SyncGuid})");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"LockManager: Fehler beim Veröffentlichen des Lightroom-Status: {ex.Message}");
+                return false;
+            }
+        }
                 
-        // Prüft ob vorhandene Catalog-Lock-Datei von uns erstellt wurde (Crash-Recovery)
+        // Prüft ob vorhandene Catalog-Lock-Datei von uns erstellt wurde
+        // Vergleicht nur die SyncGuid in der Datei mit der Config-GUID
         private static bool IsCatalogLockOurs(AppConfig config)
         {
             try
@@ -376,7 +488,16 @@ namespace LrCatalogSync.Core
                 if (!File.Exists(config.CatalogLockFile))
                     return false;
                 string content = File.ReadAllText(config.CatalogLockFile);
-                return content.StartsWith("LrCatSync=");
+                var lines = content.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var line in lines)
+                {
+                    if (line.StartsWith("SyncGuid="))
+                    {
+                        string fileSyncGuid = line.Substring("SyncGuid=".Length).Trim();
+                        return fileSyncGuid == config.SyncGuid;
+                    }
+                }
+                return false;
             }
             catch { return false; }
         }
@@ -442,9 +563,14 @@ namespace LrCatalogSync.Core
                         if (existingData != null)
                         {
                             string content = Encoding.UTF8.GetString(existingData);
-                            content += $"\nHeartbeat={DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}";
-                            byte[] updatedData = Encoding.UTF8.GetBytes(content);
-                            SMBConnectionManager.Instance.WriteFile(GlobalConst.LOCK_FILE, updatedData);
+                            // Vor jedem Update erneut den Besitzer prüfen. So bleibt ein Lock,
+                            // der inzwischen von einem anderen Client übernommen wurde, unangetastet.
+                            if (ExtractValue(content, "SyncGuid") == SyncGuid)
+                            {
+                                content += $"\nHeartbeat={DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}";
+                                byte[] updatedData = Encoding.UTF8.GetBytes(content);
+                                SMBConnectionManager.Instance.WriteFile(GlobalConst.LOCK_FILE, updatedData);
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -496,33 +622,47 @@ namespace LrCatalogSync.Core
                     }
                 }
                 
-                // Lösche remote Lock-Datei via SMB
-                if (!string.IsNullOrEmpty(config.SyncRemoteLockFile))
-                {
-                    try
-                    {
-                        // Stelle SMB-Verbindung her falls nicht vorhanden
-                        if (SMBConnectionManager.Instance.EnsureConnected(config))
-                        {
-                            if (SMBConnectionManager.Instance.DeleteFile(GlobalConst.LOCK_FILE))
-                            {
-                                Log.Debug($"LockManager: Remote Lock-Datei gelöscht via SMB");
-                            }
-                        }
-                        else
-                        {
-                            Log.Error($"LockManager: Keine SMB-Verbindung, Remote Lock wurde nicht gelöscht");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error($"LockManager: Fehler beim Löschen der remote Lock-Datei: {ex.Message}");
-                    }
-                }
+                DeleteRemoteLockIfOwned(config);
             }
             catch (Exception ex)
             {
                 Log.Error($"LockManager: Fehler beim Freigeben der Locks: {ex.Message}");
+            }
+        }
+
+        // Entfernt ausschließlich den eigenen Remote-Lock.
+        // Das ist besonders wichtig beim Aufräumen nach einem Fehler, damit kein
+        // inzwischen von einem anderen Client gesetzter Lock gelöscht wird.
+        public void ReleaseLightroomLock(AppConfig config)
+        {
+            StopHeartbeat();
+            DeleteRemoteLockIfOwned(config);
+        }
+
+        private void DeleteRemoteLockIfOwned(AppConfig config)
+        {
+            try
+            {
+                if (!SMBConnectionManager.Instance.EnsureConnected(config))
+                {
+                    Log.Error("LockManager: Keine SMB-Verbindung, Remote-Lock wurde nicht gelöscht");
+                    return;
+                }
+
+                byte[]? lockData = SMBConnectionManager.Instance.ReadFile(GlobalConst.LOCK_FILE);
+                if (lockData == null)
+                    return;
+
+                string lockContent = Encoding.UTF8.GetString(lockData);
+                if (ExtractValue(lockContent, "SyncGuid") == SyncGuid &&
+                    SMBConnectionManager.Instance.DeleteFile(GlobalConst.LOCK_FILE))
+                {
+                    Log.Debug("LockManager: Eigene Remote-Lock-Datei gelöscht");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"LockManager: Fehler beim Löschen der eigenen Remote-Lock-Datei: {ex.Message}");
             }
         }
         
