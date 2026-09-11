@@ -1,14 +1,11 @@
 # ACHTUNG!
-Aktuell ist es noch eine Beta und kann/wird Fehler enthalten. Versioniertes Backup eures Lightroom Katalogs ist immer zu empfehlen.
+Aktuell ist es noch eine Beta und kann Fehler enthalten. Versioniertes Backup eures Lightroom-Katalogs ist immer zu empfehlen.
 
 # LrCatalogSync
 
-Synchronisiert Adobe Lightroom Classic‑Kataloge über Samba Server/NAS.
-Das Programm erkennt, wenn Lightroom Classic läuft, und verzichtet dann auf den Sync, um Katalogkorruptionen zu vermeiden.
-Es synchronisiert alle vom Lightroom Katalog benötigten Hilfsdateien.
-LrCatalogSync ist dafür gedacht, Lightroom Classic auf mehreren Rechnern zu betreiben und diese über ein NAS mit Samba zu synchronisieren.
-Es zeigt über ein Symbol im Traymenü den Status des Programms an und kann im Autostart hinterlegt werden.
-Es blockiert auch den Lightroom katalog, wenn ein gerade ein Sync vom eigenen Rechner statt findet oder ein anderer Rechner gerade auf dem Samba Share eine neue Lightroom version hochlädt, damit die aktuelle Version wieder heruntergeladen kann.
+- Das LrCatalogSync-Programm synchronisiert den Katalog samt Hilfsdateien von Adobe Lightroom Classic auf einen Samba-Server.
+- Es erkennt, wenn ein Sync oder Lightroom Classic von einem anderen Rechner läuft, und verhindert das lokale Öffnen des Lightroom-Classic-Katalogs sowie den eigenen Sync-Prozess, um die Datenkonsistenz zu erhalten.
+- LrCatalogSync startet mit Windows automatisch und ist über ein Symbol in der Taskleiste zu finden.
 
 ## Funktionsweise
 
@@ -19,7 +16,8 @@ Beim Sync werden folgende Lightroom‑Dateien und Ordner synchronisiert:
 - `* Sync.lrdata/` – Für Adobe Creative Cloud
 - `* Smart Previews.lrdata/` – kleine Vorschaudateien von Raw/DNG
 - `* Helper.lrdata/` – Hilfsdaten für Katalogfunktionen
-Optional(siehe Einstellungen)):
+
+Optional (siehe Einstellungen):
 - `* Previews.lrdata/` – Standard und 1:1 Vorschaudateien 
 - `Katalog Backups *.zip` - Automatische Sicherungsdaten von Lightroom
 
@@ -41,6 +39,7 @@ Diese Dateien werden von Lightroom Classic beim Öffnen des Katalogs erstellt un
 
 ## Nutzung
 *Start:* Doppelklick auf `LrCatalogSync.exe` (kann beim Systemstart aktiviert werden). 
+
 *Stop:* Rechtsklick auf das Tray‑Icon → **Beenden**.
 
 ## Konfiguration (grafisch)
@@ -50,11 +49,14 @@ Diese Dateien werden von Lightroom Classic beim Öffnen des Katalogs erstellt un
 | **Auto-Start** | Programm beim Windows-Start automatisch ausführen |
 | **rclone‑Pfad** | Pfad zur `rclone.exe` (z. B. `C:\Programme\rclone\rclone.exe`) |
 | **Log‑Level** | `DEBUG`, `INFO`, `NOTICE`, `ERROR` |
+| **Aktualisierungszeit** | Wie oft pro Sekunde überprüft werden soll |
+| **.Previews.lrdata** | Auswahl, ob 1:1-Vorschaubilder auch synchronisiert werden sollen |
 | **Katalog‑Datei** | Pfad zur `.lrcat`‑Datei (lokal) |
-| **Remote‑Pfad** | Zielpfad auf dem SMB‑Server (z. B. `/Lightroom/`) |
-| **letzten Katalog behalten?** | Speichert vor den Sync den Katalog in ein Extra Ordner |
-| **Ordnername** | Für die letzten Katalogspeicherung |
-| **Backup Pfad** | Für die Lightroom Sicherungsdateien (Optional für den Sync) |
+| **Remote‑Pfad** | Zielpfad auf dem SMB‑Server (z. B. `//192.168.1.1/Lightroom/` -> `/Lightroom/`) |
+| **letzten Katalog behalten?** | Speichert vor dem Sync den Katalog in einem Extra-Ordner |
+| **Ordnername** | Für die letzte Katalogspeicherung |
+| **Lokaler Backup Pfad** | Lokaler Pfad, wo die Sicherungsdateien von Lightroom liegen |
+| **Remote Backup Pfad** | Zielpfad auf dem SMB-Server für die Sicherungsdateien |
 | **Server‑IP / Host** | IP oder Hostname des SMB‑Servers |
 | **Benutzer / Passwort** | Zugangsdaten (verschlüsselt gespeichert) |
 | **Backup aktivieren** | Optional, lokale und Remote‑Backups synchronisieren |
@@ -64,27 +66,26 @@ Einstellungen werden in `data/config/` gespeichert.
 ## TrayIcon
 
 Tray‑Icon‑Status:
-- 🟢 Standby – bereit, kein Sync aktiv
-- 🟠 Syncing – Synchronisiere Lightroom Sicherungsordner
-- 🟡 Syncing – Synchronisiere Lightroom Katalog 
-- 🔵 Lock – Lightroom Classic ist aktiv und Sync wird blockiert
-- 🔵 Crash Recovery - Wenn der PC während des Sync neugestartet wurde, wird dieser Recovery Prozess gestartet
-- 🟣 Remote Lock – Ein Sync läuft gerade von einen anderen Rechner
-- 🔴 Error/SMB/rclone – Fehler, siehe Log
-- ⚪ Error – Konfigurationsdatei fehlt
+- 🟢 --> bereit, kein Sync aktiv
+- 🟠  --> Synchronisiere Lightroom-Sicherungsordner
+- 🟡  --> Synchronisiere Lightroom-Katalog 
+- 🔵  --> Lightroom Classic ist lokal aktiv und Sync wird blockiert
+- 🔵 --> Wenn der PC während des Syncs neugestartet wurde, wird dieser Recovery-Prozess gestartet
+- 🟣  --> Ein Sync läuft gerade von einem anderen Rechner
+- 🟣 --> Lightroom Classic wurde auf einem anderen Rechner gestartet
+- 🔴 --> Fehler, siehe Log (Notfalls auf Debug stellen)
+- ⚪ --> Konfigurationsdatei fehlt
 
 Logs finden Sie unter `data/logs/`.
 
 ## Fehlersuche (Kurz)
 - *rclone.exe nicht gefunden*: Pfad prüfen.
 - *Samba‑Verbindung fehlgeschlagen*: IP, Benutzer, Passwort und Netzwerk prüfen.
-- *Kein *.lrcat* gefunden*: Pfad zum Katalog korrekt angeben.
-- *Lock erkannt*: Lightroom läuft, Sync wird automatisch übersprungen.
 
 ## Ressourcen
 - GitHub: https://github.com/Raychan87/LrCatalogSync
 - rclone: https://rclone.org
 - Lightroom Classic: https://www.adobe.com/de/products/photoshop-lightroom-classic.html
 
-*Version **0.9.9-beta** – Stand: August 2026*
+*Version **0.9.10-beta** – Stand: September 2026*
 
