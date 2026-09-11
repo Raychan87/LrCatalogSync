@@ -1,7 +1,7 @@
 # ACHTUNG!
 Aktuell ist es noch eine Beta und kann Fehler enthalten. Versioniertes Backup eures Lightroom-Katalogs ist immer zu empfehlen.
 
-# LrCatalogSync
+<h1><img src="docs/images/Logo.png" height="36" alt="LrCatalogSync Logo" style="vertical-align: middle;"> LrCatalogSync</h1>
 
 - Das LrCatalogSync-Programm synchronisiert den Katalog samt Hilfsdateien von Adobe Lightroom Classic auf einen Samba-Server.
 - Es erkennt, wenn ein Sync oder Lightroom Classic von einem anderen Rechner läuft, und verhindert das lokale Öffnen des Lightroom-Classic-Katalogs sowie den eigenen Sync-Prozess, um die Datenkonsistenz zu erhalten.
