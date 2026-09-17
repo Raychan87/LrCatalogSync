@@ -20,6 +20,8 @@ namespace LrCatalogSync.Core
         // Initialisiert die Anwendung: Logs, Config, Tray und Menü
         public LrCatSyncInit()
         {
+            SystemEvents.SessionEnding += OnSessionEnding;
+
             // ========== INITIALISIERUNG ==========
             // Logs im Verzeichnis data/logs erstellen
             Log.Initialize(GlobalData.BaseDir);
@@ -185,6 +187,14 @@ namespace LrCatalogSync.Core
             }
 
             base.Dispose(disposing);
+        }
+
+        private void OnSessionEnding(object? sender, SessionEndingEventArgs e)
+        {
+            Log.Info($"LrCatSync: Windows-Sitzungsende erkannt ({e.Reason}), beende laufende rclone-Prozesse");
+            LrCatSyncEnabled = false;
+            MainCycleTimer?.Dispose();
+            RcloneProcessManager.BeginShutdown();
         }
     }
 }

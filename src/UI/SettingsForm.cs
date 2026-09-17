@@ -681,7 +681,7 @@ namespace LrCatalogSync.UI
                     CreateNoWindow = true
                 };
 
-                using (Process p = Process.Start(psi)!)
+                using (Process p = RcloneProcessManager.Start(psi)!)
                 {
                     string result = p.StandardOutput.ReadToEnd().Trim();
                     p.WaitForExit();

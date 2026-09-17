@@ -42,7 +42,7 @@ namespace LrCatalogSync.Core
                 };
 
                 // Starte rclone und warte bis Prozess beendet ist
-                using (var p = Process.Start(psi))
+                using (var p = RcloneProcessManager.Start(psi))
                 {
                     if (p == null)
                         return false;
@@ -76,7 +76,7 @@ namespace LrCatalogSync.Core
                                         CreateNoWindow = true
                                     };
 
-                                    using (var retryProc = Process.Start(retryPsi))
+                                    using (var retryProc = RcloneProcessManager.Start(retryPsi))
                                     {
                                         if (retryProc == null)
                                             return false;
@@ -115,7 +115,7 @@ namespace LrCatalogSync.Core
                                 };
 
                                 // Führe resync aus
-                                using (var resyncProc = Process.Start(resyncPsi))
+                                using (var resyncProc = RcloneProcessManager.Start(resyncPsi))
                                 {
                                     if (resyncProc == null)
                                         return false;

@@ -242,7 +242,7 @@ namespace LrCatalogSync.Core
                     CreateNoWindow = true
                 };
                 
-                using (var p = Process.Start(psi))
+                using (var p = RcloneProcessManager.Start(psi))
                 {
                     // Prüfe ob der Prozess gestartet wurde
                     if (p == null)
@@ -412,7 +412,7 @@ namespace LrCatalogSync.Core
                             RedirectStandardError = true,
                             CreateNoWindow = true
                         };                        
-                        using (var deleteProc = Process.Start(deleteBackupPsi))
+                        using (var deleteProc = RcloneProcessManager.Start(deleteBackupPsi))
                         {
                             Log.Debug($"CatalogManager: Remote Backup-Ordner gelöscht: {copyBackupPath}");
                             deleteProc?.WaitForExit();
@@ -453,7 +453,7 @@ namespace LrCatalogSync.Core
                     };
                     
                     // Führe rclone copy aus und warte auf Beendigung
-                    using (var copyProc = Process.Start(copyPsi))
+                    using (var copyProc = RcloneProcessManager.Start(copyPsi))
                     {
                         if (copyProc != null)
                         {
@@ -497,7 +497,7 @@ namespace LrCatalogSync.Core
                 };
 
                 // Führe rclone delete aus und warte auf Beendigung
-                using (var deleteProc = Process.Start(deletePsi))
+                using (var deleteProc = RcloneProcessManager.Start(deletePsi))
                 {
                     if (deleteProc != null)
                     {
@@ -539,7 +539,7 @@ namespace LrCatalogSync.Core
                 };
                 
                 // Führe rclone sync aus und warte auf Beendigung
-                using (var p = Process.Start(psi))
+                using (var p = RcloneProcessManager.Start(psi))
                 {
                     if (p == null)
                         return false;
@@ -657,7 +657,7 @@ namespace LrCatalogSync.Core
                     CreateNoWindow = true
                 };
                 
-                using (var p = Process.Start(psi))
+                using (var p = RcloneProcessManager.Start(psi))
                 {
                     if (p == null)
                         return;
