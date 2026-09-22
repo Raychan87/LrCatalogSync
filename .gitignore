@@ -434,9 +434,11 @@ FodyWeavers.xsd
 # Ignore Github Copilot configuration files
 .copilotignore
 
-# Ignore ToDo folder (local only)
+
+############################
+# Custom rules
+##########################
 ToDo/
-
 Bugs und ToDo.md
-
 CHANGELOG.md
+tests/
