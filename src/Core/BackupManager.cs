@@ -36,8 +36,6 @@ namespace LrCatalogSync.Core
                     FileName = config.RclonePath,
                     Arguments = $"--config \"{GlobalData.RcloneConfigPath}\" bisync \"{config.BackupsLocalPath}\" {remoteFullPath} --compare modtime,size --metadata --max-delete -1 --log-file \"{tempLog}\" --log-level {config.LogLevel} {GlobalConst.RCLONE_TIMEOUT_ARGS}",
                     UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
                     CreateNoWindow = true
                 };
 
@@ -71,8 +69,6 @@ namespace LrCatalogSync.Core
                                         FileName = config.RclonePath,
                                         Arguments = $"--config \"{GlobalData.RcloneConfigPath}\" bisync \"{config.BackupsLocalPath}\" {remoteFullPath} --compare modtime,size --metadata --max-delete -1 --log-file \"{tempLog}\" --log-level {config.LogLevel} {GlobalConst.RCLONE_TIMEOUT_ARGS}",
                                         UseShellExecute = false,
-                                        RedirectStandardOutput = true,
-                                        RedirectStandardError = true,
                                         CreateNoWindow = true
                                     };
 
@@ -109,8 +105,6 @@ namespace LrCatalogSync.Core
                                     FileName = config.RclonePath,
                                     Arguments = $"--config \"{GlobalData.RcloneConfigPath}\" bisync \"{config.BackupsLocalPath}\" {remoteFullPath} --compare modtime,size --metadata --max-delete -1 --log-file \"{tempLog}\" --log-level {config.LogLevel} {GlobalConst.RCLONE_TIMEOUT_ARGS} --resync",
                                     UseShellExecute = false,
-                                    RedirectStandardOutput = true,
-                                    RedirectStandardError = true,
                                     CreateNoWindow = true
                                 };
 

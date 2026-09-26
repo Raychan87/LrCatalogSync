@@ -79,13 +79,11 @@ namespace LrCatalogSync.Core
                 Log.Info($"CatalogManager: Starte rclone {syncDirection.ToString().ToLower()}");
                 trayManager.UpdateStatus("LSyncing");  // 🟡 Gelb
                 
-                if (syncDirection == SyncDirection.Upload)
+                if (!RunRcloneSync(config, syncDirection, config.EnableRcloneCopy))
                 {
-                    RunRcloneSync(config, SyncDirection.Upload, config.EnableRcloneCopy);
-                }
-                else if (syncDirection == SyncDirection.Download)
-                {
-                    RunRcloneSync(config, SyncDirection.Download, config.EnableRcloneCopy);
+                    hasError = true;
+                    trayManager.UpdateStatus("Error");
+                    return false;
                 }
                 
                 // ========== PHASE 4: CLEANUP ==========
@@ -248,9 +246,9 @@ namespace LrCatalogSync.Core
                     if (p == null)
                         return new RemoteFileLookupResult(RemoteFileStatus.Unavailable, null);
                     
-                    p.WaitForExit();
-                    string output = p.StandardOutput.ReadToEnd().Trim();
-                    string error = p.StandardError.ReadToEnd().Trim();
+                    (string output, string error) = ReadProcessOutput(p);
+                    output = output.Trim();
+                    error = error.Trim();
 
                     // Prüfe ExitCode von rclone lsl    
                     if (p.ExitCode != 0)
@@ -414,8 +412,20 @@ namespace LrCatalogSync.Core
                         };                        
                         using (var deleteProc = RcloneProcessManager.Start(deleteBackupPsi))
                         {
+                            if (deleteProc == null)
+                            {
+                                Log.Error("CatalogManager: rclone delete zum Aufräumen des Remote Backup-Ordners konnte nicht gestartet werden");
+                                return false;
+                            }
+
+                            (string output, string error) = ReadProcessOutput(deleteProc);
+                            if (deleteProc.ExitCode != 0)
+                            {
+                                Log.Error($"CatalogManager: Löschen des Remote Backup-Ordners fehlgeschlagen (ExitCode: {deleteProc.ExitCode}): {error.Trim()} {output.Trim()}");
+                                return false;
+                            }
+
                             Log.Debug($"CatalogManager: Remote Backup-Ordner gelöscht: {copyBackupPath}");
-                            deleteProc?.WaitForExit();
                         }
                     }
                     else
@@ -455,20 +465,18 @@ namespace LrCatalogSync.Core
                     // Führe rclone copy aus und warte auf Beendigung
                     using (var copyProc = RcloneProcessManager.Start(copyPsi))
                     {
-                        if (copyProc != null)
+                        if (copyProc == null)
+                            return false;
+
+                        ReadProcessOutput(copyProc);
+                        if (copyProc.ExitCode == 0)
                         {
-                            string copyOutput = copyProc.StandardOutput.ReadToEnd();
-                            string copyError = copyProc.StandardError.ReadToEnd();
-                            copyProc.WaitForExit();
-                            
-                            if (copyProc.ExitCode == 0)
-                            {
-                                Log.Debug($"CatalogManager: rclone copy erfolgreich → {config.RcloneCopyFolderName}");
-                            }
-                            else
-                            {
-                                Log.Error($"CatalogManager: rclone copy fehlgeschlagen (ExitCode: {copyProc.ExitCode})");
-                            }
+                            Log.Debug($"CatalogManager: rclone copy erfolgreich → {config.RcloneCopyFolderName}");
+                        }
+                        else
+                        {
+                            Log.Error($"CatalogManager: rclone copy fehlgeschlagen (ExitCode: {copyProc.ExitCode})");
+                            return false;
                         }
                     }
                 }
@@ -499,20 +507,18 @@ namespace LrCatalogSync.Core
                 // Führe rclone delete aus und warte auf Beendigung
                 using (var deleteProc = RcloneProcessManager.Start(deletePsi))
                 {
-                    if (deleteProc != null)
+                    if (deleteProc == null)
+                        return false;
+
+                    ReadProcessOutput(deleteProc);
+                    if (deleteProc.ExitCode == 0)
                     {
-                        string deleteOutput = deleteProc.StandardOutput.ReadToEnd();
-                        string deleteError = deleteProc.StandardError.ReadToEnd();
-                        deleteProc.WaitForExit();
-                        
-                        if (deleteProc.ExitCode == 0)
-                        {
-                            Log.Debug($"CatalogManager: rclone delete erfolgreich");
-                        }
-                        else
-                        {
-                            Log.Error($"CatalogManager: rclone delete fehlgeschlagen (ExitCode: {deleteProc.ExitCode})");
-                        }
+                        Log.Debug("CatalogManager: rclone delete erfolgreich");
+                    }
+                    else
+                    {
+                        Log.Error($"CatalogManager: rclone delete fehlgeschlagen (ExitCode: {deleteProc.ExitCode})");
+                        return false;
                     }
                 }
                 
@@ -544,11 +550,8 @@ namespace LrCatalogSync.Core
                     if (p == null)
                         return false;
                     
-                    // Lese Output für Statistiken
-                    string output = p.StandardOutput.ReadToEnd();
-                    string error = p.StandardError.ReadToEnd();
-                    
-                    p.WaitForExit();
+                    // Lese beide Streams parallel, damit keine Pipe den Prozess blockiert.
+                    (string output, string error) = ReadProcessOutput(p);
                     
                     if (p.ExitCode == 0)
                     {
@@ -570,13 +573,15 @@ namespace LrCatalogSync.Core
                     else
                     {
                         Log.Error($"CatalogManager: rclone {direction.ToString().ToLower()} fehlgeschlagen (ExitCode: {p.ExitCode})");
+                        return false;
                     }
                 }
                 
                 // Separater Sync für Previews.lrdata (nur wenn SyncPreviewData=true)
                 if (config.SyncPreviewData)
                 {
-                    SyncPreviewsData(config);
+                    if (!SyncPreviewsData(config))
+                        return false;
                 }
                 return true;
             }
@@ -587,6 +592,14 @@ namespace LrCatalogSync.Core
             }
         }
         
+        private static (string Output, string Error) ReadProcessOutput(Process process)
+        {
+            Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+            Task<string> errorTask = process.StandardError.ReadToEndAsync();
+            process.WaitForExit();
+            return (outputTask.GetAwaiter().GetResult(), errorTask.GetAwaiter().GetResult());
+        }
+
         // Parst Transfer-Statistiken aus rclone Output
         private static (int Files, long Bytes) ParseRcloneStats(string output)
         {
@@ -640,7 +653,7 @@ namespace LrCatalogSync.Core
         }
         
         // Führt separaten Sync für Previews.lrdata durch (nur wenn SyncPreviewData=true)
-        private static void SyncPreviewsData(AppConfig config)
+        private static bool SyncPreviewsData(AppConfig config)
         {
             try
             {
@@ -660,23 +673,26 @@ namespace LrCatalogSync.Core
                 using (var p = RcloneProcessManager.Start(psi))
                 {
                     if (p == null)
-                        return;
-                    
-                    p.WaitForExit();
+                        return false;
+
+                    ReadProcessOutput(p);
                     
                     if (p.ExitCode == 0)
                     {
                         Log.Debug($"CatalogManager: Previews.lrdata Sync erfolgreich");
+                        return true;
                     }
                     else
                     {
                         Log.Error($"CatalogManager: Previews.lrdata Sync fehlgeschlagen (ExitCode: {p.ExitCode})");
+                        return false;
                     }
                 }
             }
             catch (Exception ex)
             {
                 Log.Error($"CatalogManager: Previews.lrdata Sync Fehler: {ex.Message}");
+                return false;
             }
         }
     }
