@@ -650,7 +650,7 @@ namespace LrCatalogSync.Core
                 var psi = new ProcessStartInfo
                 {
                     FileName = config.RclonePath,
-                    Arguments = $"--config \"{GlobalData.RcloneConfigPath}\" bisync \"{config.CatalogLocalPath}\" \"{config.CatalogRemoteFile}\" --include \"{config.CatalogName} Previews.lrdata/**\" --log-level {config.LogLevel} --contimeout {GlobalConst.RCLONE_CONNECT_TIMEOUT}",
+                    Arguments = $"--config \"{GlobalData.RcloneConfigPath}\" bisync \"{config.CatalogLocalPreviewsPath}\" \"{GlobalConst.REMOTE_NAME}:{config.CatalogRemotePreviewsPath}\" --log-level {config.LogLevel} --contimeout {GlobalConst.RCLONE_CONNECT_TIMEOUT}",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,

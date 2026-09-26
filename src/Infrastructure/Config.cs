@@ -71,6 +71,10 @@ namespace LrCatalogSync.Infrastructure
         // Beispiel: "[Katalogname]"
         public string CatalogName => Path.GetFileNameWithoutExtension(CatalogLocalFile);
 
+        // Vollständige lokale und remote Pfade zum Lightroom-Preview-Ordner
+        public string CatalogLocalPreviewsPath => Path.Combine(CatalogLocalPath, $"{CatalogName} Previews.lrdata");
+        public string CatalogRemotePreviewsPath => Path.Combine(CatalogRemotePath, $"{CatalogName} Previews.lrdata");
+
         // Remote: Vollständiger Pfad zur Lightroom Katalog-Datei auf dem Samba Server
         // Beispiel: "/SambaOrdner/[Katalogname].lrcat"
         public string CatalogRemoteFile => Path.Combine(CatalogRemotePath, Path.GetFileName(CatalogLocalFile));
