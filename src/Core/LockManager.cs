@@ -398,6 +398,7 @@ namespace LrCatalogSync.Core
                     else
                     {
                         Log.Debug($"LockManager: Lokaler Lock ist noch aktiv (jünger als {GlobalConst.SYNC_LOCK_TIMEOUT_MIN} min)");
+                        DeleteRemoteLockIfOwned(config);
                         return false;
                     }
                 }
