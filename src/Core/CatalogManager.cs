@@ -347,7 +347,7 @@ namespace LrCatalogSync.Core
                 int transferredFiles = 0;
                 long transferredBytes = 0;    
                 string sourcePath, destPath, copyBackupPath, copySourcePath;               
-                string tempLog = Path.Combine(GlobalData.BaseDir, "data", "logs", "rclone_backup_sync.log");
+                string tempLog = Path.Combine(GlobalData.BaseDir, "data", "logs", "rclone.log");
                 string logsDir = Path.Combine(GlobalData.BaseDir, "data", "logs");
                 
                 // ========== Richtung festlegen  ==========

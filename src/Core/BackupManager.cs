@@ -21,7 +21,7 @@ namespace LrCatalogSync.Core
                 Log.Debug($"BackupManager: gestartet {config.BackupsLocalPath} -> {remoteFullPath}");
 
                 // ========== LOG-DATEI VORBEREITEN ==========
-                string tempLog = Path.Combine(GlobalData.BaseDir, "data", "logs", "rclone_backup_sync.log");
+                string tempLog = Path.Combine(GlobalData.BaseDir, "data", "logs", "rclone.log");
                 string logsDir = Path.Combine(GlobalData.BaseDir, "data", "logs");
                 if (!Directory.Exists(logsDir))
                     Directory.CreateDirectory(logsDir);
