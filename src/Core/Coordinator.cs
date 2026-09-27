@@ -43,10 +43,10 @@ namespace LrCatalogSync.Core
                     cfgFileLost = true;
                     return;
                 }
-                // Prüfe ob rclone.conf existiert
-                if (!File.Exists(GlobalData.RcloneConfigPath))
+                // Prüfe ob LrCatSyncRclone.conf existiert
+                if (!File.Exists(GlobalData.LrCatSyncRcloneConfigPath))
                 {
-                    Log.Error("Coordinator: rclone.conf fehlt. Bitte Einstellungen prüfen.");
+                    Log.Error("Coordinator: LrCatSyncRclone.conf fehlt. Bitte Einstellungen prüfen.");
                     trayManager.UpdateStatus("RcloneCfg");
                     cfgFileLost = true;
                     return;

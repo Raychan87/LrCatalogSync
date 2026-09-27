@@ -706,8 +706,8 @@ namespace LrCatalogSync.UI
                 $"pass = {config.SambaPasswordRclone}"
             };
 
-            File.WriteAllLines(GlobalData.RcloneConfigPath, lines);
-            Log.Debug("Config: rclone.conf erfolgreich erstellt");
+            File.WriteAllLines(GlobalData.LrCatSyncRcloneConfigPath, lines);
+            Log.Debug("Config: LrCatSyncRclone.conf erfolgreich erstellt");
         }
 
         // ==================== HILFSMETHODEN FÜR VERSION UND EINSTELLUNGEN ====================

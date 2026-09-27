@@ -4,7 +4,7 @@
     {
         public static string BaseDir { get; private set; } = AppDomain.CurrentDomain.BaseDirectory;
         public static string LrCatSyncConfigPath { get; private set; } = Path.Combine(GlobalData.BaseDir, "data", "config", "LrCatSync.conf");
-        public static string RcloneConfigPath { get; private set; } = Path.Combine(GlobalData.BaseDir, "data", "config", "rclone.conf");
+        public static string LrCatSyncRcloneConfigPath { get; private set; } = Path.Combine(GlobalData.BaseDir, "data", "config", "LrCatSyncRclone.conf");  
     }
 
     public static class GlobalConst

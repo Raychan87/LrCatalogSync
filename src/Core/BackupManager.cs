@@ -34,7 +34,7 @@ namespace LrCatalogSync.Core
                 var psi = new ProcessStartInfo
                 {
                     FileName = config.RclonePath,
-                    Arguments = $"--config \"{GlobalData.RcloneConfigPath}\" bisync \"{config.BackupsLocalPath}\" {remoteFullPath} --compare modtime,size --metadata --max-delete -1 --log-file \"{tempLog}\" --log-level {config.LogLevel} {GlobalConst.RCLONE_TIMEOUT_ARGS}",
+                    Arguments = $"--config \"{GlobalData.LrCatSyncRcloneConfigPath}\" bisync \"{config.BackupsLocalPath}\" {remoteFullPath} --compare modtime,size --metadata --max-delete -1 --log-file \"{tempLog}\" --log-level {config.LogLevel} {GlobalConst.RCLONE_TIMEOUT_ARGS}",
                     UseShellExecute = false,
                     CreateNoWindow = true
                 };
@@ -67,7 +67,7 @@ namespace LrCatalogSync.Core
                                     var retryPsi = new ProcessStartInfo
                                     {
                                         FileName = config.RclonePath,
-                                        Arguments = $"--config \"{GlobalData.RcloneConfigPath}\" bisync \"{config.BackupsLocalPath}\" {remoteFullPath} --compare modtime,size --metadata --max-delete -1 --log-file \"{tempLog}\" --log-level {config.LogLevel} {GlobalConst.RCLONE_TIMEOUT_ARGS}",
+                                        Arguments = $"--config \"{GlobalData.LrCatSyncRcloneConfigPath}\" bisync \"{config.BackupsLocalPath}\" {remoteFullPath} --compare modtime,size --metadata --max-delete -1 --log-file \"{tempLog}\" --log-level {config.LogLevel} {GlobalConst.RCLONE_TIMEOUT_ARGS}",
                                         UseShellExecute = false,
                                         CreateNoWindow = true
                                     };
@@ -103,7 +103,7 @@ namespace LrCatalogSync.Core
                                 var resyncPsi = new ProcessStartInfo
                                 {
                                     FileName = config.RclonePath,
-                                    Arguments = $"--config \"{GlobalData.RcloneConfigPath}\" bisync \"{config.BackupsLocalPath}\" {remoteFullPath} --compare modtime,size --metadata --max-delete -1 --log-file \"{tempLog}\" --log-level {config.LogLevel} {GlobalConst.RCLONE_TIMEOUT_ARGS} --resync",
+                                    Arguments = $"--config \"{GlobalData.LrCatSyncRcloneConfigPath}\" bisync \"{config.BackupsLocalPath}\" {remoteFullPath} --compare modtime,size --metadata --max-delete -1 --log-file \"{tempLog}\" --log-level {config.LogLevel} {GlobalConst.RCLONE_TIMEOUT_ARGS} --resync",
                                     UseShellExecute = false,
                                     CreateNoWindow = true
                                 };
