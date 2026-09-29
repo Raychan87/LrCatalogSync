@@ -1,5 +1,6 @@
 using LrCatalogSync.Infrastructure;    // ← für Log, AppConfig, GlobalData
 using LrCatalogSync.UI;                // ← für TrayManager
+using Microsoft.Win32;
 
 namespace LrCatalogSync.Core
 {
@@ -12,8 +13,10 @@ namespace LrCatalogSync.Core
         private AppConfig config;                           // Konfigurationsdaten laden/speichern
         private TrayManager trayManager;                    // Manager für Tray-Icon und Status
         private SettingsForm? settingsForm;                 // Bereits geöffnetes Einstellungsfenster
+        private UsbExportForm? usbExportForm;                    // Bereits geöffnetes USB-Export-Fenster
         private System.Threading.Timer? MainCycleTimer;     // Timer für Sync-Zyklus (Backup + Katalog)
         private bool LrCatSyncEnabled = true;               // Sync aktiv (beim Start immer an)
+        private bool syncEnabledBeforeUsbExport;               // Zustand vor dem Öffnen von USB-Export
         private ToolStripMenuItem? toggleItem;              // Menü-Eintrag für Sync ein/aus
 
         // ==================== KONSTRUKTOR - HAUPTEINSTIEGSPUNKT ====================
@@ -92,6 +95,14 @@ namespace LrCatalogSync.Core
 //            menu.Items.Add(statusItem);
 //            menu.Items.Add(new ToolStripSeparator());
 
+            // ========== MENÜ-EINTRAG: USB-EXPORT ==========
+            var usbExportItem = new ToolStripMenuItem("USB-Export");
+            usbExportItem.Click += (s, e) => OpenUsbExportForm();
+            menu.Items.Add(usbExportItem);
+
+            // ========== MENÜ-TRENNLINIE ==========
+            menu.Items.Add(new ToolStripSeparator());
+
             // ========== MENÜ-EINTRAG: Sync ein/aus (über Einstellungen) ==========
             // Zeigt "Ausschalten" wenn Sync läuft, "Einschalten" wenn er aus ist
             toggleItem = new ToolStripMenuItem("Ausschalten");
@@ -144,6 +155,56 @@ namespace LrCatalogSync.Core
             trayManager.GetTrayIcon().ContextMenuStrip = menu;
         }
 
+        // Öffnet das USB-Export-Fenster modeless und pausiert den normalen Sync.
+        private void OpenUsbExportForm()
+        {
+            if (usbExportForm is { IsDisposed: false })
+            {
+                usbExportForm.Activate();
+                return;
+            }
+
+            if (!File.Exists(GlobalData.LrCatSyncConfigPath))
+            {
+                MessageBox.Show(
+                    $"USB-Export kann nicht gestartet werden, weil die LrCatalogSync-Konfiguration fehlt.{Environment.NewLine}{Environment.NewLine}Erwarteter Pfad:{Environment.NewLine}{GlobalData.LrCatSyncConfigPath}{Environment.NewLine}{Environment.NewLine}Bitte zuerst die Einstellungen öffnen und speichern.",
+                    "USB-Export nicht verfügbar",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            syncEnabledBeforeUsbExport = LrCatSyncEnabled;
+            LrCatSyncEnabled = false;
+            if (toggleItem != null)
+            {
+                toggleItem.Enabled = false;
+                toggleItem.Text = "USB-Export geöffnet";
+            }
+
+            usbExportForm = new UsbExportForm(config, () => Coordinator.IsCycleRunning);
+            usbExportForm.FormClosed += UsbExportFormClosed;
+            usbExportForm.Show();
+        }
+
+        private void UsbExportFormClosed(object? sender, FormClosedEventArgs e)
+        {
+            if (sender is Form form)
+            {
+                form.FormClosed -= UsbExportFormClosed;
+            }
+
+            usbExportForm = null;
+            LrCatSyncEnabled = syncEnabledBeforeUsbExport;
+            if (toggleItem != null)
+            {
+                toggleItem.Enabled = true;
+                toggleItem.Text = LrCatSyncEnabled ? "Ausschalten" : "Einschalten";
+            }
+
+            Log.Info("LrCatSync: USB-Export-Fenster geschlossen, vorheriger Sync-Zustand wiederhergestellt");
+        }
+
         // ==================== SYNC EIN/AUS SCHALTEN ====================
         // Schaltet den Sync-Zyklus ein oder aus
         private void OnOffCoordinator(ToolStripMenuItem toggleItem)
@@ -171,6 +232,11 @@ namespace LrCatalogSync.Core
         {
             if (disposing)
             {
+                SystemEvents.SessionEnding -= OnSessionEnding;
+                RcloneProcessManager.StopAll();
+
+                usbExportForm?.Close();
+
                 // Stoppe und dispose Timer
                 if (MainCycleTimer != null)
                 {

@@ -5,6 +5,8 @@
         public static string BaseDir { get; private set; } = AppDomain.CurrentDomain.BaseDirectory;
         public static string LrCatSyncConfigPath { get; private set; } = Path.Combine(GlobalData.BaseDir, "data", "config", "LrCatSync.conf");
         public static string LrCatSyncRcloneConfigPath { get; private set; } = Path.Combine(GlobalData.BaseDir, "data", "config", "LrCatSyncRclone.conf");  
+                public static string UsbExportRcloneConfigPath { get; private set; } = Path.Combine(GlobalData.BaseDir, "data", "config", "USBExportRclone.conf");
+        public static string UsbExportConfigPath { get; private set; } = Path.Combine(GlobalData.BaseDir, "data", "config", "USBExport.conf");
     }
 
     public static class GlobalConst

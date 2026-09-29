@@ -10,6 +10,19 @@ namespace LrCatalogSync.Core
         // Lock gegen parallele Ausführung
         private static readonly object cycleLock = new object();
         private static bool isCycleRunning = false;
+
+        // Liefert den Laufstatus für manuelle Arbeitsbereiche wie USB-Export.
+        public static bool IsCycleRunning
+        {
+            get
+            {
+                lock (cycleLock)
+                {
+                    return isCycleRunning;
+                }
+            }
+        }
+
         private static bool hasError = false;
         private static bool backupSyncSucceeded = false;
         private static bool catalogSyncSucceeded = false;
