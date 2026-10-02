@@ -30,12 +30,15 @@ Das Programm erkennt automatisch, wenn Lightroom geöffnet ist, und verzichtet d
 Diese Dateien werden von Lightroom Classic beim Öffnen des Katalogs erstellt und beim Schließen wieder gelöscht.
 
 ## Voraussetzungen
-- ab Windows 8.1
-- **rclone** (https://rclone.org)
+- Windows 10 oder Windows Server 2016 oder neuer
+- Internetverbindung beim ersten Start, wenn rclone noch nicht vorhanden ist
 
 ## Installation
-1. rclone herunterladen, `rclone.exe` z. B. nach `C:\Programme\rclone` entpacken.
-2. LrCatalogSync von GitHub herunterladen und `LrCatalogSync.exe` starten – das Symbol erscheint im Tray.
+1. LrCatalogSync von GitHub herunterladen und `LrCatalogSync.exe` starten – das Symbol erscheint im Tray.
+2. Wenn noch keine rclone-Version vorhanden ist, lädt LrCatalogSync beim Start automatisch das aktuelle stabile Windows-AMD64-Release von [rclone.org](https://downloads.rclone.org/rclone-current-windows-amd64.zip) herunter und legt `rclone.exe` unter `data/rclone/` ab.
+3. Bei weiteren Starts wird nach einer neueren Version gesucht. Ist rclone bereits vorhanden, bleibt es bei fehlender Verbindung zur Downloadseite nutzbar.
+
+Falls der automatische Download nicht verfügbar ist, rclone manuell von [rclone.org](https://rclone.org/downloads/) herunterladen, entpacken und in den Einstellungen den Ordner mit `rclone.exe` eintragen. Ein bereits konfigurierter manueller Pfad bleibt erhalten und wird nicht automatisch ersetzt.
 
 ## Nutzung
 *Start:* Doppelklick auf `LrCatalogSync.exe` (kann beim Systemstart aktiviert werden). 
@@ -47,7 +50,7 @@ Diese Dateien werden von Lightroom Classic beim Öffnen des Katalogs erstellt un
 | Feld | Beschreibung |
 |------|--------------|
 | **Auto-Start** | Programm beim Windows-Start automatisch ausführen |
-| **rclone‑Pfad** | Pfad zur `rclone.exe` (z. B. `C:\Programme\rclone\rclone.exe`) |
+| **rclone‑Pfad** | Ordner mit `rclone.exe`; Standard ist `data/rclone/`. Ein anderer Ordner kann manuell eingetragen werden. |
 | **Log‑Level** | `DEBUG`, `INFO`, `NOTICE`, `ERROR` |
 | **Aktualisierungszeit** | Wie oft pro Sekunde überprüft werden soll |
 | **.Previews.lrdata** | Auswahl, ob 1:1-Vorschaubilder auch synchronisiert werden sollen |
@@ -79,7 +82,7 @@ Tray‑Icon‑Status:
 Logs finden Sie unter `data/logs/`.
 
 ## Fehlersuche (Kurz)
-- *rclone.exe nicht gefunden*: Pfad prüfen.
+- *rclone.exe nicht gefunden*: Internetverbindung beim ersten Start prüfen. Bei einem manuellen Pfad muss der ausgewählte Ordner die `rclone.exe` enthalten.
 - *Samba‑Verbindung fehlgeschlagen*: IP, Benutzer, Passwort und Netzwerk prüfen.
 
 ## Ressourcen

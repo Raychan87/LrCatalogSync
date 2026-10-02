@@ -33,6 +33,18 @@ namespace LrCatalogSync.Core
             // Config aus Datei laden (falls vorhanden, sonst Standard-Einstellungen)
             config = AppConfig.LoadFromFile(GlobalData.LrCatSyncConfigPath, GlobalData.BaseDir);
             Log.SetLogLevel(config.LogLevel);
+            RcloneInstaller.EnsureManagedRclone(config.RclonePath);
+            if (config.RcloneFolderWasMigrated && File.Exists(GlobalData.LrCatSyncConfigPath))
+            {
+                try
+                {
+                    config.Save(GlobalData.LrCatSyncConfigPath);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"LrCatSync: Der migrierte rclone-Pfad konnte nicht gespeichert werden: {ex.Message}");
+                }
+            }
 
             // Autorun aus Registry laden und in Config speichern (für Anzeige in SettingsForm)
             config.AutoRun = Autorun.IsEnabled();
@@ -50,7 +62,7 @@ namespace LrCatalogSync.Core
             if (LockManager.CheckRecovery(config, trayManager))
                 Log.Debug("LrCatSync: Crash-Recovery abgeschlossen - nächster Zyklus startet Sync neu");
 
-            // ========== INITIALISIERE MAIN-CYCLE-TIMER ==========          
+            // ========== INITIALISIERE MAIN-CYCLE ==========
             InitMain();
         }
 
@@ -130,6 +142,7 @@ namespace LrCatalogSync.Core
                         // Config neu laden (wenn in SettingsForm gespeichert wurde)
                         config = AppConfig.LoadFromFile(GlobalData.LrCatSyncConfigPath, GlobalData.BaseDir);
                         Log.SetLogLevel(config.LogLevel);
+                        RcloneInstaller.EnsureManagedRclone(config.RclonePath);
                         InitMain();
                         Log.Info("Config: Einstellungen aktualisiert");
                     }

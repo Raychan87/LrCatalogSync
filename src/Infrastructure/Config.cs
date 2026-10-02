@@ -38,7 +38,7 @@ namespace LrCatalogSync.Infrastructure
         public string CatalogRemotePath = "/SambaOrdner/";
 
         // Ordner in dem rclone.exe liegt (z.B. "./rclone" oder "C:\Program Files\rclone")
-        public string RcloneFolder = "./rclone";
+        public string RcloneFolder = GlobalData.DefaultRcloneFolder;
 
         // Samba Benutzername
         public string SambaUser = "";
@@ -51,6 +51,7 @@ namespace LrCatalogSync.Infrastructure
 
         // Absolute Pfade (werden beim Laden berechnet)
         public string RclonePath { get; private set; } = null!;
+        public bool RcloneFolderWasMigrated { get; private set; }
 
         //Einstellung von LogLevel = DEBUG/INFO/NOTICE/ERROR
         public string LogLevel { get; set; } = "INFO";
@@ -97,6 +98,8 @@ namespace LrCatalogSync.Infrastructure
         // "baseDir" --> Basis-Verzeichnis des Programms
         public void Load(string path, string baseDir)
         {
+            RcloneFolderWasMigrated = false;
+
             // Prüfe ob Datei existiert
             if (File.Exists(path))
             {
@@ -150,6 +153,18 @@ namespace LrCatalogSync.Infrastructure
                         if (key == "AutoRun") AutoRun = bool.TryParse(value, out bool result4) && result4;
                     }
                 }
+            }
+
+            string configuredRclonePath = Path.TrimEndingDirectorySeparator(
+                Path.GetFullPath(GetAbsoluteRclonePath(RcloneFolder, baseDir)));
+            string legacyRclonePath = Path.TrimEndingDirectorySeparator(
+                Path.GetFullPath(GetAbsoluteRclonePath("./rclone", baseDir)));
+            if (string.IsNullOrWhiteSpace(RcloneFolder) ||
+                (!File.Exists(configuredRclonePath) && string.Equals(configuredRclonePath, legacyRclonePath, StringComparison.OrdinalIgnoreCase)))
+            {
+                RcloneFolder = GlobalData.DefaultRcloneFolder;
+                RcloneFolderWasMigrated = true;
+                Log.Info("Config: Fehlenden alten rclone-Standardpfad auf data/rclone umgestellt.");
             }
 
             // Berechne absolute Pfade
