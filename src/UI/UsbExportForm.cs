@@ -22,7 +22,6 @@ namespace LrCatalogSync.UI
         private bool initializingControls;
         private bool hasLogEntries;
         private int displayedLogEntryCount;
-        private string transferSpeed = string.Empty;
         private string? displayedStatusText;
 
         // Parameterloser Konstruktor – wird nur vom WinForms-Designer zur Designzeit verwendet
@@ -142,7 +141,7 @@ namespace LrCatalogSync.UI
 
         private void SelectTargetFolder()
         {
-            string initialPath = GetTargetDialogPath();
+            string initialPath = targetPathTextBox.Text;
             using var dialog = new FolderBrowserDialog
             {
                 Description = "Zielordner auf dem externen Laufwerk auswählen",
@@ -156,11 +155,6 @@ namespace LrCatalogSync.UI
 
             SaveConfiguration();
             UpdateAvailability();
-        }
-
-        private string GetTargetDialogPath()
-        {
-            return targetPathTextBox.Text;
         }
 
         private string GetInitialTargetPath()
@@ -286,7 +280,6 @@ namespace LrCatalogSync.UI
 
         private void ResetTransferProgress()
         {
-            transferSpeed = string.Empty;
             transferRateLabel.Text = string.Empty;
             sectionProgressLabel.Text = string.Empty;
             SetTransferProgress(0);
@@ -317,8 +310,7 @@ namespace LrCatalogSync.UI
 
         private void UpdateTransferProgress(UsbExportProgress progress)
         {
-            transferSpeed = progress.Speed;
-            transferRateLabel.Text = transferSpeed;
+            transferRateLabel.Text = progress.Speed;
             SetTransferProgress(progress.Percent);
         }
 
@@ -656,6 +648,10 @@ namespace LrCatalogSync.UI
             using Stream? stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
             return stream != null ? new Icon(stream) : SystemIcons.Application;
         }
-
+    
+        private void driveDetailsLabel_TextChanged(object sender, EventArgs e)
+        {
+            // TODO: handle the TextChanged event
+        }
     }
 }
