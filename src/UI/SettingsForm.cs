@@ -40,6 +40,36 @@ namespace LrCatalogSync.UI
             chkEnableRcloneCopy.Checked = cfg.EnableRcloneCopy;
             chkEnableBackups.Checked = cfg.EnableBackups;
             LoadSettings();
+            UpdateBackupControls();
+            UpdateRcloneCopyControls();
+        }
+
+        private void ChkEnableBackups_CheckedChanged(object? sender, EventArgs e)
+        {
+            UpdateBackupControls();
+        }
+
+        private void ChkEnableRcloneCopy_CheckedChanged(object? sender, EventArgs e)
+        {
+            UpdateRcloneCopyControls();
+        }
+
+        // Die Checkbox selbst bleibt bedienbar, daher werden nur die Felder darunter deaktiviert
+        private void UpdateBackupControls()
+        {
+            bool enabled = chkEnableBackups.Checked;
+            backupsLocalPathLabel.Enabled = enabled;
+            txtBackupsLocalPath.Enabled = enabled;
+            browseBackupsPathButton.Enabled = enabled;
+            backupsRemotePathLabel.Enabled = enabled;
+            txtBackupsRemotePath.Enabled = enabled;
+        }
+
+        private void UpdateRcloneCopyControls()
+        {
+            bool enabled = chkEnableRcloneCopy.Checked;
+            rcloneCopyFolderNameLabel.Enabled = enabled;
+            txtRcloneCopyFolderName.Enabled = enabled;
         }
 
         private void BrowseButton_Click(object? sender, EventArgs e)
@@ -408,5 +438,10 @@ namespace LrCatalogSync.UI
         }
 
     
+    
+        private void backupsLocalPathLabel_Click(object sender, EventArgs e)
+        {
+            // TODO: handle the Click event
+        }
     }
 }
