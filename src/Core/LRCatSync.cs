@@ -225,7 +225,8 @@ namespace LrCatalogSync.Core
             {
                 // ========== AUSSCHALTEN ==========
                 LrCatSyncEnabled = false;
-                toggleItem.Text = "Einschalten";                
+                toggleItem.Text = "Einschalten";     
+                trayManager.UpdateStatus("SyncDisabled");           
                 Log.Info("LrCatSync: manuell gestoppt");
             }
             else
@@ -233,7 +234,7 @@ namespace LrCatalogSync.Core
                 // ========== EINSCHALTEN ==========
                 LrCatSyncEnabled = true;
                 toggleItem.Text = "Ausschalten";
-                trayManager.UpdateStatus("standby");
+                trayManager.UpdateStatus("Standby");
                 Log.Info("LrCatSync: manuell gestartet");
             }
         }
