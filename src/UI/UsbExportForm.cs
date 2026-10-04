@@ -38,7 +38,7 @@ namespace LrCatalogSync.UI
             appConfig = config;
             usbExportConfig = UsbExportConfig.Load(GlobalData.UsbExportConfigPath);
             UsbExportLog.Initialize(GlobalData.BaseDir);
-            Text = $"LrCatalogSync v{GetApplicationVersion()} - USB-Export";
+            Text = $"LrCatalogSync v{GetApplicationVersion()} - USB-Export - Fototour-und-Technik.de";
             Icon = LoadIcon("LrCatalogSync.Resources.Icons.app_icon.ico");
 
             // Werte aus der gespeicherten Konfiguration in die Controls übernehmen
@@ -137,6 +137,28 @@ namespace LrCatalogSync.UI
         private void ExitButton_Click(object? sender, EventArgs e)
         {
             Close();
+        }
+
+        private void GitHubLinkLabel_LinkClicked(object? sender, LinkLabelLinkClickedEventArgs e)
+        {
+            OpenLink("https://github.com/Raychan87/LrCatalogSync");
+        }
+
+        private void WebsiteLinkLabel_LinkClicked(object? sender, LinkLabelLinkClickedEventArgs e)
+        {
+            OpenLink("https://Fototour-und-Technik.de");
+        }
+
+        private static void OpenLink(string url)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+            }
+            catch
+            {
+                MessageBox.Show("Link konnte nicht geöffnet werden.", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void SelectTargetFolder()

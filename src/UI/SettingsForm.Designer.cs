@@ -347,7 +347,7 @@ namespace LrCatalogSync.UI
             this.chkEnableBackups.Name = "chkEnableBackups";
             this.chkEnableBackups.Size = new System.Drawing.Size(300, 20);
             this.chkEnableBackups.TabIndex = 0;
-            this.chkEnableBackups.Text = "Sicherungsordner aktivieren";
+            this.chkEnableBackups.Text = "Sicherungsordner synchronisieren?";
             this.chkEnableBackups.UseVisualStyleBackColor = true;
             this.chkEnableBackups.CheckedChanged += new System.EventHandler(this.ChkEnableBackups_CheckedChanged);
             this.settingsToolTip.SetToolTip(this.chkEnableBackups, "Aktiviert die Sicherung der Sicherungsordner die Lightroom Classic ablegt.");
@@ -486,7 +486,7 @@ namespace LrCatalogSync.UI
             this.gitHubLinkLabel.AutoSize = false;
             this.gitHubLinkLabel.LinkBehavior = System.Windows.Forms.LinkBehavior.NeverUnderline;
             this.gitHubLinkLabel.LinkColor = System.Drawing.Color.FromArgb(0, 120, 215);
-            this.gitHubLinkLabel.Location = new System.Drawing.Point(14, 558);
+            this.gitHubLinkLabel.Location = new System.Drawing.Point(14, 540);
             this.gitHubLinkLabel.Name = "gitHubLinkLabel";
             this.gitHubLinkLabel.Size = new System.Drawing.Size(230, 18);
             this.gitHubLinkLabel.TabIndex = 4;
@@ -500,7 +500,7 @@ namespace LrCatalogSync.UI
             this.websiteLinkLabel.AutoSize = false;
             this.websiteLinkLabel.LinkBehavior = System.Windows.Forms.LinkBehavior.NeverUnderline;
             this.websiteLinkLabel.LinkColor = System.Drawing.Color.FromArgb(0, 120, 215);
-            this.websiteLinkLabel.Location = new System.Drawing.Point(14, 578);
+            this.websiteLinkLabel.Location = new System.Drawing.Point(14, 560);
             this.websiteLinkLabel.Name = "websiteLinkLabel";
             this.websiteLinkLabel.Size = new System.Drawing.Size(230, 18);
             this.websiteLinkLabel.TabIndex = 5;
@@ -511,7 +511,7 @@ namespace LrCatalogSync.UI
             //
             // Button zum Speichern
             //
-            this.saveButton.Location = new System.Drawing.Point(276, 560);
+            this.saveButton.Location = new System.Drawing.Point(276, 542);
             this.saveButton.Name = "saveButton";
             this.saveButton.Size = new System.Drawing.Size(100, 35);
             this.saveButton.TabIndex = 6;
@@ -522,7 +522,7 @@ namespace LrCatalogSync.UI
             // Button zum Abbrechen
             //
             this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancelButton.Location = new System.Drawing.Point(384, 560);
+            this.cancelButton.Location = new System.Drawing.Point(384, 542);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(100, 35);
             this.cancelButton.TabIndex = 7;
@@ -534,7 +534,7 @@ namespace LrCatalogSync.UI
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
-            this.ClientSize = new System.Drawing.Size(496, 608);
+            this.ClientSize = new System.Drawing.Size(497, 588);
             this.Controls.Add(this.generalGroup);
             this.Controls.Add(this.catalogGroup);
             this.Controls.Add(this.backupGroup);

@@ -56,6 +56,8 @@ namespace LrCatalogSync.UI
             this.cancelButton = new System.Windows.Forms.Button();
             this.exitButton = new System.Windows.Forms.Button();
             this.availabilityTimer = new System.Windows.Forms.Timer(this.components);
+            this.gitHubLinkLabel = new System.Windows.Forms.LinkLabel();
+            this.websiteLinkLabel = new System.Windows.Forms.LinkLabel();
             this.targetGroup.SuspendLayout();
             this.sourceGroup.SuspendLayout();
             this.logGroup.SuspendLayout();
@@ -78,6 +80,16 @@ namespace LrCatalogSync.UI
             this.targetGroup.TabIndex = 0;
             this.targetGroup.TabStop = false;
             this.targetGroup.Text = "Ziel Informationen";
+            this.targetGroup.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.targetPathTextBox.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.targetPathLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.browseTargetButton.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.removeTargetButton.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.driveInfoLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.driveDetailsLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.deleteButton.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.metadataCheckBox.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.hashComparisonCheckBox.Font = new System.Drawing.Font("Segoe UI", 9F);
             //
             // Label für Zielpfad
             //
@@ -157,7 +169,7 @@ namespace LrCatalogSync.UI
             this.deleteButton.Name = "deleteButton";
             this.deleteButton.Size = new System.Drawing.Size(177, 25);
             this.deleteButton.TabIndex = 6;
-            this.deleteButton.Text = "Externen Speicher löschen";
+            this.deleteButton.Text = "Inhalt des Zielordners löschen";
             this.deleteButton.UseVisualStyleBackColor = true;
             this.deleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
             //
@@ -196,6 +208,12 @@ namespace LrCatalogSync.UI
             this.sourceGroup.TabIndex = 1;
             this.sourceGroup.TabStop = false;
             this.sourceGroup.Text = "Datenquellen";
+            this.sourceGroup.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.sourceListBox.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.addSourceButton.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.removeSourceButton.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.excludeLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.excludePatternsTextBox.Font = new System.Drawing.Font("Segoe UI", 9F);
             //
             // Liste der Datenquellen
             //
@@ -263,6 +281,17 @@ namespace LrCatalogSync.UI
             this.logGroup.TabIndex = 2;
             this.logGroup.TabStop = false;
             this.logGroup.Text = "Status-Log";
+            this.logGroup.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.statusLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.transferProgressBar.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.sectionProgressLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.transferRateLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.transferProgressLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.elapsedTimeLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.transferToExternalButton.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.compareButton.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.cancelButton.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.exitButton.Font = new System.Drawing.Font("Segoe UI", 9F);
             //
             // Status-Log Textbox
             //
@@ -385,14 +414,47 @@ namespace LrCatalogSync.UI
             this.availabilityTimer.Interval = 500;
             this.availabilityTimer.Tick += new System.EventHandler(this.AvailabilityTimer_Tick);
             //
+            // Link zum GitHub-Projekt
+            //
+            this.gitHubLinkLabel.AutoSize = false;
+            this.gitHubLinkLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.gitHubLinkLabel.LinkBehavior = System.Windows.Forms.LinkBehavior.NeverUnderline;
+            this.gitHubLinkLabel.LinkColor = System.Drawing.Color.FromArgb(0, 120, 215);
+            this.gitHubLinkLabel.Location = new System.Drawing.Point(14, 638);
+            this.gitHubLinkLabel.Name = "gitHubLinkLabel";
+            this.gitHubLinkLabel.Size = new System.Drawing.Size(150, 18);
+            this.gitHubLinkLabel.TabIndex = 3;
+            this.gitHubLinkLabel.TabStop = true;
+            this.gitHubLinkLabel.Text = "GitHub Project";
+            this.gitHubLinkLabel.VisitedLinkColor = System.Drawing.Color.FromArgb(0, 120, 215);
+            this.gitHubLinkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.GitHubLinkLabel_LinkClicked);
+            //
+            // Link zur Webseite
+            //
+            this.websiteLinkLabel.AutoSize = false;
+            this.websiteLinkLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.websiteLinkLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.websiteLinkLabel.LinkBehavior = System.Windows.Forms.LinkBehavior.NeverUnderline;
+            this.websiteLinkLabel.LinkColor = System.Drawing.Color.FromArgb(0, 120, 215);
+            this.websiteLinkLabel.Location = new System.Drawing.Point(424, 638);
+            this.websiteLinkLabel.Name = "websiteLinkLabel";
+            this.websiteLinkLabel.Size = new System.Drawing.Size(200, 18);
+            this.websiteLinkLabel.TabIndex = 4;
+            this.websiteLinkLabel.TabStop = true;
+            this.websiteLinkLabel.Text = "© Fototour und Technik";
+            this.websiteLinkLabel.VisitedLinkColor = System.Drawing.Color.FromArgb(0, 120, 215);
+            this.websiteLinkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.WebsiteLinkLabel_LinkClicked);
+            //
             // UsbExportForm
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(640, 642);
+            this.ClientSize = new System.Drawing.Size(640, 667);
             this.Controls.Add(this.targetGroup);
             this.Controls.Add(this.sourceGroup);
             this.Controls.Add(this.logGroup);
+            this.Controls.Add(this.gitHubLinkLabel);
+            this.Controls.Add(this.websiteLinkLabel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.Name = "UsbExportForm";
@@ -426,6 +488,8 @@ namespace LrCatalogSync.UI
         private System.Windows.Forms.Label excludeLabel;
         private System.Windows.Forms.TextBox excludePatternsTextBox;
         private System.Windows.Forms.GroupBox logGroup;
+        private System.Windows.Forms.LinkLabel gitHubLinkLabel;
+        private System.Windows.Forms.LinkLabel websiteLinkLabel;
         private System.Windows.Forms.RichTextBox statusLabel;
         private System.Windows.Forms.ProgressBar transferProgressBar;
         private System.Windows.Forms.Label sectionProgressLabel;
