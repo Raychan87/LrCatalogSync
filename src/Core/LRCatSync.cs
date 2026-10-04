@@ -80,6 +80,15 @@ namespace LrCatalogSync.Core
         // Ein Zyklus des Programms: Backup → Katalog-Sync
         private void MainCycle(object? state)
         {
+            // Fehlende Haupt-Config immer anzeigen (auch bei geöffnetem USB-Export)
+            if (!File.Exists(GlobalData.LrCatSyncConfigPath))
+            {
+                if (!Coordinator.IsCycleRunning)
+                    trayManager.UpdateStatus("NoCfg");
+                if (!LrCatSyncEnabled)
+                    return;
+            }
+
             // ========== PRÜFUNG: LrCatSync aktiviert? ==========
             if (!LrCatSyncEnabled)
             {
@@ -174,16 +183,6 @@ namespace LrCatalogSync.Core
             if (usbExportForm is { IsDisposed: false })
             {
                 usbExportForm.Activate();
-                return;
-            }
-
-            if (!File.Exists(GlobalData.LrCatSyncConfigPath))
-            {
-                MessageBox.Show(
-                    $"USB-Export kann nicht gestartet werden, weil die LrCatalogSync-Konfiguration fehlt.{Environment.NewLine}{Environment.NewLine}Erwarteter Pfad:{Environment.NewLine}{GlobalData.LrCatSyncConfigPath}{Environment.NewLine}{Environment.NewLine}Bitte zuerst die Einstellungen öffnen und speichern.",
-                    "USB-Export nicht verfügbar",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
                 return;
             }
 

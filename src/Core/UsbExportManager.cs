@@ -284,9 +284,6 @@ namespace LrCatalogSync.Core
 
         private static UsbExportResult? ValidatePrerequisites(AppConfig appConfig)
         {
-            if (!File.Exists(GlobalData.LrCatSyncConfigPath))
-                return new UsbExportResult(false, false, $"Die LrCatalogSync-Konfiguration fehlt: {GlobalData.LrCatSyncConfigPath}");
-
             if (string.IsNullOrWhiteSpace(appConfig.RclonePath) || !File.Exists(appConfig.RclonePath))
                 return new UsbExportResult(false, false, $"rclone wurde nicht gefunden: {appConfig.RclonePath}");
 
