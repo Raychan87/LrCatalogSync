@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using LrCatalogSync.Resources.Strings;
 
 namespace LrCatalogSync.Infrastructure;
 
@@ -92,7 +93,7 @@ public static class Cryptor
         }
         catch (Exception ex)
         {
-            Log.Error($"Cryptor: Entschlüsselung fehlgeschlagen: {ex.Message}");
+            Log.Error($"Cryptor: {string.Format(Strings.Get("Log_Cryptor_DecryptFailed"), ex.Message)}");
             throw new InvalidOperationException("Failed to decrypt password. The password may be corrupted or the key may be incorrect.", ex);
         }
     }

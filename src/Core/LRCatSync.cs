@@ -1,4 +1,5 @@
 using LrCatalogSync.Infrastructure;    // ← für Log, AppConfig, GlobalData
+using LrCatalogSync.Resources.Strings;
 using LrCatalogSync.UI;                // ← für TrayManager
 using Microsoft.Win32;
 
@@ -28,11 +29,12 @@ namespace LrCatalogSync.Core
             // ========== INITIALISIERUNG ==========
             // Logs im Verzeichnis data/logs erstellen
             Log.Initialize(GlobalData.BaseDir);
-            Log.Info("LrCatalog Sync gestartet");
+            Log.Info($"LrCatSync: {Strings.Get("Log_LrCatSync_Started")}");
 
             // Config aus Datei laden (falls vorhanden, sonst Standard-Einstellungen)
             config = AppConfig.LoadFromFile(GlobalData.LrCatSyncConfigPath, GlobalData.BaseDir);
             Log.SetLogLevel(config.LogLevel);
+            Localization.Apply(config.Language);
             RcloneInstaller.EnsureManagedRclone(config.RclonePath);
             if (config.RcloneFolderWasMigrated && File.Exists(GlobalData.LrCatSyncConfigPath))
             {
@@ -42,7 +44,7 @@ namespace LrCatalogSync.Core
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"LrCatSync: Der migrierte rclone-Pfad konnte nicht gespeichert werden: {ex.Message}");
+                    Log.Error($"LrCatSync: {string.Format(Strings.Get("Log_LrCatSync_MigratedPathSaveFailed"), ex.Message)}");
                 }
             }
 
@@ -60,7 +62,7 @@ namespace LrCatalogSync.Core
             // ========== CRASH-RECOVERY: Verwaiste Locks bereinigen ==========
             // Nur ausführen, wenn Config existiert (sonst keine SMB-Verbindung nötig)
             if (LockManager.CheckRecovery(config, trayManager))
-                Log.Debug("LrCatSync: Crash-Recovery abgeschlossen - nächster Zyklus startet Sync neu");
+                Log.Debug($"LrCatSync: {Strings.Get("Log_LrCatSync_CrashRecoveryDone")}");
 
             // ========== INITIALISIERE MAIN-CYCLE ==========
             InitMain();
@@ -71,7 +73,7 @@ namespace LrCatalogSync.Core
         {
             // Stoppe vorherigen Timer (falls vorhanden)
             MainCycleTimer?.Dispose();    
-            Log.Debug($"LrCatSync: Initialisiere Main-Zyklus mit ({config.GlobalCycleInterval}sec Intervall)");   
+            Log.Debug($"LrCatSync: {string.Format(Strings.Get("Log_LrCatSync_MainCycleInitialized"), config.GlobalCycleInterval)}");
             // Timer führt alle GlobalCycleInterval Sekunden kompletten Zyklus aus (Backup → Katalog)     
             MainCycleTimer = new System.Threading.Timer(MainCycle, null, 0, config.GlobalCycleInterval * 1000);
         }
@@ -80,6 +82,8 @@ namespace LrCatalogSync.Core
         // Ein Zyklus des Programms: Backup → Katalog-Sync
         private void MainCycle(object? state)
         {
+            Localization.ApplyToCurrentThread();
+
             // Fehlende Haupt-Config immer anzeigen (auch bei geöffnetem USB-Export)
             if (!File.Exists(GlobalData.LrCatSyncConfigPath))
             {
@@ -92,7 +96,7 @@ namespace LrCatalogSync.Core
             // ========== PRÜFUNG: LrCatSync aktiviert? ==========
             if (!LrCatSyncEnabled)
             {
-                Log.Debug("LrCatSync: Coordinator ist deaktiviert - Zyklus übersprungen");
+                Log.Debug($"LrCatSync: {Strings.Get("Log_LrCatSync_CoordinatorDisabled")}");
                 trayManager.UpdateStatus("SyncDisabled");
                 return;
             }
@@ -116,8 +120,9 @@ namespace LrCatalogSync.Core
 //            menu.Items.Add(statusItem);
 //            menu.Items.Add(new ToolStripSeparator());
 
+            var previousMenu = trayManager.GetTrayIcon().ContextMenuStrip;
             // ========== MENÜ-EINTRAG: USB-EXPORT ==========
-            var usbExportItem = new ToolStripMenuItem("USB-Export");
+            var usbExportItem = new ToolStripMenuItem(Strings.Tray_Menu_UsbExport);
             usbExportItem.Click += (s, e) => OpenUsbExportForm();
             menu.Items.Add(usbExportItem);
 
@@ -126,7 +131,10 @@ namespace LrCatalogSync.Core
 
             // ========== MENÜ-EINTRAG: Sync ein/aus (über Einstellungen) ==========
             // Zeigt "Ausschalten" wenn Sync läuft, "Einschalten" wenn er aus ist
-            toggleItem = new ToolStripMenuItem("Ausschalten");
+            toggleItem = new ToolStripMenuItem(GetToggleMenuText())
+            {
+                Enabled = usbExportForm is not { IsDisposed: false }
+            };
             toggleItem.Click += (s, e) => OnOffCoordinator(toggleItem!);
             menu.Items.Add(toggleItem);
 
@@ -134,7 +142,7 @@ namespace LrCatalogSync.Core
             menu.Items.Add(new ToolStripSeparator());
 
             // ========== MENÜ-EINTRAG: Einstellungen öffnen ==========
-            var settingsItem = new ToolStripMenuItem("Einstellungen");
+            var settingsItem = new ToolStripMenuItem(Strings.Tray_Menu_Settings);
             settingsItem.Click += (s, e) =>
             {
                 if (settingsForm is { IsDisposed: false })
@@ -151,9 +159,12 @@ namespace LrCatalogSync.Core
                         // Config neu laden (wenn in SettingsForm gespeichert wurde)
                         config = AppConfig.LoadFromFile(GlobalData.LrCatSyncConfigPath, GlobalData.BaseDir);
                         Log.SetLogLevel(config.LogLevel);
+                        Localization.Apply(config.Language);
+                        trayManager.RefreshText();
+                        SetupContextMenu();
                         RcloneInstaller.EnsureManagedRclone(config.RclonePath);
                         InitMain();
-                        Log.Info("Config: Einstellungen aktualisiert");
+                        Log.Info($"Config: {Strings.Get("Log_LrCatSync_SettingsUpdated")}");
                     }
                 }
 
@@ -165,7 +176,7 @@ namespace LrCatalogSync.Core
             menu.Items.Add(new ToolStripSeparator());
 
             // ========== MENÜ-EINTRAG: Programm beenden ==========
-            var exitItem = new ToolStripMenuItem("Beenden");
+            var exitItem = new ToolStripMenuItem(Strings.Tray_Menu_Exit);
             exitItem.Click += (s, e) => 
             { 
                 trayManager.GetTrayIcon().Visible = false;
@@ -175,6 +186,15 @@ namespace LrCatalogSync.Core
 
             // Binde Menü an Tray-Icon
             trayManager.GetTrayIcon().ContextMenuStrip = menu;
+            previousMenu?.Dispose();
+        }
+
+        private string GetToggleMenuText()
+        {
+            if (usbExportForm is { IsDisposed: false })
+                return Strings.Tray_Menu_UsbExportOpen;
+
+            return LrCatSyncEnabled ? Strings.Tray_Menu_TurnOff : Strings.Tray_Menu_TurnOn;
         }
 
         // Öffnet das USB-Export-Fenster modeless und pausiert den normalen Sync.
@@ -191,7 +211,7 @@ namespace LrCatalogSync.Core
             if (toggleItem != null)
             {
                 toggleItem.Enabled = false;
-                toggleItem.Text = "USB-Export geöffnet";
+                toggleItem.Text = Strings.Tray_Menu_UsbExportOpen;
             }
 
             usbExportForm = new UsbExportForm(config, () => Coordinator.IsCycleRunning);
@@ -211,10 +231,10 @@ namespace LrCatalogSync.Core
             if (toggleItem != null)
             {
                 toggleItem.Enabled = true;
-                toggleItem.Text = LrCatSyncEnabled ? "Ausschalten" : "Einschalten";
+                toggleItem.Text = GetToggleMenuText();
             }
 
-            Log.Info("LrCatSync: USB-Export-Fenster geschlossen, vorheriger Sync-Zustand wiederhergestellt");
+            Log.Info($"LrCatSync: {Strings.Get("Log_LrCatSync_UsbExportClosed")}");
         }
 
         // ==================== SYNC EIN/AUS SCHALTEN ====================
@@ -225,17 +245,17 @@ namespace LrCatalogSync.Core
             {
                 // ========== AUSSCHALTEN ==========
                 LrCatSyncEnabled = false;
-                toggleItem.Text = "Einschalten";     
+                toggleItem.Text = Strings.Tray_Menu_TurnOn;
                 trayManager.UpdateStatus("SyncDisabled");           
-                Log.Info("LrCatSync: manuell gestoppt");
+                Log.Info($"LrCatSync: {Strings.Get("Log_LrCatSync_ManuallyStopped")}");
             }
             else
             {
                 // ========== EINSCHALTEN ==========
                 LrCatSyncEnabled = true;
-                toggleItem.Text = "Ausschalten";
+                toggleItem.Text = Strings.Tray_Menu_TurnOff;
                 trayManager.UpdateStatus("Standby");
-                Log.Info("LrCatSync: manuell gestartet");
+                Log.Info($"LrCatSync: {Strings.Get("Log_LrCatSync_ManuallyStarted")}");
             }
         }
         
@@ -254,7 +274,7 @@ namespace LrCatalogSync.Core
                 if (MainCycleTimer != null)
                 {
                     MainCycleTimer.Dispose();
-                    Log.Debug("LrCatSync:Zyklus Timer beendet");
+                    Log.Debug($"LrCatSync: {Strings.Get("Log_LrCatSync_TimerStopped")}");
                 }
 
                 // Verstecke Tray-Icon und gebe Ressourcen frei
@@ -270,7 +290,7 @@ namespace LrCatalogSync.Core
 
         private void OnSessionEnding(object? sender, SessionEndingEventArgs e)
         {
-            Log.Info($"LrCatSync: Windows-Sitzungsende erkannt ({e.Reason}), beende laufende rclone-Prozesse");
+            Log.Info($"LrCatSync: {string.Format(Strings.Get("Log_LrCatSync_SessionEnding"), e.Reason)}");
             LrCatSyncEnabled = false;
             MainCycleTimer?.Dispose();
             RcloneProcessManager.BeginShutdown();

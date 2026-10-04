@@ -1,94 +1,148 @@
-# ACHTUNG!
-Aktuell ist es noch eine Beta und kann Fehler enthalten. Versioniertes Backup eures Lightroom-Katalogs ist immer zu empfehlen.
+﻿**English** | [Deutsch](README.de.md)
 
 <h1><img src="docs/images/Logo.png" height="36" alt="LrCatalogSync Logo" style="vertical-align: middle;"> LrCatalogSync</h1>
 
-- Das LrCatalogSync-Programm synchronisiert den Katalog samt Hilfsdateien von Adobe Lightroom Classic auf einen Samba-Server.
-- Es erkennt, wenn ein Sync oder Lightroom Classic von einem anderen Rechner läuft, und verhindert das lokale Öffnen des Lightroom-Classic-Katalogs sowie den eigenen Sync-Prozess, um die Datenkonsistenz zu erhalten.
-- LrCatalogSync startet mit Windows automatisch und ist über ein Symbol in der Taskleiste zu finden.
+- LrCatalogSync synchronizes the Adobe Lightroom Classic catalog and its helper files to a Samba server.
+- It detects when a sync or Lightroom Classic is running on another computer, and prevents opening the Lightroom Classic catalog locally as well as its own sync process in order to keep the data consistent.
+- LrCatalogSync starts automatically with Windows and can be found as an icon in the system tray.
 
-## Funktionsweise
+## How it works
 
-### Kopierte Dateien
-Beim Sync werden folgende Lightroom‑Dateien und Ordner synchronisiert:
-- `*.lrcat` – Die Hauptkatalogdatei (SQL)
-- `*.lrcat-data/` – Katalog-Datenbank (Masken, KI-Auswahlen)
-- `* Sync.lrdata/` – Für Adobe Creative Cloud
-- `* Smart Previews.lrdata/` – kleine Vorschaudateien von Raw/DNG
-- `* Helper.lrdata/` – Hilfsdaten für Katalogfunktionen
+### Copied files
+The following Lightroom files and folders are synchronized:
+- `*.lrcat` – the main catalog file (SQL)
+- `*.lrcat-data/` – catalog database (masks, AI selections)
+- `* Sync.lrdata/` – for Adobe Creative Cloud
+- `* Smart Previews.lrdata/` – small preview files of Raw/DNG
+- `* Helper.lrdata/` – helper data for catalog functions
 
-Optional (siehe Einstellungen):
-- `* Previews.lrdata/` – Standard und 1:1 Vorschaudateien 
-- `Katalog Backups *.zip` - Automatische Sicherungsdaten von Lightroom
+Optional (see settings):
+- `* Previews.lrdata/` – standard and 1:1 previews (option **Sync \*Previews.lrdata?**)
 
-### Lock-Dateien (Lightroom-Erkennung)
-Das Programm erkennt automatisch, wenn Lightroom geöffnet ist, und verzichtet dann auf den Sync:
-- `*.lrcat.lock` – Haupt-Lock-Datei
-- `*.lrcat-shm` – Shared Memory Segment
-- `*.lrcat-wal` – Write-Ahead Log
+Backup folder (option **Sync backup folder?**):
+- The Lightroom backup folder (catalog backups) is synchronized separately and in both directions (rclone `bisync`).
 
-Diese Dateien werden von Lightroom Classic beim Öffnen des Katalogs erstellt und beim Schließen wieder gelöscht.
+### Lock files (Lightroom detection)
+The program detects automatically when Lightroom is open and skips the sync:
+- `*.lrcat.lock` – main lock file
+- `*.lrcat-shm` – shared memory segment
+- `*.lrcat-wal` – write-ahead log
 
-## Voraussetzungen
-- Windows 10 oder Windows Server 2016 oder neuer
-- Internetverbindung beim ersten Start, wenn rclone noch nicht vorhanden ist
+Lightroom Classic creates these files when the catalog is opened and deletes them when it is closed.
+
+## Requirements
+- Windows 10 or Windows Server 2016 or newer
+- Internet connection on first start if rclone is not yet available
 
 ## Installation
-1. LrCatalogSync von GitHub herunterladen und `LrCatalogSync.exe` starten – das Symbol erscheint im Tray.
-2. Wenn noch keine rclone-Version vorhanden ist, lädt LrCatalogSync beim Start automatisch das aktuelle stabile Windows-AMD64-Release von [rclone.org](https://downloads.rclone.org/rclone-current-windows-amd64.zip) herunter und legt `rclone.exe` unter `data/rclone/` ab.
-3. Bei weiteren Starts wird nach einer neueren Version gesucht. Ist rclone bereits vorhanden, bleibt es bei fehlender Verbindung zur Downloadseite nutzbar.
+1. Download LrCatalogSync from GitHub and start `LrCatalogSync.exe` – the icon appears in the tray.
+2. If no rclone version is available yet, LrCatalogSync automatically downloads the current stable Windows AMD64 release from [rclone.org](https://downloads.rclone.org/rclone-current-windows-amd64.zip) on startup and stores `rclone.exe` in `data/rclone/`.
+3. On later starts it checks for a newer version. If rclone is already present, it stays usable when the download site cannot be reached.
 
-Falls der automatische Download nicht verfügbar ist, rclone manuell von [rclone.org](https://rclone.org/downloads/) herunterladen, entpacken und in den Einstellungen den Ordner mit `rclone.exe` eintragen. Ein bereits konfigurierter manueller Pfad bleibt erhalten und wird nicht automatisch ersetzt.
+If the automatic download is not available, download rclone manually from [rclone.org](https://rclone.org/downloads/), unpack it and enter the folder containing `rclone.exe` in the settings. A manually configured path is kept and is not replaced automatically.
 
-## Nutzung
-*Start:* Doppelklick auf `LrCatalogSync.exe` (kann beim Systemstart aktiviert werden). 
+## Usage
+*Start:* double-click `LrCatalogSync.exe` (can be enabled at system start).
 
-*Stop:* Rechtsklick auf das Tray‑Icon → **Beenden**.
+*Stop:* right-click the tray icon → **Exit**.
 
-## Konfiguration (grafisch)
-![alt text](docs/images/config_menu.png)
-| Feld | Beschreibung |
-|------|--------------|
-| **Auto-Start** | Programm beim Windows-Start automatisch ausführen |
-| **rclone‑Pfad** | Ordner mit `rclone.exe`; Standard ist `data/rclone/`. Ein anderer Ordner kann manuell eingetragen werden. |
-| **Log‑Level** | `DEBUG`, `INFO`, `NOTICE`, `ERROR` |
-| **Aktualisierungszeit** | Wie oft pro Sekunde überprüft werden soll |
-| **.Previews.lrdata** | Auswahl, ob 1:1-Vorschaubilder auch synchronisiert werden sollen |
-| **Katalog‑Datei** | Pfad zur `.lrcat`‑Datei (lokal) |
-| **Remote‑Pfad** | Zielpfad auf dem SMB‑Server (z. B. `//192.168.1.1/Lightroom/` -> `/Lightroom/`) |
-| **letzten Katalog behalten?** | Speichert vor dem Sync den Katalog in einem Extra-Ordner |
-| **Ordnername** | Für die letzte Katalogspeicherung |
-| **Lokaler Backup Pfad** | Lokaler Pfad, wo die Sicherungsdateien von Lightroom liegen |
-| **Remote Backup Pfad** | Zielpfad auf dem SMB-Server für die Sicherungsdateien |
-| **Server‑IP / Host** | IP oder Hostname des SMB‑Servers |
-| **Benutzer / Passwort** | Zugangsdaten (verschlüsselt gespeichert) |
-| **Backup aktivieren** | Optional, lokale und Remote‑Backups synchronisieren |
+## Configuration (GUI)
+Right-click the tray icon → **Settings**
 
-Einstellungen werden in `data/config/` gespeichert.
+![LrCatalogSync settings](docs/images/LrCatSyncConfig.en.png)
+| Field | Description |
+|-------|-------------|
+| **Start automatically with Windows** | Run the program automatically at Windows startup |
+| **Rclone folder** | Folder containing `rclone.exe`; default is `data/rclone/`. Another folder can be entered manually. |
+| **Log level** | `DEBUG`, `INFO`, `NOTICE`, `ERROR` |
+| **Language** | `System` (Windows display language), `English` or `Deutsch`. Unsupported Windows languages use English. |
+| **Check interval** | Check interval in seconds (1 to 999, default 10) |
+| **Sync \*Previews.lrdata?** | Whether the `* Previews.lrdata` folder (standard and 1:1 previews) is synchronized as well |
+| **Local catalog file** | Path to the local `.lrcat` file |
+| **Remote catalog path** | Target path on the SMB server (e.g. `//192.168.1.1/Lightroom/` -> `/Lightroom/`) |
+| **Keep last catalog?** | Before syncing, stores a copy of the previous catalog in an extra folder (on the server for uploads, locally for downloads) |
+| **Folder name** | Name of the folder for this copy |
+| **Sync backup folder?** | Optional, synchronizes the Lightroom backup folder locally and remotely |
+| **Local backup path** | Local path where Lightroom stores its backups |
+| **Remote backup path** | Target path on the SMB server for the backups |
+| **Server IP/name** | IP or host name of the SMB server |
+| **Username / Password** | Credentials (stored encrypted) |
 
-## TrayIcon
+Settings are stored in `data/config/`.
+The user interface and the log messages generated by LrCatalogSync follow the selected language. `System` uses German or English according to the Windows display language; other languages fall back to English. rclone's own log messages stay in the language provided by rclone.
 
-Tray‑Icon‑Status:
-- 🟢 --> bereit, kein Sync aktiv
-- 🟠  --> Synchronisiere Lightroom-Sicherungsordner
-- 🟡  --> Synchronisiere Lightroom-Katalog 
-- 🔵  --> Lightroom Classic ist lokal aktiv und Sync wird blockiert
-- 🔵 --> Wenn der PC während des Syncs neugestartet wurde, wird dieser Recovery-Prozess gestartet
-- 🟣  --> Ein Sync läuft gerade von einem anderen Rechner
-- 🟣 --> Lightroom Classic wurde auf einem anderen Rechner gestartet
-- 🔴 --> Fehler, siehe Log (Notfalls auf Debug stellen)
-- ⚪ --> Konfigurationsdatei fehlt
+## Tray icon
 
-Logs finden Sie unter `data/logs/`.
+Tray icon status:
+- 🟢 --> ready, no sync active
+- 🟠 --> synchronizing the Lightroom backup folder
+- 🟡 --> synchronizing the Lightroom catalog
+- 🔵 --> Lightroom Classic is active locally and the sync is blocked
+- 🔵 --> the PC was restarted during a sync, this recovery process is started
+- 🟣 --> a sync is currently running from another computer
+- 🟣 --> Lightroom Classic was started on another computer
+- 🔴 --> error (e.g. no Samba connection, rclone missing, stale remote lock), see log (set to Debug if necessary)
+- ⚪ --> configuration file missing
+- <img src="docs/images/Logo.png" height="16" alt="Program icon" style="vertical-align: middle;"> --> sync is switched off (tray menu **Turn off** or USB export open)
 
-## Fehlersuche (Kurz)
-- *rclone.exe nicht gefunden*: Internetverbindung beim ersten Start prüfen. Bei einem manuellen Pfad muss der ausgewählte Ordner die `rclone.exe` enthalten.
-- *Samba‑Verbindung fehlgeschlagen*: IP, Benutzer, Passwort und Netzwerk prüfen.
+Tray menu: **USB export**, **Turn off/Turn on**, **Settings**, **Exit**.
 
-## Ressourcen
+Logs are located in `data/logs/`.
+
+## USB export (additional tool)
+
+The USB export copies arbitrary folders (e.g. photo library, Lightroom catalog, image archive) to an external drive. The tool is part of LrCatalogSync and also uses rclone.
+
+![USB export](docs/images/UsbExport.en.png)
+
+### Opening
+Right-click the tray icon → **USB export**. While the window is open, the normal sync is paused (the menu entry shows "USB export open"). After closing, the previous state (sync on/off) is restored. If a normal sync cycle is running, all inputs and actions are locked until it has finished; the window cannot be closed in that case.
+
+### Areas and controls
+| Area / element | Description |
+|----------------|-------------|
+| **Target** | Target folder on the external drive (**Browse** / **Remove**). The drive is derived from the path. |
+| **Drive** | Drive, file system, total size, used (red) and free (green) space; updated automatically |
+| **Clear target folder** | Empties the target folder after a confirmation. For a drive root, the whole drive is emptied (Windows system folders are kept). |
+| **Transfer metadata** | Additionally transfers file metadata. Only selectable if the target is NTFS-formatted. |
+| **Use hash comparison and verify** | Compares files by checksum instead of size/date and automatically runs a checksum comparison after the transfer |
+| **Data sources** | List of folders to copy (**Add** / **Remove**) |
+| **Exclude** | Custom exclude patterns separated by `;` (e.g. `*.tmp;*.partial;*Previews.lrdata`) |
+| **Status log** | Messages of the running action (errors in red, successful verification in green) |
+| **Progress display** | Percentage, current section (e.g. 1/2), speed and elapsed time |
+| **Copy to external** | Starts the transfer of all data sources into the target folder |
+| **Checksum compare** | Compares sources and target by checksum without copying anything |
+| **Cancel** | Cancels the running action |
+| **Exit** | Closes the window (not possible during an action; closing via the window asks whether to cancel) |
+
+### Transfer procedure
+1. Select the target folder on the external drive.
+2. Add one or more data sources. Optionally set exclude patterns, metadata and hash comparison.
+3. Click **Copy to external**.
+4. Beforehand it is checked whether the drive and sources are reachable and whether the sources contain Lightroom lock files (`*.lrcat.lock`, `*.lrcat-shm`, `*.lrcat-wal`). If Lightroom is still open, the transfer is rejected and the lock files are listed in the log.
+5. Each data source is transferred into its own subfolder of the target folder (name of the source folder). For identical names, the folder name is extended by parent folders or the drive letter and, if necessary, a number.
+6. With hash comparison enabled, a checksum comparison follows automatically. The result (missing, differing or unreadable files) is shown in the status log.
+
+> **Warning:** The transfer is a synchronization (`rclone sync`). Files in the target subfolder that no longer exist in the source are deleted. The source is never modified.
+
+### Automatically excluded
+Regardless of custom patterns, the following are never transferred or deleted:
+- `*.lrcat.lock`, `*.lrcat-shm`, `*.lrcat-wal`, `*.lock`, `Thumbs.db`
+- Windows system folders in the drive root: `System Volume Information`, `$RECYCLE.BIN`, `Recovery`
+
+### Notes
+- If the drive is full, the transfer is aborted and the missing space (in GB) is reported in the log.
+- Settings (target, sources, excludes, options) are saved automatically in `data/config/USBExport.conf`. A separate rclone configuration is stored in `data/config/USBExportRclone.conf`.
+- The log is written to `data/logs/USBExport.log`.
+- An existing `rclone.exe` is required (see Installation).
+
+## Troubleshooting (short)
+- *rclone.exe not found*: check the internet connection on first start. With a manual path, the selected folder must contain `rclone.exe`.
+- *Samba connection failed*: check IP, user, password and network.
+
+## Resources
 - GitHub: https://github.com/Raychan87/LrCatalogSync
 - rclone: https://rclone.org
-- Lightroom Classic: https://www.adobe.com/de/products/photoshop-lightroom-classic.html
+- Lightroom Classic: https://www.adobe.com/products/photoshop-lightroom-classic.html
 
-*Version **0.9.10-beta** – Stand: September 2026*
-
+*Version **1.0.0** – as of: October 2026*

@@ -160,7 +160,6 @@ namespace LrCatalogSync.UI
             this.driveDetailsLabel.TabStop = false;
             this.driveDetailsLabel.Text = "Kein Laufwerk ausgewählt";
             this.driveDetailsLabel.WordWrap = false;
-            this.driveDetailsLabel.TextChanged += new System.EventHandler(this.driveDetailsLabel_TextChanged);
             //
             // Button zum Löschen des externen Speichers
             //

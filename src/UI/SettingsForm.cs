@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Reflection;
 
 using LrCatalogSync.Infrastructure;
+using LrCatalogSync.Resources.Strings;
 
 namespace LrCatalogSync.UI
 {
@@ -14,6 +15,7 @@ namespace LrCatalogSync.UI
         public SettingsForm()
         {
             InitializeComponent();
+            ApplyLocalization();
         }
 
         public SettingsForm(AppConfig cfg)
@@ -23,7 +25,12 @@ namespace LrCatalogSync.UI
             originalPasswordRclone = cfg.SambaPasswordRclone;
             originalPasswordAes = cfg.SambaPasswordAes;
 
-            Text = $"LrCatalogSync v{appVersion} - Fototour-und-Technik.de";
+            cmbLanguage.DataSource = Localization.Languages.ToArray();
+            cmbLanguage.DisplayMember = nameof(LanguageOption.DisplayName);
+            cmbLanguage.ValueMember = nameof(LanguageOption.Code);
+            cmbLanguage.SelectedValue = cfg.Language;
+            ApplyLocalization();
+
             Icon = LoadIcon("LrCatalogSync.Resources.Icons.app_icon.ico");
             txtRcloneFolder.Text = cfg.RcloneFolder;
             txtGlobalCycleInterval.Text = cfg.GlobalCycleInterval.ToString();
@@ -78,7 +85,7 @@ namespace LrCatalogSync.UI
                 return;
 
             string path = textBox == txtCatalogLocalFile
-                ? BrowseFile("Lightroom Katalog-Datei (*.lrcat)|*.lrcat|Alle Dateien (*.*)|*.*")
+                ? BrowseFile(Strings.Settings_Filter_Catalog)
                 : BrowseFolder();
 
             if (!string.IsNullOrEmpty(path))
@@ -108,25 +115,25 @@ namespace LrCatalogSync.UI
             }
             catch
             {
-                MessageBox.Show("Link konnte nicht geöffnet werden.", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Strings.Settings_Dialog_LinkError, Strings.Settings_Title_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private string BrowseFolder()
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
-                dialog.Description = "Ordner auswählen";
+                dialog.Description = Strings.Settings_Dialog_SelectFolder;
                 if (dialog.ShowDialog() == DialogResult.OK)
                     return dialog.SelectedPath ?? string.Empty;
             }
             return string.Empty;
         }
 
-        private string BrowseFile(string filter = "Alle Dateien (*.*)|*.*")
+        private string BrowseFile(string filter)
         {
             using (OpenFileDialog dialog = new OpenFileDialog())
             {
-                dialog.Title = "Datei auswählen";
+                dialog.Title = Strings.Settings_Dialog_SelectFile;
                 dialog.Filter = filter;
                 if (dialog.ShowDialog() == DialogResult.OK)
                     return dialog.FileName ?? string.Empty;
@@ -150,6 +157,7 @@ namespace LrCatalogSync.UI
                 config.CatalogRemotePath = GetControlValue("txtCatalogRemotePath");
                 config.SambaUser = GetControlValue("txtSambaUser");
                 config.LogLevel = GetControlValue("cmbLogLevel");
+                config.Language = cmbLanguage.SelectedValue?.ToString() ?? Localization.SystemCode;
                 config.AutoRun = GetCheckBoxValue("chkAutoRun");
 
                 if (!ValidateRemotePath(ref config.CatalogRemotePath, "Remote Katalog Pfad") ||
@@ -159,8 +167,8 @@ namespace LrCatalogSync.UI
                 if (!int.TryParse(GetControlValue("txtGlobalCycleInterval"), out int globalCycleInterval) || globalCycleInterval <= 0)
                 {
                     MessageBox.Show(
-                        "Fehler: Die Aktualisierungszeit muss eine positive Zahl in Sekunden sein!",
-                        "Ungültige Aktualisierungszeit",
+                        Strings.Settings_Dialog_InvalidInterval,
+                        Strings.Settings_Dialog_InvalidIntervalTitle,
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
                     return;
@@ -169,8 +177,8 @@ namespace LrCatalogSync.UI
                 if (globalCycleInterval > 999)
                 {
                     MessageBox.Show(
-                        "Fehler: Die Aktualisierungszeit muss zwischen 1 und 999 Sekunden liegen!",
-                        "Ungültiger Wertebereich",
+                        Strings.Settings_Dialog_IntervalRange,
+                        Strings.Settings_Dialog_IntervalRangeTitle,
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
                     return;
@@ -187,8 +195,8 @@ namespace LrCatalogSync.UI
                 if (!File.Exists(absoluteRclonePath))
                 {
                     MessageBox.Show(
-                        $"Fehler: rclone.exe nicht gefunden!\n\nPfad: {absoluteRclonePath}\n\nBitte überprüfen Sie den Pfad.",
-                        "rclone.exe nicht gefunden",
+                        string.Format(Strings.Settings_Dialog_RcloneMissing, absoluteRclonePath),
+                        Strings.Settings_Dialog_RcloneMissingTitle,
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
                     return;
@@ -196,15 +204,15 @@ namespace LrCatalogSync.UI
 
                 if (string.IsNullOrEmpty(config.CatalogLocalFile))
                 {
-                    MessageBox.Show("Fehler: Die Katalog-Datei ist erforderlich!", "Katalog-Datei fehlt", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(Strings.Settings_Dialog_CatalogRequired, Strings.Settings_Dialog_CatalogRequiredTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
                 if (!File.Exists(config.CatalogLocalFile))
                 {
                     MessageBox.Show(
-                        $"Fehler: Die Katalog-Datei existiert nicht!\n\nPfad: {config.CatalogLocalFile}",
-                        "Katalog-Datei existiert nicht",
+                        string.Format(Strings.Settings_Dialog_CatalogMissing, config.CatalogLocalFile),
+                        Strings.Settings_Dialog_CatalogMissingTitle,
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
                     return;
@@ -213,8 +221,8 @@ namespace LrCatalogSync.UI
                 if (!config.CatalogLocalFile.EndsWith(".lrcat", StringComparison.OrdinalIgnoreCase))
                 {
                     MessageBox.Show(
-                        $"Fehler: Die ausgewählte Datei ist keine Lightroom Katalog-Datei!\n\nDatei: {config.CatalogLocalFile}\n\nBitte wählen Sie eine *.lrcat Datei.",
-                        "Keine .lrcat Datei",
+                        string.Format(Strings.Settings_Dialog_CatalogInvalid, config.CatalogLocalFile),
+                        Strings.Settings_Dialog_CatalogInvalidTitle,
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
                     return;
@@ -224,15 +232,15 @@ namespace LrCatalogSync.UI
                 {
                     if (string.IsNullOrEmpty(config.BackupsLocalPath))
                     {
-                        MessageBox.Show("Fehler: Der lokale Backup Pfad ist erforderlich wenn Backups aktiviert sind!", "Lokaler Backup Pfad fehlt", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(Strings.Settings_Dialog_BackupLocalRequired, Strings.Settings_Dialog_BackupLocalRequiredTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
 
                     if (!Directory.Exists(config.BackupsLocalPath))
                     {
                         MessageBox.Show(
-                            $"Fehler: Der lokale Backup Pfad existiert nicht!\n\nPfad: {config.BackupsLocalPath}",
-                            "Lokaler Backup Pfad existiert nicht",
+                            string.Format(Strings.Settings_Dialog_BackupLocalMissing, config.BackupsLocalPath),
+                            Strings.Settings_Dialog_BackupLocalMissingTitle,
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
                         return;
@@ -240,14 +248,14 @@ namespace LrCatalogSync.UI
 
                     if (string.IsNullOrEmpty(config.BackupsRemotePath))
                     {
-                        MessageBox.Show("Fehler: Der Remote Backup Pfad ist erforderlich wenn Backups aktiviert sind!", "Remote Backup Pfad fehlt", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(Strings.Settings_Dialog_BackupRemoteRequired, Strings.Settings_Dialog_BackupRemoteRequiredTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
                 }
 
                 if (config.EnableRcloneCopy && string.IsNullOrEmpty(config.RcloneCopyFolderName))
                 {
-                    MessageBox.Show("Fehler: Der rclone copy Ordnername darf nicht leer sein!", "Ordnername fehlt", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(Strings.Settings_Dialog_CopyFolderRequired, Strings.Settings_Dialog_CopyFolderRequiredTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
@@ -269,19 +277,20 @@ namespace LrCatalogSync.UI
 
                 config.Save(GlobalData.LrCatSyncConfigPath);
                 SaveRcloneConfig();
+                Localization.Apply(config.Language);
 
                 if (config.AutoRun)
                     Autorun.Enable(Application.ExecutablePath);
                 else
                     Autorun.Disable();
 
-                MessageBox.Show("Einstellungen erfolgreich gespeichert!", "Erfolg", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(Strings.Settings_Dialog_SaveSuccess, Strings.Settings_Title_Success, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 DialogResult = DialogResult.OK;
                 Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Fehler beim Speichern: {ex.Message}", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(string.Format(Strings.Settings_Dialog_SaveFailure, ex.Message), Strings.Settings_Title_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private string GetControlValue(string controlName)
@@ -314,15 +323,8 @@ namespace LrCatalogSync.UI
                 trimmedRemotePath[1] == ':')
             {
                 MessageBox.Show(
-                    $"Das Feld \"{fieldName}\" enthält einen Windows-Laufwerksbuchstaben (z.B. X:, D:, F:), der hier nicht erlaubt ist.\n\n" +
-                    "Tragen Sie hier den Ordnerpfad innerhalb Ihrer Samba-Freigabe ein, z.B.:\n" +
-                    "  /SambaOrdner/\n" +
-                    "  /SambaOrdner/Lightroom/\n\n" +
-                    "Der Samba-Server (IP oder Hostname) wird separat im Feld \"Server IP/Name\" eingetragen.\n\n" +
-                    $"Aus den beiden Feldern wird der vollständige Netzwerkpfad zusammengesetzt:\n" +
-                    $"  \\\\{{Server IP/Name}}{{{fieldName}}}\n" +
-                    $"  Beispiel: \\\\192.168.1.100/SambaOrdner/",
-                    $"Ungültiger Pfad in {fieldName}",
+                    string.Format(Strings.Settings_Dialog_RemotePathInvalid, fieldName),
+                    string.Format(Strings.Settings_Dialog_RemotePathInvalidTitle, fieldName),
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
                 return false;
@@ -334,6 +336,75 @@ namespace LrCatalogSync.UI
 
             return true;
         }
+
+        private void ApplyLocalization()
+        {
+            Text = string.Format(Strings.Settings_Title, appVersion);
+            generalGroup.Text = Strings.Settings_Group_General;
+            chkAutoRun.Text = Strings.Settings_AutoRun;
+            rcloneFolderLabel.Text = Strings.Settings_RcloneFolder;
+            rcloneDownloadLabel.Text = Strings.Settings_RcloneDownload;
+            logLevelLabel.Text = Strings.Settings_LogLevel;
+            languageLabel.Text = Strings.Settings_Language;
+            updateIntervalLabel.Text = Strings.Settings_UpdateInterval;
+            secondsLabel.Text = Strings.Settings_Seconds;
+            catalogGroup.Text = Strings.Settings_Group_Catalog;
+            chkSyncPreviewData.Text = Strings.Settings_SyncPreviews;
+            catalogLocalFileLabel.Text = Strings.Settings_CatalogLocal;
+            catalogRemotePathLabel.Text = Strings.Settings_CatalogRemote;
+            chkEnableRcloneCopy.Text = Strings.Settings_KeepCatalog;
+            rcloneCopyFolderNameLabel.Text = Strings.Settings_FolderName;
+            backupGroup.Text = Strings.Settings_Group_Backups;
+            chkEnableBackups.Text = Strings.Settings_SyncBackups;
+            backupsLocalPathLabel.Text = Strings.Settings_BackupLocal;
+            backupsRemotePathLabel.Text = Strings.Settings_BackupRemote;
+            sambaGroup.Text = Strings.Settings_Group_Samba;
+            remoteIpLabel.Text = Strings.Settings_Server;
+            sambaUserLabel.Text = Strings.Settings_Username;
+            sambaPasswordLabel.Text = Strings.Settings_Password;
+            saveButton.Text = Strings.Settings_Save;
+            cancelButton.Text = Strings.Settings_Cancel;
+
+            settingsToolTip.SetToolTip(chkAutoRun, Strings.Settings_Tip_AutoRun);
+            settingsToolTip.SetToolTip(txtRcloneFolder, Strings.Settings_Tip_RcloneFolder);
+            settingsToolTip.SetToolTip(txtGlobalCycleInterval, Strings.Settings_Tip_Interval);
+            settingsToolTip.SetToolTip(chkSyncPreviewData, Strings.Settings_Tip_SyncPreviews);
+            settingsToolTip.SetToolTip(txtCatalogLocalFile, Strings.Settings_Tip_CatalogLocal);
+            settingsToolTip.SetToolTip(txtCatalogRemotePath, Strings.Settings_Tip_CatalogRemote);
+            settingsToolTip.SetToolTip(chkEnableRcloneCopy, Strings.Settings_Tip_KeepCatalog);
+            settingsToolTip.SetToolTip(txtRcloneCopyFolderName, Strings.Settings_Tip_FolderName);
+            settingsToolTip.SetToolTip(chkEnableBackups, Strings.Settings_Tip_SyncBackups);
+            settingsToolTip.SetToolTip(txtBackupsLocalPath, Strings.Settings_Tip_BackupLocal);
+            settingsToolTip.SetToolTip(txtBackupsRemotePath, Strings.Settings_Tip_BackupRemote);
+            settingsToolTip.SetToolTip(txtRemoteIP, Strings.Settings_Tip_Server);
+            settingsToolTip.SetToolTip(txtSambaUser, Strings.Settings_Tip_Username);
+            settingsToolTip.SetToolTip(txtSambaPassword, Strings.Settings_Tip_Password);
+
+#if DEBUG
+            CheckLocalizedControlWidths(this);
+#endif
+        }
+
+#if DEBUG
+        private static void CheckLocalizedControlWidths(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (!string.IsNullOrEmpty(control.Text))
+                {
+                    int textWidth = TextRenderer.MeasureText(
+                        control.Text,
+                        control.Font,
+                        new Size(int.MaxValue, control.ClientSize.Height),
+                        TextFormatFlags.NoPadding).Width;
+                    if (textWidth > control.ClientSize.Width)
+                        Log.Debug(string.Format(Strings.Settings_Debug_TextTooWide, control.Name, textWidth, control.ClientSize.Width));
+                }
+
+                CheckLocalizedControlWidths(control);
+            }
+        }
+#endif
 
         private string ObscurePassword(string? password, string rcloneExePath)
         {
@@ -358,7 +429,7 @@ namespace LrCatalogSync.UI
             }
             catch (Exception ex)
             {
-                Log.Error($"SettingsForm: Verschlüsseln des Passworts: {ex.Message}");
+                Log.Error($"SettingsForm: {string.Format(Strings.Get("Log_Settings_PasswordObscureFailed"), ex.Message)}");
                 throw;
             }
         }
@@ -375,7 +446,7 @@ namespace LrCatalogSync.UI
             };
 
             File.WriteAllLines(GlobalData.LrCatSyncRcloneConfigPath, lines);
-            Log.Debug("Config: LrCatSyncRclone.conf erfolgreich erstellt");
+            Log.Debug($"Config: {Strings.Get("Log_Settings_RcloneConfigCreated")}");
         }
 
         // ==================== HILFSMETHODEN FÜR VERSION UND EINSTELLUNGEN ====================
@@ -435,13 +506,6 @@ namespace LrCatalogSync.UI
             {
                 ((CheckBox)chkAutoRun[0]).Checked = config.AutoRun;
             }
-        }
-
-    
-    
-        private void backupsLocalPathLabel_Click(object sender, EventArgs e)
-        {
-            // TODO: handle the Click event
         }
     }
 }

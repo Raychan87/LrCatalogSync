@@ -1,4 +1,5 @@
 using LrCatalogSync.Infrastructure;
+using LrCatalogSync.Resources.Strings;
 using System.Diagnostics;
 using System.Globalization;
 
@@ -9,6 +10,15 @@ namespace LrCatalogSync.Core
         ComputerToExternal,
         ExternalToComputer
     }
+
+    public enum UsbLogSeverity
+    {
+        Info,
+        Error,
+        Success
+    }
+
+    public readonly record struct UsbLogEntry(UsbLogSeverity Severity, string Text);
 
     public sealed class UsbExportRequest
     {
@@ -23,10 +33,17 @@ namespace LrCatalogSync.Core
 
     public sealed record UsbExportValidationResult(bool IsValid, string Message, IReadOnlyList<string> LockFiles)
     {
-        public static UsbExportValidationResult Valid() => new(true, "Die USB-Export-Konfiguration ist gültig.", Array.Empty<string>());
+        public static UsbExportValidationResult Valid() => new(true, Strings.Get("Usb_Valid_Config"), Array.Empty<string>());
     }
 
-    public sealed record UsbExportResult(bool Succeeded, bool Cancelled, string Message);
+    public sealed record UsbExportResult(
+        bool Succeeded,
+        bool Cancelled,
+        string Message,
+        UsbLogSeverity? SeverityOverride = null)
+    {
+        public UsbLogSeverity Severity => SeverityOverride ?? (Succeeded ? UsbLogSeverity.Info : UsbLogSeverity.Error);
+    }
 
     public readonly record struct UsbExportProgress(int Percent, string Speed);
     public readonly record struct UsbExportSectionProgress(int Current, int Total);
@@ -73,7 +90,7 @@ namespace LrCatalogSync.Core
         public static UsbExportValidationResult ValidateRequest(UsbExportRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.ExternalRoot))
-                return Invalid("Kein externes Laufwerk ausgewählt.");
+                return Invalid(Strings.Get("Usb_Validation_NoDrive"));
 
             string externalRoot;
             try
@@ -82,19 +99,19 @@ namespace LrCatalogSync.Core
             }
             catch (Exception)
             {
-                return Invalid("Das externe Laufwerk ist ungültig.");
+                return Invalid(Strings.Get("Usb_Validation_ExternalInvalid"));
             }
 
             if (!Directory.Exists(externalRoot))
-                return Invalid("Das ausgewählte externe Laufwerk ist nicht erreichbar.");
+                return Invalid(Strings.Get("Usb_Validation_ExternalUnavailable"));
 
             if (request.Sources.Count == 0)
-                return Invalid("Mindestens eine Datenquelle muss ausgewählt werden.");
+                return Invalid(Strings.Get("Usb_Validation_SourceRequired"));
 
             foreach (string source in request.Sources)
             {
                 if (string.IsNullOrWhiteSpace(source) || !Directory.Exists(source))
-                    return Invalid($"Die Datenquelle ist nicht erreichbar: {source}");
+                    return Invalid(string.Format(Strings.Get("Usb_Validation_SourceUnavailable"), source));
 
                 if (request.Direction == UsbExportDirection.ExternalToComputer)
                 {
@@ -102,7 +119,7 @@ namespace LrCatalogSync.Core
                     if (!IsWithinDirectory(normalizedSource, externalRoot) &&
                         !string.Equals(normalizedSource, externalRoot, StringComparison.OrdinalIgnoreCase))
                     {
-                        return Invalid("Beim Download müssen alle Datenquellen innerhalb des ausgewählten externen Laufwerks liegen.");
+                        return Invalid(Strings.Get("Usb_Validation_DownloadSourceOutside"));
                     }
                 }
             }
@@ -120,14 +137,14 @@ namespace LrCatalogSync.Core
             }
 
             if (request.Direction == UsbExportDirection.ExternalToComputer && !Directory.Exists(targetPath))
-                return Invalid($"Das lokale Zielverzeichnis ist nicht erreichbar: {targetPath}");
+                return Invalid(string.Format(Strings.Get("Usb_Validation_LocalTargetUnavailable"), targetPath));
 
             IReadOnlyList<string> lockFiles = FindLightroomLocks(request.Sources);
             if (lockFiles.Count > 0)
             {
                 return new UsbExportValidationResult(
                     false,
-                    "Ein Lightroom-Katalog ist geöffnet. Der Vorgang wurde aus Sicherheitsgründen blockiert.",
+                    Strings.Get("Usb_Validation_LightroomOpen"),
                     lockFiles);
             }
 
@@ -176,7 +193,7 @@ namespace LrCatalogSync.Core
         public static async Task<UsbExportResult> ExportAsync(
             AppConfig appConfig,
             UsbExportRequest request,
-            IProgress<string>? progress,
+            IProgress<UsbLogEntry>? progress,
             IProgress<UsbExportProgress>? transferProgress,
             IProgress<UsbExportSectionProgress>? sectionProgress,
             CancellationToken cancellationToken)
@@ -199,7 +216,7 @@ namespace LrCatalogSync.Core
                 : NormalizeDirectory(request.TargetPath);
 
             Directory.CreateDirectory(targetRoot);
-            progress?.Report($"Zielordner: {targetRoot}");
+            ReportProgress(progress, string.Format(Strings.Get("Usb_Log_TargetFolder"), targetRoot));
             var usedDestinationNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             int totalSections = request.Sources.Count * (request.UseHashComparison ? 2 : 1);
 
@@ -211,8 +228,8 @@ namespace LrCatalogSync.Core
                 sectionProgress?.Report(new UsbExportSectionProgress(sourceIndex + 1, totalSections));
                 string destination = CreateSourceDestination(targetRoot, source, usedDestinationNames);
                 Directory.CreateDirectory(destination);
-                progress?.Report($"Quelle: {source}");
-                progress?.Report($"Ziel: {destination}");
+                ReportProgress(progress, string.Format(Strings.Get("Usb_Log_Source"), source));
+                ReportProgress(progress, string.Format(Strings.Get("Usb_Log_Destination"), destination));
 
                 UsbExportResult result = await RunRcloneSyncAsync(
                     appConfig.RclonePath,
@@ -228,12 +245,12 @@ namespace LrCatalogSync.Core
                 if (!result.Succeeded)
                     return result;
 
-                progress?.Report(result.Message);
+                ReportProgress(progress, result.Message, result.Succeeded ? UsbLogSeverity.Info : UsbLogSeverity.Error);
             }
 
             if (request.UseHashComparison)
             {
-                progress?.Report("Vollständiger Hash-Nachcheck läuft...");
+                ReportProgress(progress, Strings.Get("Usb_Log_HashRecheck"));
                 UsbExportResult verification = await CompareAsync(
                     appConfig,
                     request,
@@ -248,17 +265,17 @@ namespace LrCatalogSync.Core
                     return new UsbExportResult(
                         false,
                         verification.Cancelled,
-                        $"Übertragung abgeschlossen, Hash-Nachcheck fehlgeschlagen: {verification.Message}");
+                        string.Format(Strings.Get("Usb_Result_VerificationFailed"), verification.Message));
                 }
             }
 
-            return new UsbExportResult(true, false, "Übertragung erfolgreich abgeschlossen.");
+            return new UsbExportResult(true, false, Strings.Get("Usb_Result_TransferDone"));
         }
 
         public static async Task<UsbExportResult> CompareAsync(
             AppConfig appConfig,
             UsbExportRequest request,
-            IProgress<string>? progress,
+            IProgress<UsbLogEntry>? progress,
             IProgress<UsbExportProgress>? transferProgress,
             IProgress<UsbExportSectionProgress>? sectionProgress,
             CancellationToken cancellationToken,
@@ -292,7 +309,7 @@ namespace LrCatalogSync.Core
                 transferProgress?.Report(new UsbExportProgress(0, string.Empty));
                 sectionProgress?.Report(new UsbExportSectionProgress(sectionOffset + sourceIndex + 1, totalSections));
                 string destination = CreateSourceDestination(targetRoot, source, usedDestinationNames);
-                progress?.Report($"Quelle: {source} -> Ziel: {destination}");
+                ReportProgress(progress, string.Format(Strings.Get("Usb_Log_SourceToDestination"), source, destination));
                 int exitCode = await RunRcloneCheckAsync(
                     appConfig.RclonePath,
                     source,
@@ -307,14 +324,14 @@ namespace LrCatalogSync.Core
             }
 
             return allEqual
-                ? new UsbExportResult(true, false, "Checksummen-Vergleich erfolgreich abgeschlossen.")
-                : new UsbExportResult(false, false, "Checksummen-Vergleich fehlerhaft abgeschlossen!");
+                ? new UsbExportResult(true, false, Strings.Get("Usb_Result_CompareSuccess"), UsbLogSeverity.Success)
+                : new UsbExportResult(false, false, Strings.Get("Usb_Result_CompareError"));
         }
 
         private static UsbExportResult? ValidatePrerequisites(AppConfig appConfig)
         {
             if (string.IsNullOrWhiteSpace(appConfig.RclonePath) || !File.Exists(appConfig.RclonePath))
-                return new UsbExportResult(false, false, $"rclone wurde nicht gefunden: {appConfig.RclonePath}");
+                return new UsbExportResult(false, false, string.Format(Strings.Get("Usb_Result_RcloneMissing"), appConfig.RclonePath));
 
             return null;
         }
@@ -334,7 +351,7 @@ namespace LrCatalogSync.Core
             }
             catch (Exception ex)
             {
-                return new UsbExportResult(false, false, $"Die USB-Export-rclone-Konfiguration konnte nicht angelegt werden: {ex.Message}");
+                return new UsbExportResult(false, false, string.Format(Strings.Get("Usb_Result_ConfigCreateFailed"), ex.Message));
             }
         }
 
@@ -374,15 +391,15 @@ namespace LrCatalogSync.Core
 
         public static async Task<UsbExportResult> ClearExternalTargetAsync(
             UsbExportRequest request,
-            IProgress<string>? progress,
+            IProgress<UsbLogEntry>? progress,
             CancellationToken cancellationToken)
         {
             if (request.Direction != UsbExportDirection.ComputerToExternal)
-                return new UsbExportResult(false, false, "Löschen ist nur für ein externes Ziel verfügbar.");
+                return new UsbExportResult(false, false, Strings.Get("Usb_Result_DeleteOnlyExternal"));
 
             string externalRoot = NormalizeDirectory(request.ExternalRoot);
             if (!Directory.Exists(externalRoot))
-                return new UsbExportResult(false, false, "Das ausgewählte externe Laufwerk ist nicht erreichbar.");
+                return new UsbExportResult(false, false, Strings.Get("Usb_Validation_ExternalUnavailable"));
 
             string targetPath;
             try
@@ -394,7 +411,7 @@ namespace LrCatalogSync.Core
                 return new UsbExportResult(false, false, ex.Message);
             }
             if (!Directory.Exists(targetPath))
-                return new UsbExportResult(true, false, "Der Zielordner existiert nicht und ist bereits leer.");
+                return new UsbExportResult(true, false, Strings.Get("Usb_Result_TargetAlreadyEmpty"));
 
             bool clearingDriveRoot = string.Equals(targetPath, externalRoot, StringComparison.OrdinalIgnoreCase);
             int deletedCount = 0;
@@ -415,18 +432,18 @@ namespace LrCatalogSync.Core
                         Directory.Delete(entry, recursive: true);
 
                     deletedCount++;
-                    progress?.Report($"Gelöscht: {entry}");
+                    ReportProgress(progress, string.Format(Strings.Get("Usb_Log_Deleted"), entry));
                 }
                 catch (Exception ex)
                 {
                     errorCount++;
-                    progress?.Report($"Fehler beim Löschen: {entry} - {ex.Message}");
+                    ReportProgress(progress, string.Format(Strings.Get("Usb_Log_DeleteError"), entry, ex.Message), UsbLogSeverity.Error);
                 }
             }
 
             return errorCount == 0
-                ? new UsbExportResult(true, false, $"Der ausgewählte externe Zielordner wurde geleert. Gelöscht: {deletedCount} Einträge.")
-                : new UsbExportResult(false, false, $"Löschen mit Fehlern abgeschlossen. Gelöscht: {deletedCount}, Fehler: {errorCount}.");
+                ? new UsbExportResult(true, false, string.Format(Strings.Get("Usb_Result_TargetCleared"), deletedCount))
+                : new UsbExportResult(false, false, string.Format(Strings.Get("Usb_Result_ClearErrors"), deletedCount, errorCount));
         }
 
         private static async Task<UsbExportResult> RunRcloneSyncAsync(
@@ -436,12 +453,12 @@ namespace LrCatalogSync.Core
             IReadOnlyList<string> excludePatterns,
             bool useHashComparison,
             bool transferMetadata,
-            IProgress<string>? progress,
+            IProgress<UsbLogEntry>? progress,
             IProgress<UsbExportProgress>? transferProgress,
             CancellationToken cancellationToken)
         {
             if (!File.Exists(rclonePath))
-                return new UsbExportResult(false, false, $"rclone wurde nicht gefunden: {rclonePath}");
+                return new UsbExportResult(false, false, string.Format(Strings.Get("Usb_Result_RcloneMissing"), rclonePath));
 
             var startInfo = new ProcessStartInfo
             {
@@ -477,7 +494,7 @@ namespace LrCatalogSync.Core
             try
             {
                 if (!process.Start())
-                    return new UsbExportResult(false, false, "rclone konnte nicht gestartet werden.");
+                    return new UsbExportResult(false, false, Strings.Get("Usb_Result_RcloneStartFailed"));
 
                 RcloneProcessManager.Register(process);
 
@@ -505,7 +522,7 @@ namespace LrCatalogSync.Core
                         transferProgress?.Report(parsedProgress);
 
                     if (TryFormatRcloneOutput(line, out string formattedLine))
-                        progress?.Report(formattedLine);
+                        ReportProgress(progress, formattedLine, rcloneError.Success ? UsbLogSeverity.Error : UsbLogSeverity.Info);
                 }
                 Task outputTask = ForwardOutputAsync(process.StandardOutput, ReportOutput, cancellationToken);
                 Task errorTask = ForwardOutputAsync(process.StandardError, ReportOutput, cancellationToken);
@@ -513,27 +530,27 @@ namespace LrCatalogSync.Core
                 await Task.WhenAll(outputTask, errorTask);
 
                 if (process.ExitCode == 0)
-                    return new UsbExportResult(true, false, "Quelle erfolgreich übertragen.");
+                    return new UsbExportResult(true, false, Strings.Get("Usb_Result_SourceTransferred"));
 
                 if (diskFull)
                 {
                     string missingInfo = await GetMissingSpaceInfoAsync(rclonePath, source, destination, excludePatterns);
-                    return new UsbExportResult(false, false, $"Abbruch: Es ist nicht genügend Speicherplatz vorhanden.{missingInfo}");
+                    return new UsbExportResult(false, false, string.Format(Strings.Get("Usb_Result_DiskFull"), missingInfo));
                 }
 
                 return new UsbExportResult(false, false, string.IsNullOrEmpty(lastRcloneError)
-                    ? $"rclone wurde mit Exitcode {process.ExitCode} beendet."
-                    : $"rclone wurde mit Exitcode {process.ExitCode} beendet. Letzter Fehler: {lastRcloneError}");
+                    ? string.Format(Strings.Get("Usb_Result_ExitCode"), process.ExitCode)
+                    : string.Format(Strings.Get("Usb_Result_ExitCodeLastError"), process.ExitCode, lastRcloneError));
             }
             catch (OperationCanceledException)
             {
                 TryKillProcess(process);
-                return new UsbExportResult(false, true, "Übertragung abgebrochen.");
+                return new UsbExportResult(false, true, Strings.Get("Usb_Log_TransferCancelled"), UsbLogSeverity.Error);
             }
             catch (Exception ex)
             {
                 TryKillProcess(process);
-                return new UsbExportResult(false, false, $"Fehler beim Kopieren: {ex.Message}");
+                return new UsbExportResult(false, false, string.Format(Strings.Get("Usb_Result_CopyError"), ex.Message));
             }
             finally
             {
@@ -557,7 +574,7 @@ namespace LrCatalogSync.Core
                 if (missing <= 0)
                     return string.Empty;
 
-                return $" Fehlt: {(missing / 1024d / 1024d / 1024d).ToString("0.00", CultureInfo.CurrentCulture)} GB";
+                return string.Format(Strings.Get("Usb_Result_MissingSpace"), (missing / 1024d / 1024d / 1024d).ToString("0.00", CultureInfo.CurrentCulture));
             }
             catch
             {
@@ -614,21 +631,21 @@ namespace LrCatalogSync.Core
             var differencesMatch = System.Text.RegularExpressions.Regex.Match(line, @":\s*(\d+)\s+differences found\b");
             if (differencesMatch.Success)
             {
-                formattedLine = $"{differencesMatch.Groups[1].Value} unterschiedliche Daten";
+                formattedLine = string.Format(Strings.Get("Usb_Rclone_Differences"), differencesMatch.Groups[1].Value);
                 return true;
             }
 
             var matchingFilesMatch = System.Text.RegularExpressions.Regex.Match(line, @":\s*(\d+)\s+matching files\b");
             if (matchingFilesMatch.Success)
             {
-                formattedLine = $"{matchingFilesMatch.Groups[1].Value} identische Dateien";
+                formattedLine = string.Format(Strings.Get("Usb_Rclone_MatchingFiles"), matchingFilesMatch.Groups[1].Value);
                 return true;
             }
 
             var errorMatch = System.Text.RegularExpressions.Regex.Match(line, @"\bERROR\s*:\s*(.*)$");
             if (errorMatch.Success)
             {
-                formattedLine = $"rclone-Fehler: {errorMatch.Groups[1].Value}";
+                formattedLine = string.Format(Strings.Get("Usb_Rclone_Error"), errorMatch.Groups[1].Value);
                 return true;
             }
 
@@ -686,7 +703,7 @@ namespace LrCatalogSync.Core
             string destination,
             IReadOnlyList<string> excludePatterns,
             bool useHashComparison,
-            IProgress<string>? progress,
+            IProgress<UsbLogEntry>? progress,
             IProgress<UsbExportProgress>? checkProgress,
             CancellationToken cancellationToken)
         {
@@ -767,7 +784,7 @@ namespace LrCatalogSync.Core
                         return;
 
                     if (TryFormatRcloneOutput(line, out string formattedLine))
-                        progress?.Report(formattedLine);
+                        ReportProgress(progress, formattedLine, checkError.Success ? UsbLogSeverity.Error : UsbLogSeverity.Info);
                 }
 
                 Task outputTask = ForwardOutputAsync(process.StandardOutput, ReportOutput, cancellationToken);
@@ -803,17 +820,17 @@ namespace LrCatalogSync.Core
 
                 if (missingOnDestination + differing + readErrors == 0)
                 {
-                    progress?.Report("Keine Unterschiede gefunden");
+                    ReportProgress(progress, Strings.Get("Usb_Log_NoDifferences"), UsbLogSeverity.Success);
                     return 0;
                 }
 
                 if (missingOnDestination > 0)
-                    progress?.Report($"{missingOnDestination} fehlende Dateien");
+                    ReportProgress(progress, string.Format(Strings.Get("Usb_Log_MissingFiles"), missingOnDestination), UsbLogSeverity.Error);
                 if (differing > 0)
-                    progress?.Report($"{differing} unterschiedliche Dateien");
+                    ReportProgress(progress, string.Format(Strings.Get("Usb_Log_DifferentFiles"), differing), UsbLogSeverity.Error);
                 if (readErrors > 0)
-                    progress?.Report($"{readErrors} Dateien konnten nicht gelesen werden");
-                progress?.Report("Unterschiede gefunden!");
+                    ReportProgress(progress, string.Format(Strings.Get("Usb_Log_UnreadableFiles"), readErrors), UsbLogSeverity.Error);
+                ReportProgress(progress, Strings.Get("Usb_Log_DifferencesFound"), UsbLogSeverity.Error);
 
                 return process.ExitCode == 0 ? 1 : process.ExitCode;
             }
@@ -844,6 +861,11 @@ namespace LrCatalogSync.Core
                 if (!string.IsNullOrWhiteSpace(line))
                     report(line.Trim());
             }
+        }
+
+        private static void ReportProgress(IProgress<UsbLogEntry>? progress, string text, UsbLogSeverity severity = UsbLogSeverity.Info)
+        {
+            progress?.Report(new UsbLogEntry(severity, text));
         }
 
         private static void TryKillProcess(Process process)

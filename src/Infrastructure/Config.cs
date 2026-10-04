@@ -1,4 +1,6 @@
 ﻿
+using LrCatalogSync.Resources.Strings;
+
 namespace LrCatalogSync.Infrastructure
 {
     // Konfigurationsklasse für das Lightroom Sync Programm.
@@ -55,6 +57,9 @@ namespace LrCatalogSync.Infrastructure
 
         //Einstellung von LogLevel = DEBUG/INFO/NOTICE/ERROR
         public string LogLevel { get; set; } = "INFO";
+
+        // Sprache: "System" | "en" | "de"
+        public string Language { get; set; } = "System";
 
         // Intervall für die Prüfzyklen in Sekunden
         public int GlobalCycleInterval { get; set; } = 10;
@@ -131,7 +136,7 @@ namespace LrCatalogSync.Infrastructure
                                 if (lrcatFiles.Length > 0)
                                 {
                                     CatalogLocalFile = lrcatFiles[0];
-                                    Log.Debug($"Config: Migration von CatalogLocalPath zu CatalogLocalFile: {CatalogLocalFile}");
+                                    Log.Debug($"Config: {string.Format(Strings.Get("Log_Config_CatalogPathMigrated"), CatalogLocalFile)}");
                                 }
                             }
                         }
@@ -149,6 +154,7 @@ namespace LrCatalogSync.Infrastructure
                         if (key == "SambaPasswordRclone") SambaPasswordRclone = value;
                         if (key == "SambaPasswordAes") SambaPasswordAes = value;
                         if (key == "LogLevel") LogLevel = value;
+                        if (key == "Language") Language = value is "System" or "en" or "de" ? value : "System";
                         if (key == "GlobalCycleInterval" && int.TryParse(value, out int globalCycleInterval)) GlobalCycleInterval = globalCycleInterval;
                         if (key == "AutoRun") AutoRun = bool.TryParse(value, out bool result4) && result4;
                     }
@@ -161,7 +167,7 @@ namespace LrCatalogSync.Infrastructure
             {
                 RcloneFolder = GlobalData.DefaultRcloneFolder;
                 RcloneFolderWasMigrated = true;
-                Log.Info("Config: rclone.exe im konfigurierten Ordner fehlt, Standardordner data/rclone wird verwendet (Download beim Start).");
+                Log.Info($"Config: {Strings.Get("Log_Config_RcloneFallback")}");
             }
 
             // Berechne absolute Pfade
@@ -214,6 +220,7 @@ namespace LrCatalogSync.Infrastructure
                 "SambaPasswordRclone=" + SambaPasswordRclone,
                 "SambaPasswordAes=" + SambaPasswordAes,
                 "LogLevel=" + LogLevel,
+                "Language=" + (Language is "System" or "en" or "de" ? Language : "System"),
                 "GlobalCycleInterval=" + GlobalCycleInterval,
                 "AutoRun=" + AutoRun
             };

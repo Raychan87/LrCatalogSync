@@ -23,10 +23,10 @@ namespace LrCatalogSync.Infrastructure
             }
         }
 
-        public static void BeginAction(string action)
+        public static void BeginAction(string entry)
         {
             Clear();
-            Add($"Aktion gestartet: {action}");
+            Add(entry);
         }
 
         public static IReadOnlyList<string> Add(string message)

@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using LrCatalogSync.Resources.Strings;
 
 namespace LrCatalogSync.Infrastructure
 {
@@ -105,7 +106,7 @@ namespace LrCatalogSync.Infrastructure
                 catch (Exception ex)
                 {
                     // Eine vorhandene Version bleibt auch ohne Verbindung zur Downloadseite nutzbar.
-                    Log.Notice($"RcloneInstaller: Updateprüfung nicht möglich; vorhandene EXE wird weiterverwendet: {ex.Message}");
+                    Log.Notice($"RcloneInstaller: {string.Format(Strings.Get("Log_RcloneInstaller_UpdateCheckUnavailable"), ex.Message)}");
                     return;
                 }
 
@@ -120,14 +121,14 @@ namespace LrCatalogSync.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    Log.Notice($"RcloneInstaller: Lokale Version konnte nicht gelesen werden; Update wird versucht: {ex.Message}");
+                    Log.Notice($"RcloneInstaller: {string.Format(Strings.Get("Log_RcloneInstaller_LocalVersionUnreadable"), ex.Message)}");
                     installedVersion = null;
                 }
 
                 if (string.Equals(installedVersion, latestVersion, StringComparison.OrdinalIgnoreCase))
                 {
                     // Die lokale Version ist bereits aktuell; ein erneuter Download ist nicht nötig.
-                    Log.Debug($"RcloneInstaller: rclone {installedVersion} ist aktuell.");
+                    Log.Debug($"RcloneInstaller: {string.Format(Strings.Get("Log_RcloneInstaller_VersionCurrent"), installedVersion)}");
                     return;
                 }
             }
@@ -136,7 +137,7 @@ namespace LrCatalogSync.Infrastructure
             try
             {
                 string installedVersion = await InstallLatestAsync(GlobalData.RcloneFolderPath, cancellationToken);
-                Log.Info($"RcloneInstaller: rclone {installedVersion} ist bereit.");
+                Log.Info($"RcloneInstaller: {string.Format(Strings.Get("Log_RcloneInstaller_VersionReady"), installedVersion)}");
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -147,9 +148,9 @@ namespace LrCatalogSync.Infrastructure
                 // Bei einem fehlgeschlagenen Update bleibt die alte EXE erhalten; beim Erststart
                 // protokolliert der Coordinator später den gewohnten Status "RcloneExe".
                 if (executableExists)
-                    Log.Notice($"RcloneInstaller: Update fehlgeschlagen; vorhandene EXE bleibt erhalten: {ex.Message}");
+                    Log.Notice($"RcloneInstaller: {string.Format(Strings.Get("Log_RcloneInstaller_UpdateFailed"), ex.Message)}");
                 else
-                    Log.Error($"RcloneInstaller: rclone konnte nicht automatisch heruntergeladen werden: {ex.Message}");
+                    Log.Error($"RcloneInstaller: {string.Format(Strings.Get("Log_RcloneInstaller_DownloadFailed"), ex.Message)}");
             }
         }
 
@@ -225,7 +226,7 @@ namespace LrCatalogSync.Infrastructure
 
                 // Erst die geprüfte Datei ersetzt die bisherige Installation.
                 File.Move(temporaryExecutablePath, Path.Combine(installDirectory, "rclone.exe"), overwrite: true);
-                Log.Info($"RcloneInstaller: rclone {version} wurde installiert.");
+                Log.Info($"RcloneInstaller: {string.Format(Strings.Get("Log_RcloneInstaller_Installed"), version)}");
                 return version;
             }
             finally

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 
 using LrCatalogSync.Infrastructure;    // ← für Log, AppConfig, GlobalData
+using LrCatalogSync.Resources.Strings;
 using LrCatalogSync.UI;                // ← für TrayManager
 
 namespace LrCatalogSync.Core
@@ -42,7 +43,7 @@ namespace LrCatalogSync.Core
             try
             {
                 // ========== PHASE 1: VERSIONSVERGLEICH + RICHTUNGSBESTIMMUNG ==========
-                Log.Debug("CatalogManager: Starte Versionsvergleich (lokal vs remote)");
+                Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_StartVersionCompare")}");
                 
                 string tempLog = Path.Combine(GlobalData.BaseDir, "data", "logs", "rclone_catalog_check.log");
                 
@@ -55,18 +56,18 @@ namespace LrCatalogSync.Core
                 
                 if (syncDirection == SyncDirection.None)
                 {
-                    Log.Debug("CatalogManager: Katalog ist bereits synchron (kein Sync nötig)");
+                    Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_AlreadySynced")}");
                     return true;
                 }
                 
-                Log.Debug($"CatalogManager: Sync-Richtung erkannt: {syncDirection}");
+                Log.Debug($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_SyncDirectionDetected"), syncDirection)}");
                 
                 // ========== PHASE 2: LOCK AKQUIRIEREN ==========
-                Log.Debug("CatalogManager: setze Lockfiles");
+                Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_SetLocks")}");
                 lockManager = new LockManager(config);
                 if (!lockManager.AcquireLocks(config, trayManager, syncDirection))
                 {
-                    Log.Error("CatalogManager: Konnte Locks nicht setzen, breche Sync ab");
+                    Log.Error($"CatalogManager: {Strings.Get("Log_Catalog_SetLocksFailed")}");
                     trayManager.UpdateStatus("NoSamba");  // 🔴 Rot
                     hasError = true;
                     return false;
@@ -76,7 +77,10 @@ namespace LrCatalogSync.Core
                 CreateLightroomLock(config);
                 
                 // ========== PHASE 3: RCLONE SYNC AUSFÜHREN ==========
-                Log.Info($"CatalogManager: Starte rclone {syncDirection.ToString().ToLower()}");
+                string directionText = syncDirection == SyncDirection.Upload
+                    ? Strings.Get("Log_Catalog_Upload")
+                    : Strings.Get("Log_Catalog_Download");
+                Log.Info($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_RcloneStarting"), directionText)}");
                 trayManager.UpdateStatus("LSyncing");  // 🟡 Gelb
                 
                 if (!RunRcloneSync(config, syncDirection, config.EnableRcloneCopy))
@@ -87,13 +91,13 @@ namespace LrCatalogSync.Core
                 }
                 
                 // ========== PHASE 4: CLEANUP ==========
-                Log.Debug("CatalogManager: Cleanup - Locks freigeben");
+                Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_CleanupLocks")}");
                 return true;
             }
             catch (Exception ex)
             {
                 hasError = true;
-                Log.Error($"CatalogManager: Fehler: {ex.Message}");
+                Log.Error($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_Error"), ex.Message)}");
                 trayManager.UpdateStatus("Error");  // 🔴 Rot
                 return false;
             }
@@ -107,12 +111,12 @@ namespace LrCatalogSync.Core
 
                 if (hasError)
                 {
-                    Log.Debug("CatalogManager: mit Fehler abgebrochen");
+                    Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_AbortedWithError")}");
                 }
                 else
                 {
                     trayManager.UpdateStatus("Standby");  // 🟢 Grün
-                    Log.Debug("CatalogManager: Sync erfolgreich abgeschlossen");
+                    Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_SyncSucceeded")}");
                 }
             }
         }
@@ -135,17 +139,17 @@ namespace LrCatalogSync.Core
                     if (content.StartsWith("LrCatSync=") && fileSyncGuid == config.SyncGuid)
                     {
                         File.Delete(config.CatalogLockFile);
-                        Log.Debug($"CatalogManager: LrCatSync Lock-Datei gelöscht: {config.CatalogLockFile}");
+                        Log.Debug($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_OwnLockDeleted"), config.CatalogLockFile)}");
                     }
                     else
                     {
-                        Log.Debug($"CatalogManager: Lightrooms Lock-Datei, NICHT löschen: {config.CatalogLockFile}");
+                        Log.Debug($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_LightroomLockPreserved"), config.CatalogLockFile)}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Log.Error($"CatalogManager: Fehler beim Löschen der Lightroom-Locks: {ex.Message}");
+                Log.Error($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_LightroomLockCleanupFailed"), ex.Message)}");
             }
         }
         
@@ -159,7 +163,7 @@ namespace LrCatalogSync.Core
                 DateTime? localModTime = GetFileModificationTime(config.CatalogLocalFile);
                 if (localModTime == null)
                 {
-                    Log.Error($"CatalogManager: Lokale Katalog-Datei nicht gefunden: {config.CatalogLocalFile}");
+                    Log.Error($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_LocalCatalogMissing"), config.CatalogLocalFile)}");
                     return SyncDirection.None;
                 }
                 
@@ -169,14 +173,14 @@ namespace LrCatalogSync.Core
                 if (remoteFile.Status == RemoteFileStatus.Unavailable)
                 {
                     hasError = true;
-                    Log.Debug("CatalogManager: Remote-Katalog konnte wegen eines Verbindungs- oder rclone-Fehlers nicht abgefragt werden; Sync wird abgebrochen");
+                    Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_RemoteCatalogUnavailable")}");
                     return SyncDirection.None;
                 }
                 // Prüfe ob remote Datei existiert
                 if (remoteFile.Status == RemoteFileStatus.Missing)
                 {
                     // Remote-Datei existiert nicht -> Upload
-                    Log.Debug($"CatalogManager: Remote-Katalog nicht vorhanden → UPLOAD");
+                    Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_RemoteCatalogMissingUpload")}");
                     return SyncDirection.Upload;
                 }
 
@@ -188,23 +192,23 @@ namespace LrCatalogSync.Core
                 if (Math.Abs(difference.TotalSeconds) < 2)
                 {
                     // Weniger als 2 Sekunden Differenz -> als gleich betrachten
-                    Log.Debug("CatalogManager: Kataloge sind zeitlich synchron (Delta < 2s)");
+                    Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_TimestampsSynchronized")}");
                     return SyncDirection.None;
                 }
                 else if (difference.TotalSeconds > 0)
                 {
-                    Log.Debug($"CatalogManager: Lokaler Katalog ist neuer ({difference.TotalMinutes:F1} Min) → UPLOAD");
+                    Log.Debug($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_LocalCatalogNewer"), difference.TotalMinutes)}");
                     return SyncDirection.Upload;
                 }
                 else
                 {
-                    Log.Debug($"CatalogManager: Remote-Katalog ist neuer ({Math.Abs(difference.TotalMinutes):F1} Min) → DOWNLOAD");
+                    Log.Debug($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_RemoteCatalogNewer"), Math.Abs(difference.TotalMinutes))}");
                     return SyncDirection.Download;
                 }
             }
             catch (Exception ex)
             {
-                Log.Error($"CatalogManager: Fehler bei Sync-Richtungsbestimmung: {ex.Message}");
+                Log.Error($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_DirectionCheckFailed"), ex.Message)}");
                 return SyncDirection.None;
             }
         }
@@ -253,7 +257,7 @@ namespace LrCatalogSync.Core
                     // Prüfe ExitCode von rclone lsl    
                     if (p.ExitCode != 0)
                     {
-                        Log.Debug($"CatalogManager: rclone lsl fehlgeschlagen (ExitCode {p.ExitCode}): {error}");
+                        Log.Debug($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_RcloneLslFailed"), p.ExitCode, error)}");
                         return new RemoteFileLookupResult(RemoteFileStatus.Unavailable, null);
                     }
 
@@ -296,13 +300,13 @@ namespace LrCatalogSync.Core
                             return new RemoteFileLookupResult(RemoteFileStatus.Found, fallbackResult.ToUniversalTime());
                     }
                     
-                    Log.Debug($"CatalogManager: Ausgabe von rclone lsl konnte nicht gelesen werden: {output}");
+                    Log.Debug($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_RcloneLslOutputUnreadable"), output)}");
                     return new RemoteFileLookupResult(RemoteFileStatus.Unavailable, null);
                 }
             }
             catch (Exception ex)
             {
-                Log.Debug($"CatalogManager: Fehler beim Abfragen des Remote-Katalogs: {ex.Message}");
+                Log.Debug($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_RemoteCatalogQueryFailed"), ex.Message)}");
                 return new RemoteFileLookupResult(RemoteFileStatus.Unavailable, null);
             }
         }
@@ -328,12 +332,12 @@ namespace LrCatalogSync.Core
                 // Schreibe Sync-Info in Lock-Datei (Lightroom ignoriert Inhalt, prüft nur Existenz)
                 File.WriteAllText(config.CatalogLockFile, $"LrCatSync={DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}\nSyncGuid={config.SyncGuid}");
                 
-                Log.Debug($"CatalogManager: Lightroom-Lock erstellt: {config.CatalogLockFile}");
+                Log.Debug($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_LightroomLockCreated"), config.CatalogLockFile)}");
                 return true;
             }
             catch (Exception ex)
             {
-                Log.Debug($"CatalogManager: Fehler beim Erstellen der Lightroom-Lock: {ex.Message}");
+                Log.Debug($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_LightroomLockCreateFailed"), ex.Message)}");
                 return false;
             }
         }
@@ -356,17 +360,17 @@ namespace LrCatalogSync.Core
                 {
                     sourcePath = config.CatalogLocalPath;
                     destPath =  $"{GlobalConst.REMOTE_NAME}:{config.CatalogRemotePath}";
-                    Log.Debug("CatalogManager: Starte rclone upload (lokal → NAS)");
+                    Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_RcloneUploadStarted")}");
                 }
                 else if (direction == SyncDirection.Download)
                 {
                     sourcePath =  $"{GlobalConst.REMOTE_NAME}:{config.CatalogRemotePath}";
                     destPath = config.CatalogLocalPath;
-                    Log.Debug("CatalogManager: Starte rclone download (NAS → lokal)");
+                    Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_RcloneDownloadStarted")}");
                 }
                 else
                 {
-                    Log.Debug("CatalogManager: Keine Sync-Richtung erkannt, breche ab");
+                    Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_SyncDirectionUnknown")}");
                     return false;
                 }
                 
@@ -390,7 +394,7 @@ namespace LrCatalogSync.Core
                 // Prüfe ob rclone copy aktiviert ist
                 if (!EnableRcloneCopy)
                 {
-                    Log.Debug("CatalogManager: rclone copy ist deaktiviert, überspringe Backup");
+                    Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_RcloneCopyDisabled")}");
                 }
                 else
                 {
@@ -414,18 +418,18 @@ namespace LrCatalogSync.Core
                         {
                             if (deleteProc == null)
                             {
-                                Log.Error("CatalogManager: rclone delete zum Aufräumen des Remote Backup-Ordners konnte nicht gestartet werden");
+                                Log.Error($"CatalogManager: {Strings.Get("Log_Catalog_RemoteBackupDeleteStartFailed")}");
                                 return false;
                             }
 
                             (string output, string error) = ReadProcessOutput(deleteProc);
                             if (deleteProc.ExitCode != 0)
                             {
-                                Log.Error($"CatalogManager: Löschen des Remote Backup-Ordners fehlgeschlagen (ExitCode: {deleteProc.ExitCode}): {error.Trim()} {output.Trim()}");
+                                Log.Error($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_RemoteBackupDeleteFailed"), deleteProc.ExitCode, error.Trim(), output.Trim())}");
                                 return false;
                             }
 
-                            Log.Debug($"CatalogManager: Remote Backup-Ordner gelöscht: {copyBackupPath}");
+                            Log.Debug($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_RemoteBackupDeleted"), copyBackupPath)}");
                         }
                     }
                     else
@@ -437,7 +441,7 @@ namespace LrCatalogSync.Core
                         if (Directory.Exists(copyBackupPath))
                         {
                             Directory.Delete(copyBackupPath, recursive: true);
-                            Log.Debug($"CatalogManager: Lokalen Backup-Ordner gelöscht: {copyBackupPath}");
+                            Log.Debug($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_LocalBackupDeleted"), copyBackupPath)}");
                         }
                     }
 
@@ -449,7 +453,7 @@ namespace LrCatalogSync.Core
                     if (File.Exists(tempLog))
                         File.Delete(tempLog);
 
-                    Log.Debug("CatalogManager: rclone copy starten");
+                    Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_RcloneCopyStarted")}");
                     
                     // Baue ProcessStartInfo für rclone copy
                     var copyPsi = new ProcessStartInfo
@@ -471,11 +475,11 @@ namespace LrCatalogSync.Core
                         ReadProcessOutput(copyProc);
                         if (copyProc.ExitCode == 0)
                         {
-                            Log.Debug($"CatalogManager: rclone copy erfolgreich → {config.RcloneCopyFolderName}");
+                            Log.Debug($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_RcloneCopySucceeded"), config.RcloneCopyFolderName)}");
                         }
                         else
                         {
-                            Log.Error($"CatalogManager: rclone copy fehlgeschlagen (ExitCode: {copyProc.ExitCode})");
+                            Log.Error($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_RcloneCopyFailed"), copyProc.ExitCode)}");
                             return false;
                         }
                     }
@@ -490,7 +494,7 @@ namespace LrCatalogSync.Core
                 if (File.Exists(tempLog))
                     File.Delete(tempLog);
 
-                Log.Debug($"CatalogManager: rclone delete starten");
+                Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_RcloneDeleteStarted")}");
 
                 // Baue ProcessStartInfo für rclone delete
                 // WICHTIG: Exclude für Backup-Ordner MUSS vor den Include-Filtern stehen!
@@ -513,11 +517,11 @@ namespace LrCatalogSync.Core
                     ReadProcessOutput(deleteProc);
                     if (deleteProc.ExitCode == 0)
                     {
-                        Log.Debug("CatalogManager: rclone delete erfolgreich");
+                        Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_RcloneDeleteSucceeded")}");
                     }
                     else
                     {
-                        Log.Error($"CatalogManager: rclone delete fehlgeschlagen (ExitCode: {deleteProc.ExitCode})");
+                        Log.Error($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_RcloneDeleteFailed"), deleteProc.ExitCode)}");
                         return false;
                     }
                 }
@@ -531,7 +535,7 @@ namespace LrCatalogSync.Core
                 if (File.Exists(tempLog))
                     File.Delete(tempLog);
 
-                Log.Debug($"CatalogManager: rclone sync starten");
+                Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_RcloneSyncStarted")}");
 
                 // Baue ProcessStartInfo für rclone sync
                 var psi = new ProcessStartInfo
@@ -563,16 +567,16 @@ namespace LrCatalogSync.Core
                         
                         TimeSpan duration = DateTime.UtcNow - syncStartTime;
                         
-                        Log.Debug($"CatalogManager: rclone {direction.ToString().ToLower()} erfolgreich");
-                        Log.Debug($"CatalogManager: Transfer-Statistiken:");
-                        Log.Debug($"  - Richtung: {direction}");
-                        Log.Debug($"  - Dateien: {transferredFiles}");
-                        Log.Debug($"  - Bytes: {transferredBytes:N0}");
-                        Log.Debug($"  - Dauer: {duration:hh\\:mm\\:ss}");
+                        Log.Debug($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_RcloneSyncSucceeded"), direction == SyncDirection.Upload ? Strings.Get("Log_Catalog_Upload") : Strings.Get("Log_Catalog_Download"))}");
+                        Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_TransferStatistics")}");
+                        Log.Debug($"  - {string.Format(Strings.Get("Log_Catalog_StatsDirection"), direction)}");
+                        Log.Debug($"  - {string.Format(Strings.Get("Log_Catalog_StatsFiles"), transferredFiles)}");
+                        Log.Debug($"  - {string.Format(Strings.Get("Log_Catalog_StatsBytes"), transferredBytes)}");
+                        Log.Debug($"  - {string.Format(Strings.Get("Log_Catalog_StatsDuration"), duration)}");
                     }
                     else
                     {
-                        Log.Error($"CatalogManager: rclone {direction.ToString().ToLower()} fehlgeschlagen (ExitCode: {p.ExitCode})");
+                        Log.Error($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_RcloneSyncFailed"), direction == SyncDirection.Upload ? Strings.Get("Log_Catalog_Upload") : Strings.Get("Log_Catalog_Download"), p.ExitCode)}");
                         return false;
                     }
                 }
@@ -587,7 +591,7 @@ namespace LrCatalogSync.Core
             }
             catch (Exception ex)
             {
-                Log.Error($"CatalogManager: rclone sync Fehler: {ex.Message}");
+                Log.Error($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_RcloneSyncError"), ex.Message)}");
                 return false;
             }
         }
@@ -646,7 +650,7 @@ namespace LrCatalogSync.Core
             }
             catch (Exception ex)
             {
-                Log.Debug($"CatalogManager: Fehler beim Parsen der Statistiken: {ex.Message}");
+                Log.Debug($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_StatsParseFailed"), ex.Message)}");
             }
             
             return (files, bytes);
@@ -657,7 +661,7 @@ namespace LrCatalogSync.Core
         {
             try
             {
-                Log.Debug("CatalogManager: Starte separaten Sync für Previews.lrdata");
+                Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_PreviewsSyncStarted")}");
 
                 // Nur den spezifischen Previews-Ordner inkludieren
                 var psi = new ProcessStartInfo
@@ -679,19 +683,19 @@ namespace LrCatalogSync.Core
                     
                     if (p.ExitCode == 0)
                     {
-                        Log.Debug($"CatalogManager: Previews.lrdata Sync erfolgreich");
+                        Log.Debug($"CatalogManager: {Strings.Get("Log_Catalog_PreviewsSyncSucceeded")}");
                         return true;
                     }
                     else
                     {
-                        Log.Error($"CatalogManager: Previews.lrdata Sync fehlgeschlagen (ExitCode: {p.ExitCode})");
+                        Log.Error($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_PreviewsSyncFailed"), p.ExitCode)}");
                         return false;
                     }
                 }
             }
             catch (Exception ex)
             {
-                Log.Error($"CatalogManager: Previews.lrdata Sync Fehler: {ex.Message}");
+                Log.Error($"CatalogManager: {string.Format(Strings.Get("Log_Catalog_PreviewsSyncError"), ex.Message)}");
                 return false;
             }
         }

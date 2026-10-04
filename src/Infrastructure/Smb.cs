@@ -5,6 +5,7 @@
 using System;
 using SMBLibrary;
 using SMBLibrary.Client;
+using LrCatalogSync.Resources.Strings;
 
 namespace LrCatalogSync.Infrastructure;
 
@@ -41,7 +42,7 @@ public class SmbClient
         }
         catch (Exception ex)
         {
-            Log.Debug($"SMB: InvalidateSession - TreeDisconnect fehlgeschlagen: {ex.Message}");
+            Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_InvalidateTreeDisconnectFailed"), ex.Message)}");
         }
 
         _fileStore = null;
@@ -55,7 +56,7 @@ public class SmbClient
         }
         catch (Exception ex)
         {
-            Log.Debug($"SMB: InvalidateSession - Disconnect fehlgeschlagen: {ex.Message}");
+            Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_InvalidateDisconnectFailed"), ex.Message)}");
         }
 
         _client = new SMB2Client();
@@ -93,7 +94,7 @@ public class SmbClient
             }
             catch (Exception ex)
             {
-                Log.Debug($"SMB: Disconnect - TreeDisconnect fehlgeschlagen: {ex.Message}");
+                Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_DisconnectTreeFailed"), ex.Message)}");
             }
 
             _fileStore = null;
@@ -108,7 +109,7 @@ public class SmbClient
             }
             catch (Exception ex)
             {
-                Log.Debug($"SMB: Disconnect - Logoff fehlgeschlagen: {ex.Message}");
+                Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_DisconnectLogoffFailed"), ex.Message)}");
             }
         }
 
@@ -120,7 +121,7 @@ public class SmbClient
             }
             catch (Exception ex)
             {
-                Log.Debug($"SMB: Disconnect - Disconnect fehlgeschlagen: {ex.Message}");
+                Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_DisconnectFailed"), ex.Message)}");
             }
         }
 
@@ -142,7 +143,7 @@ public class SmbClient
         }
         catch (Exception ex)
         {
-            Log.Error($"SMB: Passwort-Entschlüsselung fehlgeschlagen: {ex.Message}");
+            Log.Error($"SMB: {string.Format(Strings.Get("Log_Smb_PasswordDecryptFailed"), ex.Message)}");
             return false;
         }
 
@@ -190,7 +191,7 @@ public class SmbClient
         }
         catch (Exception ex)
         {
-            Log.Debug($"SMB: Logoff fehlgeschlagen: {ex.Message}");
+            Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_LogoffFailed"), ex.Message)}");
         }
 
         _isLoggedIn = false;
@@ -231,7 +232,7 @@ public class SmbClient
             }
             catch (Exception ex)
             {
-                Log.Debug($"SMB: TreeDisconnect fehlgeschlagen: {ex.Message}");
+                Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_TreeDisconnectFailed"), ex.Message)}");
             }
 
             _fileStore = null;
@@ -513,7 +514,7 @@ public sealed class SMBConnectionManager
         }
         catch (Exception ex)
         {
-            Log.Debug($"SMB: HardReset - InvalidateSession fehlgeschlagen: {ex.Message}");
+            Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_HardResetInvalidateFailed"), ex.Message)}");
         }
 
         try
@@ -522,7 +523,7 @@ public sealed class SMBConnectionManager
         }
         catch (Exception ex)
         {
-            Log.Debug($"SMB: HardReset - Disconnect fehlgeschlagen: {ex.Message}");
+            Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_HardResetDisconnectFailed"), ex.Message)}");
         }
     }
 
@@ -540,9 +541,9 @@ public sealed class SMBConnectionManager
                     _client.ListShares(out NTStatus status);
                     if (status != NTStatus.STATUS_SUCCESS)
                     {
-                        Log.Debug($"SMB: ListShares ungültig ({status}), starte Reset und Reconnect.");
+                        Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_ListSharesInvalid"), status)}");
                         NotifyTrayStatus("NoSamba");
-                        ExecuteHardResetWithLogging("SMB: Vor dem Reconnect wird die Verbindung hart zurückgesetzt.");
+                        ExecuteHardResetWithLogging($"SMB: {Strings.Get("Log_Smb_PreReconnectReset")}");
                         Thread.Sleep(3000);
                         return TryConnectWithRetry(config);
                     }
@@ -551,15 +552,15 @@ public sealed class SMBConnectionManager
                 }
                 catch (Exception ex)
                 {
-                    Log.Debug($"SMB: ListShares fehlgeschlagen: {ex.Message}, starte Reset und Reconnect.");
+                    Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_ListSharesFailed"), ex.Message)}");
                     NotifyTrayStatus("NoSamba");
-                    ExecuteHardResetWithLogging("SMB: Vor dem Reconnect wird die Verbindung hart zurückgesetzt.");
+                    ExecuteHardResetWithLogging($"SMB: {Strings.Get("Log_Smb_PreReconnectReset")}");
                     Thread.Sleep(3000);
                     return TryConnectWithRetry(config);
                 }
             }
 
-            Log.Debug("SMB: Konfiguration geändert, verbinde neu.");
+            Log.Debug($"SMB: {Strings.Get("Log_Smb_ConfigChangedReconnect")}");
             NotifyTrayStatus("NoSamba");
             _client.TreeDisconnect();
             _client.Disconnect();
@@ -567,7 +568,7 @@ public sealed class SMBConnectionManager
             return TryConnectWithRetry(config);
         }
 
-        Log.Debug("SMB: Keine gültige Verbindung erkannt, starte Re-/connect.");
+        Log.Debug($"SMB: {Strings.Get("Log_Smb_NoValidConnectionReconnect")}");
         NotifyTrayStatus("NoSamba");
         return TryConnectWithRetry(config);
     }
@@ -576,7 +577,7 @@ public sealed class SMBConnectionManager
     {
         for (int attempt = 1; attempt <= MAX_CONNECT_RETRIES; attempt++)
         {
-            Log.Debug($"SMB: Verbindungsversuch {attempt}/{MAX_CONNECT_RETRIES}");
+            Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_ConnectAttempt"), attempt, MAX_CONNECT_RETRIES)}");
 
             if (TryConnect(config))
             {
@@ -588,12 +589,12 @@ public sealed class SMBConnectionManager
             if (attempt < MAX_CONNECT_RETRIES)
             {
                 int delay = CONNECT_RETRY_DELAY_MS * attempt;
-                Log.Debug($"SMB: Verbindung fehlgeschlagen, warte {delay}ms vor erneutem Versuch.");
+                Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_ConnectRetryDelay"), delay)}");
                 Thread.Sleep(delay);
             }
         }
 
-        Log.Error($"SMB: Verbindung nach {MAX_CONNECT_RETRIES} Versuchen fehlgeschlagen.");
+        Log.Error($"SMB: {string.Format(Strings.Get("Log_Smb_ConnectRetriesExhausted"), MAX_CONNECT_RETRIES)}");
         return false;
     }
 
@@ -605,7 +606,7 @@ public sealed class SMBConnectionManager
         }
         catch (Exception ex)
         {
-            Log.Debug($"SMB: ResetBeforeReconnect - InvalidateSession fehlgeschlagen: {ex.Message}");
+            Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_ResetInvalidateFailed"), ex.Message)}");
         }
 
         try
@@ -614,7 +615,7 @@ public sealed class SMBConnectionManager
         }
         catch (Exception ex)
         {
-            Log.Debug($"SMB: ResetBeforeReconnect - Disconnect fehlgeschlagen: {ex.Message}");
+            Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_ResetDisconnectFailed"), ex.Message)}");
         }
     }
 
@@ -623,19 +624,19 @@ public sealed class SMBConnectionManager
         string shareName = ExtractShareName(config.CatalogRemotePath);
         string serverIP = config.RemoteIP;
 
-        Log.Debug($"SMB: Verbinden mit Server={serverIP}, Share={shareName}");
+        Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_Connecting"), serverIP, shareName)}");
         ResetBeforeReconnectWithLogging();
 
         if (!_client.Connect(serverIP))
         {
-            Log.Error($"SMB: TCP-Verbindung zu {serverIP} fehlgeschlagen.");
+            Log.Error($"SMB: {string.Format(Strings.Get("Log_Smb_TcpConnectFailed"), serverIP)}");
             NotifyTrayStatus("NoSamba");
             return false;
         }
 
         if (!_client.Login(string.Empty, config.SambaUser, config.SambaPasswordAes))
         {
-            Log.Debug($"SMB: Anmeldung als {config.SambaUser} fehlgeschlagen.");
+            Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_LoginFailed"), config.SambaUser)}");
             NotifyTrayStatus("NoSamba");
             _client.Disconnect();
             return false;
@@ -643,7 +644,7 @@ public sealed class SMBConnectionManager
 
         if (!_client.TreeConnect(shareName))
         {
-            Log.Debug($"SMB: TreeConnect zu Freigabe '{shareName}' fehlgeschlagen.");
+            Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_TreeConnectFailed"), shareName)}");
             NotifyTrayStatus("NoSamba");
             try
             {
@@ -651,7 +652,7 @@ public sealed class SMBConnectionManager
             }
             catch (Exception ex)
             {
-                Log.Debug($"SMB: TreeConnect-Fehler - Logoff ignoriert: {ex.Message}");
+                Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_TreeConnectLogoffIgnored"), ex.Message)}");
             }
 
             try
@@ -660,7 +661,7 @@ public sealed class SMBConnectionManager
             }
             catch (Exception ex)
             {
-                Log.Debug($"SMB: TreeConnect-Fehler - InvalidateSession fehlgeschlagen: {ex.Message}");
+                Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_TreeConnectInvalidateFailed"), ex.Message)}");
             }
 
             try
@@ -669,13 +670,13 @@ public sealed class SMBConnectionManager
             }
             catch (Exception ex)
             {
-                Log.Debug($"SMB: TreeConnect-Fehler - Disconnect fehlgeschlagen: {ex.Message}");
+                Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_TreeConnectDisconnectFailed"), ex.Message)}");
             }
 
             return false;
         }
 
-        Log.Debug($"SMB: Verbindung zu {serverIP}/{shareName} hergestellt.");
+        Log.Debug($"SMB: {string.Format(Strings.Get("Log_Smb_Connected"), serverIP, shareName)}");
         NotifyTrayStatus("Standby");
         return true;
     }

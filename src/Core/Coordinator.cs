@@ -1,4 +1,5 @@
 using LrCatalogSync.Infrastructure;
+using LrCatalogSync.Resources.Strings;
 using LrCatalogSync.UI;
 
 namespace LrCatalogSync.Core
@@ -40,7 +41,6 @@ namespace LrCatalogSync.Core
             {
                 if (isCycleRunning)
                 {
-                    // Log.Debug("Coordinator: Zyklus läuft bereits - überspringe");
                     return;
                 }                
                 isCycleRunning = true;
@@ -51,7 +51,7 @@ namespace LrCatalogSync.Core
                 // Prüfe zuerst ob Config-Datei existiert (wichtig für ersten Start)
                 if (!File.Exists(GlobalData.LrCatSyncConfigPath))
                 {
-                    Log.Error("Coordinator: Konfigurationsdatei fehlt! Bitte Einstellungen prüfen.");
+                    Log.Error($"Coordinator: {Strings.Get("Log_Coordinator_ConfigMissing")}");
                     trayManager.UpdateStatus("NoCfg");
                     cfgFileLost = true;
                     return;
@@ -59,7 +59,7 @@ namespace LrCatalogSync.Core
                 // Prüfe ob LrCatSyncRclone.conf existiert
                 if (!File.Exists(GlobalData.LrCatSyncRcloneConfigPath))
                 {
-                    Log.Error("Coordinator: LrCatSyncRclone.conf fehlt. Bitte Einstellungen prüfen.");
+                    Log.Error($"Coordinator: {Strings.Get("Log_Coordinator_RcloneConfigMissing")}");
                     trayManager.UpdateStatus("RcloneCfg");
                     cfgFileLost = true;
                     return;
@@ -67,15 +67,16 @@ namespace LrCatalogSync.Core
                 // Lade Config neu (falls in SettingsForm gespeichert wurde)
                 if (cfgFileLost)
                 {
-                    Log.Info("Coordinator: Konfigurationsdatei wiederhergestellt - Zyklus wird fortgesetzt");
+                    Log.Info($"Coordinator: {Strings.Get("Log_Coordinator_ConfigRestored")}");
                     config = AppConfig.LoadFromFile(GlobalData.LrCatSyncConfigPath, GlobalData.BaseDir);
                     Log.SetLogLevel(config.LogLevel);
+                    Localization.Apply(config.Language);
                     cfgFileLost = false;
                 }
                 // Prüfe ob rclone.exe existiert    
                 if (!File.Exists(config.RclonePath))
                 {
-                    Log.Error("Coordinator: rclone.exe nicht gefunden. Bitte Einstellungen prüfen.");
+                    Log.Error($"Coordinator: {Strings.Get("Log_Coordinator_RcloneMissing")}");
                     trayManager.UpdateStatus("RcloneExe");
                     return;
                 }
@@ -101,12 +102,12 @@ namespace LrCatalogSync.Core
                     lightroomLockManager ??= new LockManager(config);
                     if (!lightroomLockManager.AcquireLightroomLock(config, trayManager))
                     {
-                        Log.Debug("Coordinator: Lightroom läuft, Remote-Status konnte nicht gesetzt werden");
+                        Log.Debug($"Coordinator: {Strings.Get("Log_Coordinator_LightroomStatusFailed")}");
                         trayManager.UpdateStatus("NoSamba");
                         return;
                     }
 
-                    Log.Debug("Coordinator: Lightroom läuft - Backup und Katalog-Sync übersprungen");
+                    Log.Debug($"Coordinator: {Strings.Get("Log_Coordinator_LightroomActiveSkipped")}");
                     trayManager.UpdateStatus("Lockfile");
                     return;
                 }
@@ -117,19 +118,19 @@ namespace LrCatalogSync.Core
                 {
                     lightroomLockManager.ReleaseLightroomLock(config);
                     lightroomLockManager = null;
-                    Log.Debug("Coordinator: Lightroom geschlossen - Remote-Status entfernt");
+                    Log.Debug($"Coordinator: {Strings.Get("Log_Coordinator_LightroomClosed")}");
                 }
 
                 // ========== PRÜFUNG: BACKUP AKTIV? ==========
                 if (!config.EnableBackups)
                 {
-                    Log.Debug("Coordinator: Backup deaktiviert - überspringe");
+                    Log.Debug($"Coordinator: {Strings.Get("Log_Coordinator_BackupDisabled")}");
                 }
                 else
                 {
                     // ========== SCHRITT 1: BackupManager ausführen ==========
                     // BackupManager synchronisiert BackupsLocalPath → NAS
-                    Log.Debug("Coordinator: Starte BackupManager");                
+                    Log.Debug($"Coordinator: {Strings.Get("Log_Coordinator_BackupStarted")}");
                     try
                     {
                         backupSyncSucceeded = BackupManager.RunBackupProcess(config, trayManager);                        
@@ -137,7 +138,7 @@ namespace LrCatalogSync.Core
                     catch (Exception ex)
                     {
                         hasError = true;
-                        Log.Error($"Coordinator: BackupManager fehlgeschlagen: {ex.Message}");
+                        Log.Error($"Coordinator: {string.Format(Strings.Get("Log_Coordinator_BackupFailed"), ex.Message)}");
                         trayManager.UpdateStatus("Error");
                         return;
                     }
@@ -145,51 +146,51 @@ namespace LrCatalogSync.Core
                     {
                         if (!hasError && backupSyncSucceeded)
                         {
-                            Log.Debug("Coordinator: BackupManager abgeschlossen");
+                            Log.Debug($"Coordinator: {Strings.Get("Log_Coordinator_BackupFinished")}");
                         }else
                         {
-                            Log.Debug("Coordinator: BackupManager abgebrochen");
+                            Log.Debug($"Coordinator: {Strings.Get("Log_Coordinator_BackupCancelled")}");
                         }
                     }
                 }
 
                 // ========== SCHRITT 2: KATALOG-SYNC ==========
                 // CatalogManager synchronisiert CatalogLocalPath → NAS (oder umgekehrt)
-                Log.Debug("Coordinator: Starte Katalogsync");
+                Log.Debug($"Coordinator: {Strings.Get("Log_Coordinator_CatalogStarted")}");
                 
                 try
                 {
                     catalogSyncSucceeded = CatalogManager.RunCatalogSync(config, trayManager);
                     if (catalogSyncSucceeded)
                     {
-                        Log.Debug("Coordinator: CatalogManager abgeschlossen");
+                        Log.Debug($"Coordinator: {Strings.Get("Log_Coordinator_CatalogFinished")}");
                     }
                     else
                     {
-                        Log.Error("Coordinator: CatalogManager fehlgeschlagen");
+                        Log.Error($"Coordinator: {Strings.Get("Log_Coordinator_CatalogFailed")}");
                         trayManager.UpdateStatus("Error");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"Coordinator: CatalogManager fehlgeschlagen: {ex.Message}");
+                    Log.Error($"Coordinator: {string.Format(Strings.Get("Log_Coordinator_CatalogFailedWithMessage"), ex.Message)}");
                     trayManager.UpdateStatus("Error");
                 }
 
                 // ========== ZYKLUS ABGESCHLOSSEN ==========
                 if (!hasError && (backupSyncSucceeded || !config.EnableBackups) && catalogSyncSucceeded)
                 {
-                    Log.Debug("Coordinator: Zyklus erfolgreich abgeschlossen");
+                    Log.Debug($"Coordinator: {Strings.Get("Log_Coordinator_CycleSucceeded")}");
                     trayManager.UpdateStatus("Standby");
                 }
                 else
                 {
-                    Log.Debug("Coordinator: Zyklus mit Fehlern abgeschlossen");
+                    Log.Debug($"Coordinator: {Strings.Get("Log_Coordinator_CycleFinishedWithErrors")}");
                 }
             }
             catch (Exception ex)
             {
-                Log.Error($"Coordinator: Zyklus fehlgeschlagen: {ex.Message}");
+                Log.Error($"Coordinator: {string.Format(Strings.Get("Log_Coordinator_CycleFailed"), ex.Message)}");
                 trayManager.UpdateStatus("Error");
             }
             finally
@@ -218,7 +219,7 @@ namespace LrCatalogSync.Core
                     string fullPath = Path.Combine(config.CatalogLocalPath, lockFile);
                     if (File.Exists(fullPath))
                     {
-                        Log.Debug($"Coordinator: Lightroom-Lock erkannt: {fullPath}");
+                        Log.Debug($"Coordinator: {string.Format(Strings.Get("Log_Coordinator_LightroomLockFound"), fullPath)}");
                         return true;
                     }
                 }
@@ -226,7 +227,7 @@ namespace LrCatalogSync.Core
             }
             catch (Exception ex)
             {
-                Log.Error($"Coordinator: Fehler bei Lightroom-Lock-Prüfung: {ex.Message}");
+                Log.Error($"Coordinator: {string.Format(Strings.Get("Log_Coordinator_LightroomCheckFailed"), ex.Message)}");
                 return false;
             }
         }

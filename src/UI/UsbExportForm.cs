@@ -3,6 +3,7 @@ using System.Diagnostics;
 
 using LrCatalogSync.Core;
 using LrCatalogSync.Infrastructure;
+using LrCatalogSync.Resources.Strings;
 
 namespace LrCatalogSync.UI
 {
@@ -28,17 +29,19 @@ namespace LrCatalogSync.UI
         public UsbExportForm()
         {
             InitializeComponent();
+            ApplyLocalization();
         }
 
         public UsbExportForm(AppConfig config, Func<bool> coordinatorRunning)
         {
             InitializeComponent();
+            ApplyLocalization();
 
             isCoordinatorRunning = coordinatorRunning;
             appConfig = config;
             usbExportConfig = UsbExportConfig.Load(GlobalData.UsbExportConfigPath);
             UsbExportLog.Initialize(GlobalData.BaseDir);
-            Text = $"LrCatalogSync v{GetApplicationVersion()} - USB-Export - Fototour-und-Technik.de";
+            Text = string.Format(Strings.Get("Usb_Title"), GetApplicationVersion());
             Icon = LoadIcon("LrCatalogSync.Resources.Icons.app_icon.ico");
 
             // Werte aus der gespeicherten Konfiguration in die Controls übernehmen
@@ -157,7 +160,7 @@ namespace LrCatalogSync.UI
             }
             catch
             {
-                MessageBox.Show("Link konnte nicht geöffnet werden.", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Strings.Get("Usb_Dialog_LinkError"), Strings.Get("Usb_Dialog_Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -166,7 +169,7 @@ namespace LrCatalogSync.UI
             string initialPath = targetPathTextBox.Text;
             using var dialog = new FolderBrowserDialog
             {
-                Description = "Zielordner auf dem externen Laufwerk auswählen",
+                Description = Strings.Get("Usb_Dialog_SelectTarget"),
                 SelectedPath = Directory.Exists(initialPath) ? initialPath : string.Empty
             };
 
@@ -196,7 +199,7 @@ namespace LrCatalogSync.UI
 
         private void AddSource()
         {
-            using var dialog = new FolderBrowserDialog { Description = "Datenquelle auswählen" };
+            using var dialog = new FolderBrowserDialog { Description = Strings.Get("Usb_Dialog_SelectSource") };
             if (dialog.ShowDialog(this) == DialogResult.OK && !sourceListBox.Items.Contains(dialog.SelectedPath))
                 sourceListBox.Items.Add(dialog.SelectedPath);
             SaveConfiguration();
@@ -230,20 +233,20 @@ namespace LrCatalogSync.UI
         {
             if (operationRunning || isCoordinatorRunning())
             {
-                AddLogEntry("Start blockiert: Der normale Synchronisationszyklus läuft noch.");
+                AddLogEntry(new UsbLogEntry(UsbLogSeverity.Error, Strings.Get("Usb_Log_CycleBusy")));
                 return;
             }
 
-            BeginLogAction(direction == UsbExportDirection.ComputerToExternal ? "Übertragen zu Extern" : "Downloaden von Extern");
+            BeginLogAction(Strings.Get(direction == UsbExportDirection.ComputerToExternal ? "Usb_Action_Export" : "Usb_Action_Download"));
             UsbExportRequest request = BuildRequest();
             UsbExportValidationResult validation = UsbExportManager.ValidateRequest(request);
             if (!validation.IsValid)
             {
-                AddLogEntry($"Fehler: {validation.Message}");
+                AddLogEntry(new UsbLogEntry(UsbLogSeverity.Error, string.Format(Strings.Get("Usb_Log_ValidationError"), validation.Message)));
                 if (validation.LockFiles.Count > 0)
                 {
                     foreach (string lockFile in validation.LockFiles)
-                        AddLogEntry($"Lock-Datei erkannt: {lockFile}");
+                        AddLogEntry(new UsbLogEntry(UsbLogSeverity.Error, string.Format(Strings.Get("Usb_Log_LockFile"), lockFile)));
                 }
                 return;
             }
@@ -253,10 +256,10 @@ namespace LrCatalogSync.UI
             exportCancellationSource = new CancellationTokenSource();
             StartOperationTimer();
             UpdateAvailability();
-            AddLogEntry("Übertragung läuft...");
+            AddLogEntry(Strings.Get("Usb_Log_TransferRunning"));
             ResetTransferProgress();
 
-            var progress = new Progress<string>(AddLogEntry);
+            var progress = new Progress<UsbLogEntry>(AddLogEntry);
             var transferProgress = new Progress<UsbExportProgress>(UpdateTransferProgress);
             var sectionProgress = new Progress<UsbExportSectionProgress>(UpdateSectionProgress);
             UsbExportResult result;
@@ -272,7 +275,7 @@ namespace LrCatalogSync.UI
             }
             catch (OperationCanceledException)
             {
-                result = new UsbExportResult(false, true, "Übertragung abgebrochen.");
+                result = new UsbExportResult(false, true, Strings.Get("Usb_Log_TransferCancelled"), UsbLogSeverity.Error);
             }
 
             exportCancellationSource.Dispose();
@@ -281,7 +284,7 @@ namespace LrCatalogSync.UI
             operationRunning = false;
             if (result.Succeeded)
                 SetTransferProgress(100);
-            ((IProgress<string>)progress).Report(result.Message);
+            ((IProgress<UsbLogEntry>)progress).Report(new UsbLogEntry(GetResultSeverity(result), result.Message));
             UpdateAvailability(updateStatus: false);
         }
 
@@ -332,16 +335,16 @@ namespace LrCatalogSync.UI
         {
             if (operationRunning || isCoordinatorRunning())
             {
-                AddLogEntry("Start blockiert: Der normale Synchronisationszyklus läuft noch.");
+                AddLogEntry(new UsbLogEntry(UsbLogSeverity.Error, Strings.Get("Usb_Log_CycleBusy")));
                 return;
             }
 
-            BeginLogAction("Checksummen-Vergleich");
+            BeginLogAction(Strings.Get("Usb_Action_Compare"));
             UsbExportRequest request = BuildRequest();
             UsbExportValidationResult validation = UsbExportManager.ValidateRequest(request);
             if (!validation.IsValid)
             {
-                AddLogEntry($"Fehler: {validation.Message}");
+                AddLogEntry(new UsbLogEntry(UsbLogSeverity.Error, string.Format(Strings.Get("Usb_Log_ValidationError"), validation.Message)));
                 return;
             }
 
@@ -349,9 +352,9 @@ namespace LrCatalogSync.UI
             exportCancellationSource = new CancellationTokenSource();
             StartOperationTimer();
             UpdateAvailability();
-            AddLogEntry("Checksummen-Vergleich läuft...");
+            AddLogEntry(Strings.Get("Usb_Log_CompareRunning"));
             ResetTransferProgress();
-            var progress = new Progress<string>(AddLogEntry);
+            var progress = new Progress<UsbLogEntry>(AddLogEntry);
             var checkProgress = new Progress<UsbExportProgress>(UpdateTransferProgress);
             var sectionProgress = new Progress<UsbExportSectionProgress>(UpdateSectionProgress);
             UsbExportResult result;
@@ -361,7 +364,7 @@ namespace LrCatalogSync.UI
             }
             catch (OperationCanceledException)
             {
-                result = new UsbExportResult(false, true, "Checksummen-Vergleich abgebrochen.");
+                result = new UsbExportResult(false, true, Strings.Get("Usb_Log_CompareCancelled"), UsbLogSeverity.Error);
             }
             exportCancellationSource.Dispose();
             exportCancellationSource = null;
@@ -369,7 +372,7 @@ namespace LrCatalogSync.UI
             operationRunning = false;
             if (result.Succeeded)
                 SetTransferProgress(100);
-            ((IProgress<string>)progress).Report(result.Message);
+            ((IProgress<UsbLogEntry>)progress).Report(new UsbLogEntry(GetResultSeverity(result), result.Message));
             UpdateAvailability(updateStatus: false);
         }
 
@@ -378,7 +381,7 @@ namespace LrCatalogSync.UI
             if (operationRunning || isCoordinatorRunning())
                 return;
 
-            BeginLogAction("Externen Speicher löschen");
+            BeginLogAction(Strings.Get("Usb_Action_Delete"));
 
             string targetPath;
             try
@@ -387,7 +390,7 @@ namespace LrCatalogSync.UI
             }
             catch (Exception)
             {
-                AddLogEntry("Fehler: Der Zielordner ist ungültig.");
+                AddLogEntry(new UsbLogEntry(UsbLogSeverity.Error, Strings.Get("Usb_Log_TargetInvalid")));
                 return;
             }
 
@@ -400,13 +403,13 @@ namespace LrCatalogSync.UI
                     || !UsbExportManager.IsSystemExcludeName(Path.GetFileName(entry)))
                 : 0;
             string prompt = isDriveRoot
-                ? "Soll das gesamte externe Laufwerk wirklich geleert werden?"
-                : "Soll der folgende externe Zielordner wirklich geleert werden?";
-            string confirmationMessage = $"{prompt}{Environment.NewLine}{Environment.NewLine}{targetPath}{Environment.NewLine}{Environment.NewLine}Alle Dateien und Ordner werden gelöscht.{Environment.NewLine}Zu löschende Daten/Ordner: {entryCount}";
+                ? Strings.Get("Usb_Dialog_DeleteDriveConfirm")
+                : Strings.Get("Usb_Dialog_DeleteFolderConfirm");
+            string confirmationMessage = string.Format(Strings.Get("Usb_Dialog_DeleteBody"), prompt, targetPath, entryCount);
             DialogResult confirmation = MessageBox.Show(
                 this,
                 confirmationMessage,
-                "Externen Speicher löschen",
+                Strings.Get("Usb_Dialog_DeleteTitle"),
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning,
                 MessageBoxDefaultButton.Button2);
@@ -417,27 +420,32 @@ namespace LrCatalogSync.UI
             exportCancellationSource = new CancellationTokenSource();
             StartOperationTimer();
             UpdateAvailability();
-            AddLogEntry($"Löschen gestartet: {targetPath} ({entryCount} Einträge)");
+            AddLogEntry(string.Format(Strings.Get("Usb_Log_DeleteStarted"), targetPath, entryCount));
             UsbExportResult result;
             try
             {
-                result = await UsbExportManager.ClearExternalTargetAsync(BuildRequest(), new Progress<string>(AddLogEntry), exportCancellationSource.Token);
+                result = await UsbExportManager.ClearExternalTargetAsync(BuildRequest(), new Progress<UsbLogEntry>(AddLogEntry), exportCancellationSource.Token);
             }
             catch (OperationCanceledException)
             {
-                result = new UsbExportResult(false, true, "Löschen abgebrochen.");
+                result = new UsbExportResult(false, true, Strings.Get("Usb_Log_DeleteCancelled"), UsbLogSeverity.Error);
             }
             exportCancellationSource.Dispose();
             exportCancellationSource = null;
             StopOperationTimer();
             operationRunning = false;
-            AddLogEntry(result.Message);
+            AddLogEntry(new UsbLogEntry(result.Succeeded ? UsbLogSeverity.Info : UsbLogSeverity.Error, result.Message));
             UpdateAvailability(updateStatus: false);
         }
 
         private void AddLogEntry(string message)
         {
-            IReadOnlyList<string> entries = UsbExportLog.Add(message);
+            AddLogEntry(new UsbLogEntry(UsbLogSeverity.Info, message));
+        }
+
+        private void AddLogEntry(UsbLogEntry logEntry)
+        {
+            IReadOnlyList<string> entries = UsbExportLog.Add(logEntry.Text);
             if (!hasLogEntries)
             {
                 statusLabel.Clear();
@@ -445,39 +453,26 @@ namespace LrCatalogSync.UI
                 hasLogEntries = true;
             }
 
-            AppendStatusLogEntry(entries[^1]);
+            AppendStatusLogEntry(entries[^1], logEntry.Severity);
         }
 
         private void BeginLogAction(string action)
         {
-            UsbExportLog.BeginAction(action);
+            string actionStarted = string.Format(Strings.Get("Usb_Log_ActionStarted"), action);
+            UsbExportLog.BeginAction(actionStarted);
             statusLabel.Clear();
             displayedStatusText = string.Empty;
             displayedLogEntryCount = 0;
             hasLogEntries = false;
-            AppendStatusLogEntry(UsbExportLog.GetLastEntries()[^1]);
+            AppendStatusLogEntry(UsbExportLog.GetLastEntries()[^1], UsbLogSeverity.Info);
         }
 
-        private void AppendStatusLogEntry(string entry)
+        private void AppendStatusLogEntry(string entry, UsbLogSeverity severity)
         {
-            bool isCritical = entry.Contains("Fehler", StringComparison.OrdinalIgnoreCase)
-                || entry.Contains("fehlgeschlagen", StringComparison.OrdinalIgnoreCase)
-                || entry.Contains("abgebrochen", StringComparison.OrdinalIgnoreCase)
-                || entry.Contains("blockiert", StringComparison.OrdinalIgnoreCase)
-                || entry.Contains("fehlende Dateien", StringComparison.OrdinalIgnoreCase)
-                || entry.Contains("unterschiedliche Dateien", StringComparison.OrdinalIgnoreCase)
-                || entry.Contains("nur im Ziel vorhanden", StringComparison.OrdinalIgnoreCase)
-                || entry.Contains("nicht gelesen", StringComparison.OrdinalIgnoreCase)
-                || entry.Contains("fehlerhaft abgeschlossen", StringComparison.OrdinalIgnoreCase)
-                || entry.EndsWith("Unterschiede gefunden!", StringComparison.OrdinalIgnoreCase)
-                || entry.Contains("Speicherplatz", StringComparison.OrdinalIgnoreCase);
-            bool isPositive = entry.Contains("Keine Unterschiede gefunden", StringComparison.OrdinalIgnoreCase)
-                || entry.Contains("Vergleich erfolgreich abgeschlossen", StringComparison.OrdinalIgnoreCase);
-
             statusLabel.SelectionStart = statusLabel.TextLength;
             statusLabel.SelectionLength = 0;
-            statusLabel.SelectionColor = isCritical ? Color.Firebrick
-                : isPositive ? Color.ForestGreen
+            statusLabel.SelectionColor = severity == UsbLogSeverity.Error ? Color.Firebrick
+                : severity == UsbLogSeverity.Success ? Color.ForestGreen
                 : Color.FromArgb(35, 35, 35);
             statusLabel.AppendText(entry + Environment.NewLine);
             statusLabel.SelectionColor = Color.FromArgb(35, 35, 35);
@@ -499,6 +494,11 @@ namespace LrCatalogSync.UI
             statusLabel.SelectionStart = statusLabel.TextLength;
             statusLabel.SelectionLength = 0;
             statusLabel.ScrollToCaret();
+        }
+
+        private static UsbLogSeverity GetResultSeverity(UsbExportResult result)
+        {
+            return result.Severity;
         }
 
         private void SaveConfiguration()
@@ -527,7 +527,7 @@ namespace LrCatalogSync.UI
             string? root = Path.GetPathRoot(targetPathTextBox.Text);
             if (string.IsNullOrWhiteSpace(root))
             {
-                SetDriveDetailsText("Kein Laufwerk ausgewählt");
+                SetDriveDetailsText(Strings.Get("Usb_Drive_NotSelected"));
                 return;
             }
 
@@ -538,20 +538,20 @@ namespace LrCatalogSync.UI
                 long usedSpace = drive.TotalSize - drive.AvailableFreeSpace;
                 driveDetailsLabel.Clear();
                 driveDetailsLabel.SelectionColor = SystemColors.ControlText;
-                driveDetailsLabel.AppendText($"{drive.Name.TrimEnd('\\')} , {drive.DriveFormat}, Gesamt: {FormatBytes(drive.TotalSize)}, ");
+                driveDetailsLabel.AppendText(string.Format(Strings.Get("Usb_Drive_DetailsHeader"), drive.Name.TrimEnd('\\'), drive.DriveFormat, FormatBytes(drive.TotalSize)));
                 driveDetailsLabel.SelectionColor = Color.Firebrick;
-                driveDetailsLabel.AppendText($"Belegt: {FormatBytes(usedSpace)}");
+                driveDetailsLabel.AppendText(string.Format(Strings.Get("Usb_Drive_Used"), FormatBytes(usedSpace)));
                 driveDetailsLabel.SelectionColor = SystemColors.ControlText;
                 driveDetailsLabel.AppendText(", ");
                 driveDetailsLabel.SelectionColor = Color.ForestGreen;
-                driveDetailsLabel.AppendText($"Frei: {FormatBytes(freeSpace)}");
+                driveDetailsLabel.AppendText(string.Format(Strings.Get("Usb_Drive_Free"), FormatBytes(freeSpace)));
                 driveDetailsLabel.SelectionStart = 0;
                 driveDetailsLabel.SelectionLength = 0;
                 driveDetailsLabel.SelectionColor = SystemColors.ControlText;
             }
             catch (Exception)
             {
-                SetDriveDetailsText($"{root} - Laufwerk nicht erreichbar");
+                SetDriveDetailsText(string.Format(Strings.Get("Usb_Drive_Unreachable"), root));
             }
         }
 
@@ -590,8 +590,8 @@ namespace LrCatalogSync.UI
             if (updateStatus && !operationRunning && !hasLogEntries)
             {
                 string statusText = coordinatorBusy
-                    ? "Warte: Der normale LrCatalogSync-Zyklus wird noch beendet."
-                    : deviceSelected ? "Bereit - Zielgerät ausgewählt." : "Bereit - kein Laufwerk ausgewählt.";
+                    ? Strings.Get("Usb_Status_CycleBusy")
+                    : deviceSelected ? Strings.Get("Usb_Status_ReadyWithDrive") : Strings.Get("Usb_Status_ReadyNoDrive");
 
                 if (!string.Equals(displayedStatusText, statusText, StringComparison.Ordinal))
                 {
@@ -626,7 +626,7 @@ namespace LrCatalogSync.UI
         {
             if (operationRunning)
             {
-                DialogResult result = MessageBox.Show(this, "Die Übertragung läuft noch. Soll sie abgebrochen werden?", "USB-Export", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                DialogResult result = MessageBox.Show(this, Strings.Get("Usb_Dialog_ConfirmCancel"), Strings.Get("Usb_Dialog_Title"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                 if (result == DialogResult.Yes)
                 {
                     exportCancellationSource?.Cancel();
@@ -642,11 +642,35 @@ namespace LrCatalogSync.UI
             if (isCoordinatorRunning())
             {
                 e.Cancel = true;
-                MessageBox.Show(this, "Der normale Synchronisationszyklus läuft noch. Bitte nach dessen Abschluss schließen.", "USB-Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, Strings.Get("Usb_Dialog_CloseWhileSync"), Strings.Get("Usb_Dialog_Title"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             SaveConfiguration();
+        }
+
+        private void ApplyLocalization()
+        {
+            Text = string.Format(Strings.Get("Usb_Title"), GetApplicationVersion());
+            targetGroup.Text = Strings.Get("Usb_Group_Target");
+            targetPathLabel.Text = Strings.Get("Usb_Label_TargetPath");
+            browseTargetButton.Text = Strings.Get("Usb_Button_Browse");
+            removeTargetButton.Text = Strings.Get("Usb_Button_Remove");
+            driveInfoLabel.Text = Strings.Get("Usb_Label_Drive");
+            driveDetailsLabel.Text = Strings.Get("Usb_Drive_NotSelected");
+            deleteButton.Text = Strings.Get("Usb_Button_ClearTarget");
+            metadataCheckBox.Text = Strings.Get("Usb_Check_Metadata");
+            hashComparisonCheckBox.Text = Strings.Get("Usb_Check_Hash");
+            sourceGroup.Text = Strings.Get("Usb_Group_Sources");
+            addSourceButton.Text = Strings.Get("Usb_Button_Add");
+            removeSourceButton.Text = Strings.Get("Usb_Button_Remove");
+            excludeLabel.Text = Strings.Get("Usb_Label_Exclude");
+            excludePatternsTextBox.PlaceholderText = Strings.Get("Usb_Placeholder_Exclude");
+            logGroup.Text = Strings.Get("Usb_Group_StatusLog");
+            transferToExternalButton.Text = Strings.Get("Usb_Button_Transfer");
+            compareButton.Text = Strings.Get("Usb_Button_Compare");
+            cancelButton.Text = Strings.Get("Usb_Button_Cancel");
+            exitButton.Text = Strings.Get("Usb_Button_Exit");
         }
 
         private static string FormatBytes(long bytes)
@@ -671,11 +695,6 @@ namespace LrCatalogSync.UI
         {
             using Stream? stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
             return stream != null ? new Icon(stream) : SystemIcons.Application;
-        }
-    
-        private void driveDetailsLabel_TextChanged(object sender, EventArgs e)
-        {
-            // TODO: handle the TextChanged event
         }
     }
 }

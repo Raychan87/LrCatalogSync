@@ -1,4 +1,7 @@
 
+using LrCatalogSync.Infrastructure;
+using LrCatalogSync.Resources.Strings;
+
 namespace LrCatalogSync.UI
 {
     // Manager für Tray-Icon Verwaltung und Status-Updates
@@ -17,6 +20,7 @@ namespace LrCatalogSync.UI
         private Icon iconApp;                                   // Sync deaktiviert (Programm-Icon)
         private readonly SynchronizationContext? uiContext = null!;      // Für Thread-sichere UI-Updates
         private readonly List<Stream> iconStreams = new();
+        private string? lastStatusKey;
         // ==================== KONSTRUKTOR ====================
         // Initialisiert TrayManager mit Icons und Tray-Icon
         public TrayManager()
@@ -39,9 +43,9 @@ namespace LrCatalogSync.UI
             trayIcon = new NotifyIcon()
             {
                 Icon = iconGreen,
-                Text = "LR Catalog Sync - Standby",
                 Visible = true
             };
+            SetTrayTooltip(Strings.Tray_Tip_Start);
         }
 
         // ==================== ÖFFENTLICHE FUNKTIONEN ====================
@@ -50,6 +54,20 @@ namespace LrCatalogSync.UI
         public NotifyIcon GetTrayIcon()
         {
             return trayIcon;
+        }
+
+        public void RefreshText()
+        {
+            if (lastStatusKey is { } statusKey)
+            {
+                UpdateStatus(statusKey);
+                return;
+            }
+
+            if (uiContext != null && SynchronizationContext.Current != uiContext)
+                uiContext.Post(_ => SetTrayTooltip(Strings.Tray_Tip_Start), null);
+            else
+                SetTrayTooltip(Strings.Tray_Tip_Start);
         }
 
         // Aktualisiert den Status im Tray-Icon (mit Thread-Safety)
@@ -81,69 +99,88 @@ namespace LrCatalogSync.UI
         // state: Status (Standby, Syncing, rclone, Error, Lockfile, NoSamba)
         private void SetTrayText(string state)
         {
+            string text;
             switch (state)
             {
                 case "NoCfg":
                     trayIcon.Icon = iconWhite;
-                    trayIcon.Text = "LrCatSync: Konfigurationsdateien fehlen!";
+                    text = Strings.Tray_Tip_NoCfg;
                     break;
                 case "Standby":
                     trayIcon.Icon = iconGreen;
-                    trayIcon.Text = "LrCatSync: wartet auf Änderungen...";
+                    text = Strings.Tray_Tip_Standby;
                     break;
                 case "BSyncing":
                     trayIcon.Icon = iconOrange;
-                    trayIcon.Text = "LrCatSync: synchronisiere Lightroom Sicherungsordner.";
+                    text = Strings.Tray_Tip_BSyncing;
                     break;
                 case "LSyncing":
                     trayIcon.Icon = iconYellow;
-                    trayIcon.Text = "LrCatSync: synchronisiere Lightroom Katalog.";
+                    text = Strings.Tray_Tip_LSyncing;
                     break;
                 case "RcloneCfg":
                     trayIcon.Icon = iconRed;
-                    trayIcon.Text = "LrCatSync: rclone Konfigurationsdatei fehlt!";
+                    text = Strings.Tray_Tip_RcloneCfg;
                     break;
                 case "RcloneExe":
                     trayIcon.Icon = iconRed;
-                    trayIcon.Text = "LrCatSync: rclone.exe fehlt!";
+                    text = Strings.Tray_Tip_RcloneExe;
                     break;
                 case "Error":
                     trayIcon.Icon = iconRed;
-                    trayIcon.Text = "LrCatSync: Interner Programm fehler, bitte Log überprüfen!";
+                    text = Strings.Tray_Tip_Error;
                     break;
                 case "Lockfile":
                     trayIcon.Icon = iconLightBlue;
-                    trayIcon.Text = "LrCatSync: Lightroom Classic ist aktiv.";
+                    text = Strings.Tray_Tip_Lockfile;
                     break;
                 case "NoSamba":
                     trayIcon.Icon = iconRed;
-                    trayIcon.Text = "LrCatSync: Keine Verbindung zum Samba Server!";
+                    text = Strings.Tray_Tip_NoSamba;
                     break;
                 case "RemoteLockfileDown":
                     trayIcon.Icon = iconViolet;
-                    trayIcon.Text = "LrCatSync: Remote Sync ist aktiv und macht ein Download.";
+                    text = Strings.Tray_Tip_RemoteLockfileDown;
                     break;
                 case "RemoteLockfileUp":
                     trayIcon.Icon = iconViolet;
-                    trayIcon.Text = "LrCatSync: Remote Sync ist aktiv und macht ein Upload.";
+                    text = Strings.Tray_Tip_RemoteLockfileUp;
                     break;
                 case "RemoteLightroom":
                     trayIcon.Icon = iconViolet;
-                    trayIcon.Text = "LrCatSync: Lightroom Classic läuft auf einem anderen Rechner.";
+                    text = Strings.Tray_Tip_RemoteLightroom;
                     break;
                 case "LockfileErr":
                     trayIcon.Icon = iconRed;
-                    trayIcon.Text = "LrCatSync: Veralteter Remote Sync Prozess erkannt, bitte Remotepfad prüfen!";
+                    text = Strings.Tray_Tip_LockfileErr;
                     break;
                 case "CrashRecovery":
                     trayIcon.Icon = iconBlue;
-                    trayIcon.Text = "LrCatSync: Crash-Recovery läuft...";
+                    text = Strings.Tray_Tip_CrashRecovery;
                     break;
                 case "SyncDisabled":
                     trayIcon.Icon = iconApp;
-                    trayIcon.Text = "LrCatSync: ist Ausgeschaltet.";
+                    text = Strings.Tray_Tip_SyncDisabled;
                     break;
+                default:
+                    Log.Error($"TrayManager: {string.Format(Strings.Get("Log_Tray_UnknownStatus"), state)}");
+                    return;
             }
+
+            lastStatusKey = state;
+            SetTrayTooltip(text);
+        }
+
+        private void SetTrayTooltip(string text)
+        {
+            const int maxTooltipLength = 127;
+            if (text.Length > maxTooltipLength)
+            {
+                Log.Debug($"TrayManager: {string.Format(Strings.Get("Log_Tray_TooltipTruncated"), text.Length, maxTooltipLength)}");
+                text = text[..maxTooltipLength];
+            }
+
+            trayIcon.Text = text;
         }
 
         private Icon LoadIcon(string fileName)

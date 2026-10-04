@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 
 using LrCatalogSync.Infrastructure;    // ← für Log, AppConfig, GlobalData
+using LrCatalogSync.Resources.Strings;
 using LrCatalogSync.UI;                // ← für TrayManager
 
 namespace LrCatalogSync.Core
@@ -18,7 +19,7 @@ namespace LrCatalogSync.Core
             try
             {
                 // ========== LOG-EINTRAG: START ==========
-                Log.Debug($"BackupManager: gestartet {config.BackupsLocalPath} -> {remoteFullPath}");
+                Log.Debug($"BackupManager: {string.Format(Strings.Get("Log_Backup_Started"), config.BackupsLocalPath, remoteFullPath)}");
 
                 // ========== LOG-DATEI VORBEREITEN ==========
                 string tempLog = Path.Combine(GlobalData.BaseDir, "data", "logs", "rclone.log");
@@ -62,7 +63,7 @@ namespace LrCatalogSync.Core
                             {
                                 if (CleanupRcloneLockFile(logContent))
                                 {
-                                    Log.Debug("BackupManager: Verwaistes Lockfile gelöscht, starte Bisync erneut");
+                                    Log.Debug($"BackupManager: {Strings.Get("Log_Backup_OrphanLockRemovedRetry")}");
 
                                     var retryPsi = new ProcessStartInfo
                                     {
@@ -81,23 +82,23 @@ namespace LrCatalogSync.Core
                                         if (retryProc.ExitCode == 0)
                                         {
                                             WriteRcloneStats(tempLog);
-                                            Log.Debug("BackupManager: Bisync nach Lockfile-Bereinigung erfolgreich");
+                                            Log.Debug($"BackupManager: {Strings.Get("Log_Backup_BisyncRetrySucceeded")}");
                                             return true;
                                         }
 
-                                        Log.Error($"BackupManager: Bisync nach Lockfile-Bereinigung fehlgeschlagen (ExitCode: {retryProc.ExitCode})");
+                                        Log.Error($"BackupManager: {string.Format(Strings.Get("Log_Backup_BisyncRetryFailed"), retryProc.ExitCode)}");
                                         return false;
                                     }
                                 }
 
-                                Log.Error("BackupManager: Das von rclone gemeldete Lockfile konnte nicht bereinigt werden");
+                                Log.Error($"BackupManager: {Strings.Get("Log_Backup_RcloneLockCleanupFailed")}");
                                 return false;
                             }
 
                             // Prüfe auf spezifischen Fehler
                             if (logContent.Contains("cannot find prior Path1 or Path2 listings"))
                             {
-                                Log.Debug("BackupManager: Bisync-Fehler erkannt, starte mit --resync neu");
+                                Log.Debug($"BackupManager: {Strings.Get("Log_Backup_BisyncResyncStarted")}");
 
                                 // Erstelle neuen ProcessStartInfo mit --resync
                                 var resyncPsi = new ProcessStartInfo
@@ -119,17 +120,17 @@ namespace LrCatalogSync.Core
                                     // Logge Ergebnis
                                     if (resyncProc.ExitCode == 0)
                                     {
-                                        Log.Debug("BackupManager: Bisync mit --resync erfolgreich");
+                                        Log.Debug($"BackupManager: {Strings.Get("Log_Backup_BisyncResyncSucceeded")}");
                                         return true;
                                     }
 
-                                    Log.Error($"BackupManager: Bisync mit --resync fehlgeschlagen (ExitCode: {resyncProc.ExitCode})");
+                                    Log.Error($"BackupManager: {string.Format(Strings.Get("Log_Backup_BisyncResyncFailed"), resyncProc.ExitCode)}");
                                     return false;
                                 }
                             }
                         }
 
-                        Log.Error($"BackupManager: Bisync fehlgeschlagen (ExitCode: {p.ExitCode})");
+                        Log.Error($"BackupManager: {string.Format(Strings.Get("Log_Backup_BisyncFailed"), p.ExitCode)}");
                         return false;
                     }
                 }
@@ -139,7 +140,7 @@ namespace LrCatalogSync.Core
                 WriteRcloneStats(tempLog);
 
                 // ========== LOG-EINTRAG: ENDE ==========
-                Log.Debug("BackupManager: abgeschlossen");
+                Log.Debug($"BackupManager: {Strings.Get("Log_Backup_Finished")}");
                 return true;
             }
             catch (Exception ex)
@@ -248,7 +249,7 @@ namespace LrCatalogSync.Core
                     Path.GetFullPath(bisyncDirectory) + Path.DirectorySeparatorChar,
                     StringComparison.OrdinalIgnoreCase))
             {
-                Log.Error($"BackupManager: Unsicherer Lockfile-Pfad abgelehnt: {lockFilePath}");
+                Log.Error($"BackupManager: {string.Format(Strings.Get("Log_Backup_UnsafeLockPath"), lockFilePath)}");
                 return false;
             }
 
@@ -262,12 +263,12 @@ namespace LrCatalogSync.Core
             }
             catch (IOException ex)
             {
-                Log.Error($"BackupManager: Lockfile konnte nicht gelöscht werden: {ex.Message}");
+                Log.Error($"BackupManager: {string.Format(Strings.Get("Log_Backup_LockDeleteFailed"), ex.Message)}");
                 return false;
             }
             catch (UnauthorizedAccessException ex)
             {
-                Log.Error($"BackupManager: Zugriff auf Lockfile verweigert: {ex.Message}");
+                Log.Error($"BackupManager: {string.Format(Strings.Get("Log_Backup_LockAccessDenied"), ex.Message)}");
                 return false;
             }
         }

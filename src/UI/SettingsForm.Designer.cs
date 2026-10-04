@@ -39,6 +39,8 @@ namespace LrCatalogSync.UI
             this.rcloneDownloadLabel = new System.Windows.Forms.Label();
             this.logLevelLabel = new System.Windows.Forms.Label();
             this.cmbLogLevel = new System.Windows.Forms.ComboBox();
+            this.languageLabel = new System.Windows.Forms.Label();
+            this.cmbLanguage = new System.Windows.Forms.ComboBox();
             this.updateIntervalLabel = new System.Windows.Forms.Label();
             this.txtGlobalCycleInterval = new System.Windows.Forms.TextBox();
             this.secondsLabel = new System.Windows.Forms.Label();
@@ -85,6 +87,8 @@ namespace LrCatalogSync.UI
             this.generalGroup.Controls.Add(this.rcloneDownloadLabel);
             this.generalGroup.Controls.Add(this.logLevelLabel);
             this.generalGroup.Controls.Add(this.cmbLogLevel);
+            this.generalGroup.Controls.Add(this.languageLabel);
+            this.generalGroup.Controls.Add(this.cmbLanguage);
             this.generalGroup.Controls.Add(this.updateIntervalLabel);
             this.generalGroup.Controls.Add(this.txtGlobalCycleInterval);
             this.generalGroup.Controls.Add(this.secondsLabel);
@@ -175,6 +179,27 @@ namespace LrCatalogSync.UI
             this.cmbLogLevel.Size = new System.Drawing.Size(100, 23);
             this.cmbLogLevel.TabIndex = 6;
             //
+            // Label für Sprache
+            //
+            this.languageLabel.AutoSize = false;
+            this.languageLabel.Location = new System.Drawing.Point(260, 87);
+            this.languageLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.languageLabel.Name = "languageLabel";
+            this.languageLabel.Size = new System.Drawing.Size(70, 23);
+            this.languageLabel.TabIndex = 7;
+            this.languageLabel.Text = "Sprache:";
+            this.languageLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            //
+            // Sprachauswahl
+            //
+            this.cmbLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbLanguage.FormattingEnabled = true;
+            this.cmbLanguage.Location = new System.Drawing.Point(335, 87);
+            this.cmbLanguage.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.cmbLanguage.Name = "cmbLanguage";
+            this.cmbLanguage.Size = new System.Drawing.Size(123, 23);
+            this.cmbLanguage.TabIndex = 8;
+            //
             // Label für Aktualisierungszeit
             //
             this.updateIntervalLabel.AutoSize = false;
@@ -182,7 +207,7 @@ namespace LrCatalogSync.UI
             this.updateIntervalLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.updateIntervalLabel.Name = "updateIntervalLabel";
             this.updateIntervalLabel.Size = new System.Drawing.Size(125, 23);
-            this.updateIntervalLabel.TabIndex = 7;
+            this.updateIntervalLabel.TabIndex = 9;
             this.updateIntervalLabel.Text = "Aktualisierungszeit:";
             this.updateIntervalLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             //
@@ -192,7 +217,7 @@ namespace LrCatalogSync.UI
             this.txtGlobalCycleInterval.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtGlobalCycleInterval.Name = "txtGlobalCycleInterval";
             this.txtGlobalCycleInterval.Size = new System.Drawing.Size(40, 23);
-            this.txtGlobalCycleInterval.TabIndex = 8;
+            this.txtGlobalCycleInterval.TabIndex = 10;
             this.txtGlobalCycleInterval.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.settingsToolTip.SetToolTip(this.txtGlobalCycleInterval, "Zeit in Sekunden zwischen den automatischen Synchronisationszyklen (1 bis 999).");
             //
@@ -203,7 +228,7 @@ namespace LrCatalogSync.UI
             this.secondsLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.secondsLabel.Name = "secondsLabel";
             this.secondsLabel.Size = new System.Drawing.Size(70, 23);
-            this.secondsLabel.TabIndex = 9;
+            this.secondsLabel.TabIndex = 11;
             this.secondsLabel.Text = "Sekunden";
             this.secondsLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             //
@@ -572,6 +597,8 @@ namespace LrCatalogSync.UI
         private System.Windows.Forms.Label rcloneDownloadLabel = null!;
         private System.Windows.Forms.Label logLevelLabel = null!;
         private System.Windows.Forms.ComboBox cmbLogLevel = null!;
+        private System.Windows.Forms.Label languageLabel = null!;
+        private System.Windows.Forms.ComboBox cmbLanguage = null!;
         private System.Windows.Forms.Label updateIntervalLabel = null!;
         private System.Windows.Forms.TextBox txtGlobalCycleInterval = null!;
         private System.Windows.Forms.Label secondsLabel = null!;

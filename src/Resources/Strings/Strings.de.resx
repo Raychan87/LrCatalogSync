@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Language_SystemWindows" xml:space="preserve">
+    <value>System (Windows)</value>
+  </data>
+    <data name="Tray_Tip_Start" xml:space="preserve"><value>LR Catalog Sync - Standby</value></data>
+    <data name="Tray_Tip_NoCfg" xml:space="preserve"><value>LrCatSync: Konfigurationsdateien fehlen!</value></data>
+    <data name="Tray_Tip_Standby" xml:space="preserve"><value>LrCatSync: wartet auf Änderungen...</value></data>
+    <data name="Tray_Tip_BSyncing" xml:space="preserve"><value>LrCatSync: synchronisiere Lightroom Sicherungsordner.</value></data>
+    <data name="Tray_Tip_LSyncing" xml:space="preserve"><value>LrCatSync: synchronisiere Lightroom Katalog.</value></data>
+    <data name="Tray_Tip_RcloneCfg" xml:space="preserve"><value>LrCatSync: rclone Konfigurationsdatei fehlt!</value></data>
+    <data name="Tray_Tip_RcloneExe" xml:space="preserve"><value>LrCatSync: rclone.exe fehlt!</value></data>
+    <data name="Tray_Tip_Error" xml:space="preserve"><value>LrCatSync: Interner Programmfehler, Log prüfen!</value></data>
+    <data name="Tray_Tip_Lockfile" xml:space="preserve"><value>LrCatSync: Lightroom Classic ist aktiv.</value></data>
+    <data name="Tray_Tip_NoSamba" xml:space="preserve"><value>LrCatSync: Keine Verbindung zum Samba-Server!</value></data>
+    <data name="Tray_Tip_RemoteLockfileDown" xml:space="preserve"><value>LrCatSync: Remote-Sync ist aktiv (Download).</value></data>
+    <data name="Tray_Tip_RemoteLockfileUp" xml:space="preserve"><value>LrCatSync: Remote-Sync ist aktiv (Upload).</value></data>
+    <data name="Tray_Tip_RemoteLightroom" xml:space="preserve"><value>LrCatSync: Lightroom Classic läuft auf einem anderen Rechner.</value></data>
+    <data name="Tray_Tip_LockfileErr" xml:space="preserve"><value>LrCatSync: Veralteter Remote-Sync-Prozess erkannt, Remotepfad prüfen!</value></data>
+    <data name="Tray_Tip_CrashRecovery" xml:space="preserve"><value>LrCatSync: Crash-Recovery läuft...</value></data>
+    <data name="Tray_Tip_SyncDisabled" xml:space="preserve"><value>LrCatSync: ist ausgeschaltet.</value></data>
+    <data name="Tray_Menu_UsbExport" xml:space="preserve"><value>USB-Export</value></data>
+    <data name="Tray_Menu_TurnOff" xml:space="preserve"><value>Ausschalten</value></data>
+    <data name="Tray_Menu_TurnOn" xml:space="preserve"><value>Einschalten</value></data>
+    <data name="Tray_Menu_UsbExportOpen" xml:space="preserve"><value>USB-Export geöffnet</value></data>
+    <data name="Tray_Menu_Settings" xml:space="preserve"><value>Einstellungen</value></data>
+    <data name="Tray_Menu_Exit" xml:space="preserve"><value>Beenden</value></data>
+    <data name="Settings_Title" xml:space="preserve"><value>LrCatalogSync v{0} - Fototour-und-Technik.de</value></data>
+    <data name="Settings_Group_General" xml:space="preserve"><value>Allgemeine Einstellungen</value></data>
+    <data name="Settings_AutoRun" xml:space="preserve"><value>Automatisch beim Systemstart ausführen</value></data>
+    <data name="Settings_RcloneFolder" xml:space="preserve"><value>Rclone folder:</value></data>
+    <data name="Settings_RcloneDownload" xml:space="preserve"><value>Download von rclone (https://rclone.org/downloads)</value></data>
+    <data name="Settings_LogLevel" xml:space="preserve"><value>Log-Level:</value></data>
+    <data name="Settings_Language" xml:space="preserve"><value>Sprache:</value></data>
+    <data name="Settings_UpdateInterval" xml:space="preserve"><value>Aktualisierungszeit:</value></data>
+    <data name="Settings_Seconds" xml:space="preserve"><value>Sekunden</value></data>
+    <data name="Settings_Group_Catalog" xml:space="preserve"><value>Lightroom Katalog</value></data>
+    <data name="Settings_SyncPreviews" xml:space="preserve"><value>*Previews.lrdata synchronisieren?</value></data>
+    <data name="Settings_CatalogLocal" xml:space="preserve"><value>Lokale Katalog Datei:</value></data>
+    <data name="Settings_CatalogRemote" xml:space="preserve"><value>Remote Katalog Pfad:</value></data>
+    <data name="Settings_KeepCatalog" xml:space="preserve"><value>Letzten Katalog behalten?</value></data>
+    <data name="Settings_FolderName" xml:space="preserve"><value>Ordnername:</value></data>
+    <data name="Settings_Group_Backups" xml:space="preserve"><value>Lightroom Katalog Sicherungsordner</value></data>
+    <data name="Settings_SyncBackups" xml:space="preserve"><value>Sicherungsordner synchronisieren?</value></data>
+    <data name="Settings_BackupLocal" xml:space="preserve"><value>Lokaler Backup Pfad:</value></data>
+    <data name="Settings_BackupRemote" xml:space="preserve"><value>Remote Backup Pfad:</value></data>
+    <data name="Settings_Group_Samba" xml:space="preserve"><value>Samba Server Einstellungen</value></data>
+    <data name="Settings_Server" xml:space="preserve"><value>Server IP/Name:</value></data>
+    <data name="Settings_Username" xml:space="preserve"><value>Benutzername:</value></data>
+    <data name="Settings_Password" xml:space="preserve"><value>Passwort:</value></data>
+    <data name="Settings_Save" xml:space="preserve"><value>Speichern</value></data>
+    <data name="Settings_Cancel" xml:space="preserve"><value>Abbrechen</value></data>
+    <data name="Settings_Tip_AutoRun" xml:space="preserve"><value>LrCatalogSync automatisch beim Windows-Systemstart ausführen.</value></data>
+    <data name="Settings_Tip_RcloneFolder" xml:space="preserve"><value>Pfad zur rclone-Installation oder zum rclone-Verzeichnis.</value></data>
+    <data name="Settings_Tip_Interval" xml:space="preserve"><value>Zeit in Sekunden zwischen automatischen Synchronisationszyklen (1 bis 999).</value></data>
+    <data name="Settings_Tip_SyncPreviews" xml:space="preserve"><value>Wenn aktiv, wird zusätzlich der Ordner *Previews.lrdata des Lightroom-Katalogs synchronisiert.</value></data>
+    <data name="Settings_Tip_CatalogLocal" xml:space="preserve"><value>Lokaler Pfad zur Lightroom-Katalogdatei (.lrcat).</value></data>
+    <data name="Settings_Tip_CatalogRemote" xml:space="preserve"><value>Zielpfad auf dem Samba-Server, z. B. //192.168.1.100/Freigabe/ -> /Freigabe/</value></data>
+    <data name="Settings_Tip_KeepCatalog" xml:space="preserve"><value>Behält nach der Synchronisation eine Kopie des letzten Katalogs.</value></data>
+    <data name="Settings_Tip_FolderName" xml:space="preserve"><value>Name des Ordners für die Kopie des letzten Lightroom-Katalogs.</value></data>
+    <data name="Settings_Tip_SyncBackups" xml:space="preserve"><value>Synchronisiert die Sicherungsordner von Lightroom Classic.</value></data>
+    <data name="Settings_Tip_BackupLocal" xml:space="preserve"><value>Lokaler Pfad zum Sicherungsordner von Lightroom Classic.</value></data>
+    <data name="Settings_Tip_BackupRemote" xml:space="preserve"><value>Zielpfad für den Sicherungsordner auf dem entfernten Speicher.</value></data>
+    <data name="Settings_Tip_Server" xml:space="preserve"><value>IP-Adresse oder Hostname des Samba-Servers.</value></data>
+    <data name="Settings_Tip_Username" xml:space="preserve"><value>Benutzername für die Verbindung zum Samba-Server.</value></data>
+    <data name="Settings_Tip_Password" xml:space="preserve"><value>Passwort für die Verbindung zum Samba-Server.</value></data>
+    <data name="Settings_Filter_Catalog" xml:space="preserve"><value>Lightroom-Katalogdatei (*.lrcat)|*.lrcat|Alle Dateien (*.*)|*.*</value></data>
+    <data name="Settings_Dialog_SelectFolder" xml:space="preserve"><value>Ordner auswählen</value></data>
+    <data name="Settings_Dialog_SelectFile" xml:space="preserve"><value>Datei auswählen</value></data>
+    <data name="Settings_Dialog_LinkError" xml:space="preserve"><value>Der Link konnte nicht geöffnet werden.</value></data>
+    <data name="Settings_Title_Error" xml:space="preserve"><value>Fehler</value></data>
+    <data name="Settings_Dialog_InvalidInterval" xml:space="preserve"><value>Fehler: Die Aktualisierungszeit muss eine positive Zahl in Sekunden sein.</value></data>
+    <data name="Settings_Dialog_InvalidIntervalTitle" xml:space="preserve"><value>Ungültige Aktualisierungszeit</value></data>
+    <data name="Settings_Dialog_IntervalRange" xml:space="preserve"><value>Fehler: Die Aktualisierungszeit muss zwischen 1 und 999 Sekunden liegen.</value></data>
+    <data name="Settings_Dialog_IntervalRangeTitle" xml:space="preserve"><value>Ungültiger Wertebereich</value></data>
+    <data name="Settings_Dialog_RcloneMissing" xml:space="preserve"><value>Fehler: rclone.exe nicht gefunden.&#10;&#10;Pfad: {0}&#10;&#10;Bitte überprüfen Sie den Pfad.</value></data>
+    <data name="Settings_Dialog_RcloneMissingTitle" xml:space="preserve"><value>rclone.exe nicht gefunden</value></data>
+    <data name="Settings_Dialog_CatalogRequired" xml:space="preserve"><value>Fehler: Die Katalog-Datei ist erforderlich.</value></data>
+    <data name="Settings_Dialog_CatalogRequiredTitle" xml:space="preserve"><value>Katalog-Datei fehlt</value></data>
+    <data name="Settings_Dialog_CatalogMissing" xml:space="preserve"><value>Fehler: Die Katalog-Datei existiert nicht.&#10;&#10;Pfad: {0}</value></data>
+    <data name="Settings_Dialog_CatalogMissingTitle" xml:space="preserve"><value>Katalog-Datei existiert nicht</value></data>
+    <data name="Settings_Dialog_CatalogInvalid" xml:space="preserve"><value>Fehler: Die ausgewählte Datei ist keine Lightroom-Katalogdatei.&#10;&#10;Datei: {0}&#10;&#10;Bitte wählen Sie eine *.lrcat-Datei.</value></data>
+    <data name="Settings_Dialog_CatalogInvalidTitle" xml:space="preserve"><value>Keine .lrcat-Datei</value></data>
+    <data name="Settings_Dialog_BackupLocalRequired" xml:space="preserve"><value>Fehler: Bei aktivierten Backups ist ein lokaler Backup-Pfad erforderlich.</value></data>
+    <data name="Settings_Dialog_BackupLocalRequiredTitle" xml:space="preserve"><value>Lokaler Backup-Pfad fehlt</value></data>
+    <data name="Settings_Dialog_BackupLocalMissing" xml:space="preserve"><value>Fehler: Der lokale Backup-Pfad existiert nicht.&#10;&#10;Pfad: {0}</value></data>
+    <data name="Settings_Dialog_BackupLocalMissingTitle" xml:space="preserve"><value>Lokaler Backup-Pfad existiert nicht</value></data>
+    <data name="Settings_Dialog_BackupRemoteRequired" xml:space="preserve"><value>Fehler: Bei aktivierten Backups ist ein Remote-Backup-Pfad erforderlich.</value></data>
+    <data name="Settings_Dialog_BackupRemoteRequiredTitle" xml:space="preserve"><value>Remote-Backup-Pfad fehlt</value></data>
+    <data name="Settings_Dialog_CopyFolderRequired" xml:space="preserve"><value>Fehler: Der rclone-copy-Ordnername darf nicht leer sein.</value></data>
+    <data name="Settings_Dialog_CopyFolderRequiredTitle" xml:space="preserve"><value>Ordnername fehlt</value></data>
+    <data name="Settings_Dialog_SaveSuccess" xml:space="preserve"><value>Einstellungen erfolgreich gespeichert.</value></data>
+    <data name="Settings_Title_Success" xml:space="preserve"><value>Erfolg</value></data>
+    <data name="Settings_Dialog_SaveFailure" xml:space="preserve"><value>Fehler beim Speichern: {0}</value></data>
+    <data name="Settings_Dialog_RemotePathInvalid" xml:space="preserve"><value>Das Feld "{0}" enthält einen Windows-Laufwerksbuchstaben (z. B. X:, D:, F:), der hier nicht erlaubt ist.&#10;&#10;Tragen Sie hier den Ordnerpfad innerhalb Ihrer Samba-Freigabe ein, z. B.:&#10;  /SambaOrdner/&#10;  /SambaOrdner/Lightroom/&#10;&#10;Der Samba-Server (IP-Adresse oder Hostname) wird separat im Feld "Server IP/Name" eingetragen.&#10;&#10;Aus beiden Feldern wird der vollständige Netzwerkpfad zusammengesetzt:&#10;  \\{Server IP/Name}{0}&#10;  Beispiel: \\192.168.1.100/SambaOrdner/</value></data>
+    <data name="Settings_Dialog_RemotePathInvalidTitle" xml:space="preserve"><value>Ungültiger Pfad in {0}</value></data>
+    <data name="Settings_Debug_TextTooWide" xml:space="preserve"><value>SettingsForm: Text in Control {0} ist zu breit ({1}px &gt; {2}px).</value></data>
+    <data name="Usb_Title" xml:space="preserve"><value>LrCatalogSync v{0} - USB-Export - Fototour-und-Technik.de</value></data>
+    <data name="Usb_Group_Target" xml:space="preserve"><value>Ziel</value></data>
+    <data name="Usb_Label_TargetPath" xml:space="preserve"><value>Zielordner:</value></data>
+    <data name="Usb_Button_Browse" xml:space="preserve"><value>Auswählen</value></data>
+    <data name="Usb_Button_Remove" xml:space="preserve"><value>Entfernen</value></data>
+    <data name="Usb_Label_Drive" xml:space="preserve"><value>Geräteinfo.:</value></data>
+    <data name="Usb_Drive_NotSelected" xml:space="preserve"><value>Kein Laufwerk ausgewählt</value></data>
+    <data name="Usb_Button_ClearTarget" xml:space="preserve"><value>Inhalt des Zielordners löschen</value></data>
+    <data name="Usb_Check_Metadata" xml:space="preserve"><value>Metadaten übertragen</value></data>
+    <data name="Usb_Check_Hash" xml:space="preserve"><value>Hash-Vergleich verwenden und nachprüfen</value></data>
+    <data name="Usb_Group_Sources" xml:space="preserve"><value>Datenquellen</value></data>
+    <data name="Usb_Button_Add" xml:space="preserve"><value>Hinzufügen</value></data>
+    <data name="Usb_Label_Exclude" xml:space="preserve"><value>Ausschließen:</value></data>
+    <data name="Usb_Placeholder_Exclude" xml:space="preserve"><value>Beispiel: *.tmp;*.partial;*Previews.lrdata</value></data>
+    <data name="Usb_Group_StatusLog" xml:space="preserve"><value>Status-Log</value></data>
+    <data name="Usb_Button_Transfer" xml:space="preserve"><value>Übertragen zu Extern</value></data>
+    <data name="Usb_Button_Compare" xml:space="preserve"><value>Checksummen-Vergleich</value></data>
+    <data name="Usb_Button_Cancel" xml:space="preserve"><value>Abbrechen</value></data>
+    <data name="Usb_Button_Exit" xml:space="preserve"><value>Beenden</value></data>
+    <data name="Usb_Dialog_LinkError" xml:space="preserve"><value>Der Link konnte nicht geöffnet werden.</value></data>
+    <data name="Usb_Dialog_Error" xml:space="preserve"><value>Fehler</value></data>
+    <data name="Usb_Dialog_SelectTarget" xml:space="preserve"><value>Zielordner auf dem externen Laufwerk auswählen</value></data>
+    <data name="Usb_Dialog_SelectSource" xml:space="preserve"><value>Datenquelle auswählen</value></data>
+    <data name="Usb_Action_Export" xml:space="preserve"><value>Übertragen zu Extern</value></data>
+    <data name="Usb_Action_Download" xml:space="preserve"><value>Downloaden von Extern</value></data>
+    <data name="Usb_Log_ActionStarted" xml:space="preserve"><value>Aktion gestartet: {0}</value></data>
+    <data name="Usb_Log_CycleBusy" xml:space="preserve"><value>Start blockiert: Der normale Synchronisationszyklus läuft noch.</value></data>
+    <data name="Usb_Log_ValidationError" xml:space="preserve"><value>Fehler: {0}</value></data>
+    <data name="Usb_Log_LockFile" xml:space="preserve"><value>Lock-Datei erkannt: {0}</value></data>
+    <data name="Usb_Log_TransferRunning" xml:space="preserve"><value>Übertragung läuft...</value></data>
+    <data name="Usb_Log_TransferCancelled" xml:space="preserve"><value>Übertragung abgebrochen.</value></data>
+    <data name="Usb_Action_Compare" xml:space="preserve"><value>Checksummen-Vergleich</value></data>
+    <data name="Usb_Log_CompareRunning" xml:space="preserve"><value>Checksummen-Vergleich läuft...</value></data>
+    <data name="Usb_Log_CompareCancelled" xml:space="preserve"><value>Checksummen-Vergleich abgebrochen.</value></data>
+    <data name="Usb_Action_Delete" xml:space="preserve"><value>Externen Speicher löschen</value></data>
+    <data name="Usb_Log_TargetInvalid" xml:space="preserve"><value>Fehler: Der Zielordner ist ungültig.</value></data>
+    <data name="Usb_Dialog_DeleteDriveConfirm" xml:space="preserve"><value>Soll das gesamte externe Laufwerk wirklich geleert werden?</value></data>
+    <data name="Usb_Dialog_DeleteFolderConfirm" xml:space="preserve"><value>Soll der folgende externe Zielordner wirklich geleert werden?</value></data>
+    <data name="Usb_Dialog_DeleteBody" xml:space="preserve"><value>{0}&#10;&#10;{1}&#10;&#10;Alle Dateien und Ordner werden gelöscht.&#10;Zu löschende Daten/Ordner: {2}</value></data>
+    <data name="Usb_Dialog_DeleteTitle" xml:space="preserve"><value>Externen Speicher löschen</value></data>
+    <data name="Usb_Log_DeleteStarted" xml:space="preserve"><value>Löschen gestartet: {0} ({1} Einträge)</value></data>
+    <data name="Usb_Log_DeleteCancelled" xml:space="preserve"><value>Löschen abgebrochen.</value></data>
+    <data name="Usb_Drive_DetailsHeader" xml:space="preserve"><value>{0}, {1}, Gesamt: {2}, </value></data>
+    <data name="Usb_Drive_Used" xml:space="preserve"><value>Belegt: {0}</value></data>
+    <data name="Usb_Drive_Free" xml:space="preserve"><value>Frei: {0}</value></data>
+    <data name="Usb_Drive_Unreachable" xml:space="preserve"><value>{0} - Laufwerk nicht erreichbar</value></data>
+    <data name="Usb_Status_CycleBusy" xml:space="preserve"><value>Warte, bis der normale LrCatalogSync-Zyklus beendet ist.</value></data>
+    <data name="Usb_Status_ReadyWithDrive" xml:space="preserve"><value>Bereit - Zielgerät ausgewählt.</value></data>
+    <data name="Usb_Status_ReadyNoDrive" xml:space="preserve"><value>Bereit - kein Laufwerk ausgewählt.</value></data>
+    <data name="Usb_Dialog_ConfirmCancel" xml:space="preserve"><value>Die Übertragung läuft noch. Soll sie abgebrochen werden?</value></data>
+    <data name="Usb_Dialog_Title" xml:space="preserve"><value>USB-Export</value></data>
+    <data name="Usb_Dialog_CloseWhileSync" xml:space="preserve"><value>Der normale Synchronisationszyklus läuft noch. Bitte nach dessen Abschluss schließen.</value></data>
+    <data name="Usb_Valid_Config" xml:space="preserve"><value>Die USB-Export-Konfiguration ist gültig.</value></data>
+    <data name="Usb_Validation_NoDrive" xml:space="preserve"><value>Kein externes Laufwerk ausgewählt.</value></data>
+    <data name="Usb_Validation_ExternalInvalid" xml:space="preserve"><value>Das externe Laufwerk ist ungültig.</value></data>
+    <data name="Usb_Validation_ExternalUnavailable" xml:space="preserve"><value>Das ausgewählte externe Laufwerk ist nicht erreichbar.</value></data>
+    <data name="Usb_Validation_SourceRequired" xml:space="preserve"><value>Mindestens eine Datenquelle muss ausgewählt werden.</value></data>
+    <data name="Usb_Validation_SourceUnavailable" xml:space="preserve"><value>Die Datenquelle ist nicht erreichbar: {0}</value></data>
+    <data name="Usb_Validation_DownloadSourceOutside" xml:space="preserve"><value>Beim Download müssen alle Datenquellen innerhalb des ausgewählten externen Laufwerks liegen.</value></data>
+    <data name="Usb_Validation_LocalTargetUnavailable" xml:space="preserve"><value>Das lokale Zielverzeichnis ist nicht erreichbar: {0}</value></data>
+    <data name="Usb_Validation_LightroomOpen" xml:space="preserve"><value>Ein Lightroom-Katalog ist geöffnet. Der Vorgang wurde aus Sicherheitsgründen blockiert.</value></data>
+    <data name="Usb_Log_TargetFolder" xml:space="preserve"><value>Zielordner: {0}</value></data>
+    <data name="Usb_Log_Source" xml:space="preserve"><value>Quelle: {0}</value></data>
+    <data name="Usb_Log_Destination" xml:space="preserve"><value>Ziel: {0}</value></data>
+    <data name="Usb_Log_SourceToDestination" xml:space="preserve"><value>Quelle: {0} -&gt; Ziel: {1}</value></data>
+    <data name="Usb_Log_HashRecheck" xml:space="preserve"><value>Vollständiger Hash-Nachcheck läuft...</value></data>
+    <data name="Usb_Result_TransferDone" xml:space="preserve"><value>Übertragung erfolgreich abgeschlossen.</value></data>
+    <data name="Usb_Result_CompareSuccess" xml:space="preserve"><value>Checksummen-Vergleich erfolgreich abgeschlossen.</value></data>
+    <data name="Usb_Result_CompareError" xml:space="preserve"><value>Checksummen-Vergleich fehlerhaft abgeschlossen!</value></data>
+    <data name="Usb_Result_RcloneMissing" xml:space="preserve"><value>rclone wurde nicht gefunden: {0}</value></data>
+    <data name="Usb_Result_ConfigCreateFailed" xml:space="preserve"><value>Die USB-Export-rclone-Konfiguration konnte nicht angelegt werden: {0}</value></data>
+    <data name="Usb_Result_DeleteOnlyExternal" xml:space="preserve"><value>Löschen ist nur für ein externes Ziel verfügbar.</value></data>
+    <data name="Usb_Result_TargetAlreadyEmpty" xml:space="preserve"><value>Der Zielordner existiert nicht und ist bereits leer.</value></data>
+    <data name="Usb_Result_TargetCleared" xml:space="preserve"><value>Der ausgewählte externe Zielordner wurde geleert. Gelöscht: {0} Einträge.</value></data>
+    <data name="Usb_Result_ClearErrors" xml:space="preserve"><value>Löschen mit Fehlern abgeschlossen. Gelöscht: {0}, Fehler: {1}.</value></data>
+    <data name="Usb_Result_RcloneStartFailed" xml:space="preserve"><value>rclone konnte nicht gestartet werden.</value></data>
+    <data name="Usb_Result_SourceTransferred" xml:space="preserve"><value>Quelle erfolgreich übertragen.</value></data>
+    <data name="Usb_Result_DiskFull" xml:space="preserve"><value>Abbruch: Es ist nicht genügend Speicherplatz vorhanden.{0}</value></data>
+    <data name="Usb_Result_ExitCode" xml:space="preserve"><value>rclone wurde mit Exitcode {0} beendet.</value></data>
+    <data name="Usb_Result_ExitCodeLastError" xml:space="preserve"><value>rclone wurde mit Exitcode {0} beendet. Letzter Fehler: {1}</value></data>
+    <data name="Usb_Result_CopyError" xml:space="preserve"><value>Fehler beim Kopieren: {0}</value></data>
+    <data name="Usb_Result_MissingSpace" xml:space="preserve"><value> Fehlt: {0} GB</value></data>
+    <data name="Usb_Result_VerificationFailed" xml:space="preserve"><value>Übertragung abgeschlossen, Hash-Nachcheck fehlgeschlagen: {0}</value></data>
+    <data name="Usb_Log_Deleted" xml:space="preserve"><value>Gelöscht: {0}</value></data>
+    <data name="Usb_Log_DeleteError" xml:space="preserve"><value>Fehler beim Löschen: {0} - {1}</value></data>
+    <data name="Usb_Log_NoDifferences" xml:space="preserve"><value>Keine Unterschiede gefunden</value></data>
+    <data name="Usb_Log_MissingFiles" xml:space="preserve"><value>{0} fehlende Dateien</value></data>
+    <data name="Usb_Log_DifferentFiles" xml:space="preserve"><value>{0} unterschiedliche Dateien</value></data>
+    <data name="Usb_Log_UnreadableFiles" xml:space="preserve"><value>{0} Dateien konnten nicht gelesen werden</value></data>
+    <data name="Usb_Log_DifferencesFound" xml:space="preserve"><value>Unterschiede gefunden!</value></data>
+    <data name="Usb_Rclone_Differences" xml:space="preserve"><value>{0} unterschiedliche Daten</value></data>
+    <data name="Usb_Rclone_MatchingFiles" xml:space="preserve"><value>{0} identische Dateien</value></data>
+    <data name="Usb_Rclone_Error" xml:space="preserve"><value>rclone-Fehler: {0}</value></data>
+    <data name="Log_Coordinator_ConfigMissing" xml:space="preserve"><value>Konfigurationsdatei fehlt! Bitte Einstellungen prüfen.</value></data>
+    <data name="Log_Coordinator_RcloneConfigMissing" xml:space="preserve"><value>LrCatSyncRclone.conf fehlt. Bitte Einstellungen prüfen.</value></data>
+    <data name="Log_Coordinator_ConfigRestored" xml:space="preserve"><value>Konfigurationsdatei wiederhergestellt - Zyklus wird fortgesetzt.</value></data>
+    <data name="Log_Coordinator_RcloneMissing" xml:space="preserve"><value>rclone.exe nicht gefunden. Bitte Einstellungen prüfen.</value></data>
+    <data name="Log_Coordinator_LightroomStatusFailed" xml:space="preserve"><value>Lightroom läuft, der Remote-Status konnte aber nicht gesetzt werden.</value></data>
+    <data name="Log_Coordinator_LightroomActiveSkipped" xml:space="preserve"><value>Lightroom läuft - Backup- und Katalog-Sync werden übersprungen.</value></data>
+    <data name="Log_Coordinator_LightroomClosed" xml:space="preserve"><value>Lightroom geschlossen - Remote-Status entfernt.</value></data>
+    <data name="Log_Coordinator_BackupDisabled" xml:space="preserve"><value>Backup deaktiviert - überspringe.</value></data>
+    <data name="Log_Coordinator_BackupStarted" xml:space="preserve"><value>Starte BackupManager.</value></data>
+    <data name="Log_Coordinator_BackupFailed" xml:space="preserve"><value>BackupManager fehlgeschlagen: {0}</value></data>
+    <data name="Log_Coordinator_BackupFinished" xml:space="preserve"><value>BackupManager abgeschlossen.</value></data>
+    <data name="Log_Coordinator_BackupCancelled" xml:space="preserve"><value>BackupManager abgebrochen.</value></data>
+    <data name="Log_Coordinator_CatalogStarted" xml:space="preserve"><value>Starte Katalogsync.</value></data>
+    <data name="Log_Coordinator_CatalogFinished" xml:space="preserve"><value>CatalogManager abgeschlossen.</value></data>
+    <data name="Log_Coordinator_CatalogFailed" xml:space="preserve"><value>CatalogManager fehlgeschlagen.</value></data>
+    <data name="Log_Coordinator_CatalogFailedWithMessage" xml:space="preserve"><value>CatalogManager fehlgeschlagen: {0}</value></data>
+    <data name="Log_Coordinator_CycleSucceeded" xml:space="preserve"><value>Zyklus erfolgreich abgeschlossen.</value></data>
+    <data name="Log_Coordinator_CycleFinishedWithErrors" xml:space="preserve"><value>Zyklus mit Fehlern abgeschlossen.</value></data>
+    <data name="Log_Coordinator_CycleFailed" xml:space="preserve"><value>Zyklus fehlgeschlagen: {0}</value></data>
+    <data name="Log_Coordinator_LightroomLockFound" xml:space="preserve"><value>Lightroom-Lock erkannt: {0}</value></data>
+    <data name="Log_Coordinator_LightroomCheckFailed" xml:space="preserve"><value>Fehler bei Lightroom-Lock-Prüfung: {0}</value></data>
+    <data name="Log_Backup_Started" xml:space="preserve"><value>gestartet {0} -&gt; {1}</value></data>
+    <data name="Log_Backup_OrphanLockRemovedRetry" xml:space="preserve"><value>Verwaistes Lockfile gelöscht, starte Bisync erneut.</value></data>
+    <data name="Log_Backup_BisyncRetrySucceeded" xml:space="preserve"><value>Bisync nach Lockfile-Bereinigung erfolgreich.</value></data>
+    <data name="Log_Backup_BisyncRetryFailed" xml:space="preserve"><value>Bisync nach Lockfile-Bereinigung fehlgeschlagen (ExitCode: {0}).</value></data>
+    <data name="Log_Backup_RcloneLockCleanupFailed" xml:space="preserve"><value>Das von rclone gemeldete Lockfile konnte nicht bereinigt werden.</value></data>
+    <data name="Log_Backup_BisyncResyncStarted" xml:space="preserve"><value>Bisync-Fehler erkannt, starte mit --resync neu.</value></data>
+    <data name="Log_Backup_BisyncResyncSucceeded" xml:space="preserve"><value>Bisync mit --resync erfolgreich.</value></data>
+    <data name="Log_Backup_BisyncResyncFailed" xml:space="preserve"><value>Bisync mit --resync fehlgeschlagen (ExitCode: {0}).</value></data>
+    <data name="Log_Backup_BisyncFailed" xml:space="preserve"><value>Bisync fehlgeschlagen (ExitCode: {0}).</value></data>
+    <data name="Log_Backup_Finished" xml:space="preserve"><value>abgeschlossen.</value></data>
+    <data name="Log_Backup_UnsafeLockPath" xml:space="preserve"><value>Unsicherer Lockfile-Pfad abgelehnt: {0}</value></data>
+    <data name="Log_Backup_LockDeleteFailed" xml:space="preserve"><value>Lockfile konnte nicht gelöscht werden: {0}</value></data>
+    <data name="Log_Backup_LockAccessDenied" xml:space="preserve"><value>Zugriff auf Lockfile verweigert: {0}</value></data>
+    <data name="Log_Config_CatalogPathMigrated" xml:space="preserve"><value>CatalogLocalPath zu CatalogLocalFile migriert: {0}</value></data>
+    <data name="Log_Config_RcloneFallback" xml:space="preserve"><value>rclone.exe im konfigurierten Ordner fehlt, Standardordner data/rclone wird verwendet (Download beim Start).</value></data>
+    <data name="Log_Cryptor_DecryptFailed" xml:space="preserve"><value>Entschlüsselung fehlgeschlagen: {0}</value></data>
+    <data name="Log_RcloneInstaller_UpdateCheckUnavailable" xml:space="preserve"><value>Updateprüfung nicht möglich; vorhandene EXE wird weiterverwendet: {0}</value></data>
+    <data name="Log_RcloneInstaller_LocalVersionUnreadable" xml:space="preserve"><value>Lokale Version konnte nicht gelesen werden; Update wird versucht: {0}</value></data>
+    <data name="Log_RcloneInstaller_VersionCurrent" xml:space="preserve"><value>rclone {0} ist aktuell.</value></data>
+    <data name="Log_RcloneInstaller_VersionReady" xml:space="preserve"><value>rclone {0} ist bereit.</value></data>
+    <data name="Log_RcloneInstaller_UpdateFailed" xml:space="preserve"><value>Update fehlgeschlagen; vorhandene EXE bleibt erhalten: {0}</value></data>
+    <data name="Log_RcloneInstaller_DownloadFailed" xml:space="preserve"><value>rclone konnte nicht automatisch heruntergeladen werden: {0}</value></data>
+    <data name="Log_RcloneInstaller_Installed" xml:space="preserve"><value>rclone {0} wurde installiert.</value></data>
+    <data name="Log_LrCatSync_Started" xml:space="preserve"><value>Gestartet.</value></data>
+    <data name="Log_LrCatSync_MigratedPathSaveFailed" xml:space="preserve"><value>Der migrierte rclone-Pfad konnte nicht gespeichert werden: {0}</value></data>
+    <data name="Log_LrCatSync_CrashRecoveryDone" xml:space="preserve"><value>Crash-Recovery abgeschlossen - nächster Zyklus startet Sync neu.</value></data>
+    <data name="Log_LrCatSync_MainCycleInitialized" xml:space="preserve"><value>Initialisiere Main-Zyklus mit ({0}sec Intervall).</value></data>
+    <data name="Log_LrCatSync_CoordinatorDisabled" xml:space="preserve"><value>Coordinator ist deaktiviert - Zyklus übersprungen.</value></data>
+    <data name="Log_LrCatSync_SettingsUpdated" xml:space="preserve"><value>Einstellungen aktualisiert.</value></data>
+    <data name="Log_LrCatSync_UsbExportClosed" xml:space="preserve"><value>USB-Export-Fenster geschlossen, vorheriger Sync-Zustand wiederhergestellt.</value></data>
+    <data name="Log_LrCatSync_ManuallyStopped" xml:space="preserve"><value>Manuell gestoppt.</value></data>
+    <data name="Log_LrCatSync_ManuallyStarted" xml:space="preserve"><value>Manuell gestartet.</value></data>
+    <data name="Log_LrCatSync_TimerStopped" xml:space="preserve"><value>Zyklus-Timer beendet.</value></data>
+    <data name="Log_LrCatSync_SessionEnding" xml:space="preserve"><value>Windows-Sitzungsende erkannt ({0}), beende laufende rclone-Prozesse.</value></data>
+    <data name="Log_Settings_PasswordObscureFailed" xml:space="preserve"><value>Verschlüsseln des Passworts fehlgeschlagen: {0}</value></data>
+    <data name="Log_Settings_RcloneConfigCreated" xml:space="preserve"><value>LrCatSyncRclone.conf erfolgreich erstellt.</value></data>
+    <data name="Log_Catalog_StartVersionCompare" xml:space="preserve"><value>Starte Versionsvergleich (lokal vs. remote).</value></data>
+    <data name="Log_Catalog_AlreadySynced" xml:space="preserve"><value>Katalog ist bereits synchron (kein Sync nötig).</value></data>
+    <data name="Log_Catalog_SyncDirectionDetected" xml:space="preserve"><value>Sync-Richtung erkannt: {0}</value></data>
+    <data name="Log_Catalog_SetLocks" xml:space="preserve"><value>Setze Lockfiles.</value></data>
+    <data name="Log_Catalog_SetLocksFailed" xml:space="preserve"><value>Konnte Locks nicht setzen, breche Sync ab.</value></data>
+    <data name="Log_Catalog_Upload" xml:space="preserve"><value>upload</value></data>
+    <data name="Log_Catalog_Download" xml:space="preserve"><value>download</value></data>
+    <data name="Log_Catalog_RcloneStarting" xml:space="preserve"><value>Starte rclone {0}.</value></data>
+    <data name="Log_Catalog_CleanupLocks" xml:space="preserve"><value>Cleanup - Locks freigeben.</value></data>
+    <data name="Log_Catalog_Error" xml:space="preserve"><value>Fehler: {0}</value></data>
+    <data name="Log_Catalog_AbortedWithError" xml:space="preserve"><value>Mit Fehler abgebrochen.</value></data>
+    <data name="Log_Catalog_SyncSucceeded" xml:space="preserve"><value>Sync erfolgreich abgeschlossen.</value></data>
+    <data name="Log_Catalog_OwnLockDeleted" xml:space="preserve"><value>LrCatSync-Lock-Datei gelöscht: {0}</value></data>
+    <data name="Log_Catalog_LightroomLockPreserved" xml:space="preserve"><value>Lightroom-Lock-Datei NICHT löschen: {0}</value></data>
+    <data name="Log_Catalog_LightroomLockCleanupFailed" xml:space="preserve"><value>Fehler beim Löschen der Lightroom-Locks: {0}</value></data>
+    <data name="Log_Catalog_LocalCatalogMissing" xml:space="preserve"><value>Lokale Katalog-Datei nicht gefunden: {0}</value></data>
+    <data name="Log_Catalog_RemoteCatalogUnavailable" xml:space="preserve"><value>Remote-Katalog konnte wegen eines Verbindungs- oder rclone-Fehlers nicht abgefragt werden; Sync wird abgebrochen.</value></data>
+    <data name="Log_Catalog_RemoteCatalogMissingUpload" xml:space="preserve"><value>Remote-Katalog nicht vorhanden - UPLOAD.</value></data>
+    <data name="Log_Catalog_TimestampsSynchronized" xml:space="preserve"><value>Kataloge sind zeitlich synchron (Delta &lt; 2s).</value></data>
+    <data name="Log_Catalog_LocalCatalogNewer" xml:space="preserve"><value>Lokaler Katalog ist neuer ({0:F1} Min) - UPLOAD.</value></data>
+    <data name="Log_Catalog_RemoteCatalogNewer" xml:space="preserve"><value>Remote-Katalog ist neuer ({0:F1} Min) - DOWNLOAD.</value></data>
+    <data name="Log_Catalog_DirectionCheckFailed" xml:space="preserve"><value>Fehler bei Sync-Richtungsbestimmung: {0}</value></data>
+    <data name="Log_Catalog_RcloneLslFailed" xml:space="preserve"><value>rclone lsl fehlgeschlagen (ExitCode {0}): {1}</value></data>
+    <data name="Log_Catalog_RcloneLslOutputUnreadable" xml:space="preserve"><value>Ausgabe von rclone lsl konnte nicht gelesen werden: {0}</value></data>
+    <data name="Log_Catalog_RemoteCatalogQueryFailed" xml:space="preserve"><value>Fehler beim Abfragen des Remote-Katalogs: {0}</value></data>
+    <data name="Log_Catalog_LightroomLockCreated" xml:space="preserve"><value>Lightroom-Lock erstellt: {0}</value></data>
+    <data name="Log_Catalog_LightroomLockCreateFailed" xml:space="preserve"><value>Fehler beim Erstellen der Lightroom-Lock: {0}</value></data>
+    <data name="Log_Catalog_RcloneUploadStarted" xml:space="preserve"><value>Starte rclone upload (lokal -&gt; NAS).</value></data>
+    <data name="Log_Catalog_RcloneDownloadStarted" xml:space="preserve"><value>Starte rclone download (NAS -&gt; lokal).</value></data>
+    <data name="Log_Catalog_SyncDirectionUnknown" xml:space="preserve"><value>Keine Sync-Richtung erkannt, breche ab.</value></data>
+    <data name="Log_Catalog_RcloneCopyDisabled" xml:space="preserve"><value>rclone copy ist deaktiviert, überspringe Backup.</value></data>
+    <data name="Log_Catalog_RemoteBackupDeleteStartFailed" xml:space="preserve"><value>rclone delete zum Aufräumen des Remote Backup-Ordners konnte nicht gestartet werden.</value></data>
+    <data name="Log_Catalog_RemoteBackupDeleteFailed" xml:space="preserve"><value>Löschen des Remote Backup-Ordners fehlgeschlagen (ExitCode: {0}): {1} {2}</value></data>
+    <data name="Log_Catalog_RemoteBackupDeleted" xml:space="preserve"><value>Remote Backup-Ordner gelöscht: {0}</value></data>
+    <data name="Log_Catalog_LocalBackupDeleted" xml:space="preserve"><value>Lokalen Backup-Ordner gelöscht: {0}</value></data>
+    <data name="Log_Catalog_RcloneCopyStarted" xml:space="preserve"><value>rclone copy starten.</value></data>
+    <data name="Log_Catalog_RcloneCopySucceeded" xml:space="preserve"><value>rclone copy erfolgreich -&gt; {0}</value></data>
+    <data name="Log_Catalog_RcloneCopyFailed" xml:space="preserve"><value>rclone copy fehlgeschlagen (ExitCode: {0}).</value></data>
+    <data name="Log_Catalog_RcloneDeleteStarted" xml:space="preserve"><value>rclone delete starten.</value></data>
+    <data name="Log_Catalog_RcloneDeleteSucceeded" xml:space="preserve"><value>rclone delete erfolgreich.</value></data>
+    <data name="Log_Catalog_RcloneDeleteFailed" xml:space="preserve"><value>rclone delete fehlgeschlagen (ExitCode: {0}).</value></data>
+    <data name="Log_Catalog_RcloneSyncStarted" xml:space="preserve"><value>rclone sync starten.</value></data>
+    <data name="Log_Catalog_RcloneSyncSucceeded" xml:space="preserve"><value>rclone {0} erfolgreich.</value></data>
+    <data name="Log_Catalog_TransferStatistics" xml:space="preserve"><value>Transfer-Statistiken:</value></data>
+    <data name="Log_Catalog_StatsDirection" xml:space="preserve"><value>Richtung: {0}</value></data>
+    <data name="Log_Catalog_StatsFiles" xml:space="preserve"><value>Dateien: {0}</value></data>
+    <data name="Log_Catalog_StatsBytes" xml:space="preserve"><value>Bytes: {0:N0}</value></data>
+    <data name="Log_Catalog_StatsDuration" xml:space="preserve"><value>Dauer: {0}</value></data>
+    <data name="Log_Catalog_RcloneSyncFailed" xml:space="preserve"><value>rclone {0} fehlgeschlagen (ExitCode: {1}).</value></data>
+    <data name="Log_Catalog_RcloneSyncError" xml:space="preserve"><value>rclone sync Fehler: {0}</value></data>
+    <data name="Log_Catalog_StatsParseFailed" xml:space="preserve"><value>Fehler beim Parsen der Statistiken: {0}</value></data>
+    <data name="Log_Catalog_PreviewsSyncStarted" xml:space="preserve"><value>Starte separaten Sync für Previews.lrdata.</value></data>
+    <data name="Log_Catalog_PreviewsSyncSucceeded" xml:space="preserve"><value>Previews.lrdata Sync erfolgreich.</value></data>
+    <data name="Log_Catalog_PreviewsSyncFailed" xml:space="preserve"><value>Previews.lrdata Sync fehlgeschlagen (ExitCode: {0}).</value></data>
+    <data name="Log_Catalog_PreviewsSyncError" xml:space="preserve"><value>Previews.lrdata Sync Fehler: {0}</value></data>
+    <data name="Log_Lock_SyncGuidMismatch" xml:space="preserve"><value>SyncGuids stimmen nicht überein (Lokal: {0}, Remote: {1}) - Crash-Recovery abgebrochen.</value></data>
+    <data name="Log_Lock_CrashRecoveryStarted" xml:space="preserve"><value>LrCatSync Crash erkannt - Recovery gestartet - rclone (Direction: {0}).</value></data>
+    <data name="Log_Lock_CrashRecoveryCompleted" xml:space="preserve"><value>Crash-Recovery abgeschlossen - alle Locks bereinigt.</value></data>
+    <data name="Log_Lock_CrashRecoveryFailed" xml:space="preserve"><value>Crash-Recovery mit rclone fehlgeschlagen - Locks bleiben für erneuten Versuch.</value></data>
+    <data name="Log_Lock_CrashRecoveryError" xml:space="preserve"><value>Crash-Recovery mit rclone fehlgeschlagen: {0}</value></data>
+    <data name="Log_Lock_SmbConfigIncompleteCheck" xml:space="preserve"><value>SMB-Config unvollständig - überspringe Remote-Lock-Prüfung.</value></data>
+    <data name="Log_Lock_SmbConnectFailedCheck" xml:space="preserve"><value>SMB-Verbindung fehlgeschlagen, Remote-Lock kann nicht geprüft werden.</value></data>
+    <data name="Log_Lock_RemoteLockDisappeared" xml:space="preserve"><value>Remote Lock ist verschwunden.</value></data>
+    <data name="Log_Lock_NoRemoteLock" xml:space="preserve"><value>Kein Remote Lock vorhanden - andere Clients können arbeiten.</value></data>
+    <data name="Log_Lock_RemoteLockReadFailed" xml:space="preserve"><value>Remote Lock-Datei konnte nicht gelesen werden.</value></data>
+    <data name="Log_Lock_RemoteLockInvalidFormat" xml:space="preserve"><value>Remote Lock-Datei hat ungültiges Format.</value></data>
+    <data name="Log_Lock_StaleOwnLightroomStatusRemoved" xml:space="preserve"><value>Veralteten eigenen Lightroom-Status entfernt.</value></data>
+    <data name="Log_Lock_RemoteLockStale" xml:space="preserve"><value>Remote Lock ist älter als {0} min ({1:F0} min alt). Ein anderer Client könnte gecrasht sein. Bitte manuell prüfen!</value></data>
+    <data name="Log_Lock_OwnLightroomLockDetected" xml:space="preserve"><value>Eigenes Lightroom Lockfile erkannt.</value></data>
+    <data name="Log_Lock_RemoteDownloadNoLightroomLock" xml:space="preserve"><value>Remote Lock ist DOWNLOAD - kein Lightroom-Lock nötig.</value></data>
+    <data name="Log_Lock_RemoteLightroomLockCreated" xml:space="preserve"><value>Remote Lightroom ist aktiv - erstelle Lightroom-Lock.</value></data>
+    <data name="Log_Lock_RemoteUploadLightroomLockCreated" xml:space="preserve"><value>Remote Lock ist UPLOAD - erstelle Lightroom-Lock.</value></data>
+    <data name="Log_Lock_RemoteLockActive" xml:space="preserve"><value>Remote Lock von anderem Client aktiv ({0:F1} min alt, {1}). Warte auf Freigabe...</value></data>
+    <data name="Log_Lock_RemoteLockCheckFailed" xml:space="preserve"><value>Fehler beim Prüfen des Remote Locks: {0}</value></data>
+    <data name="Log_Lock_SmbConfigIncompleteAcquire" xml:space="preserve"><value>SMB-Config unvollständig - überspringe Lock-Akquise.</value></data>
+    <data name="Log_Lock_SmbConnectFailedAcquire" xml:space="preserve"><value>SMB-Verbindung fehlgeschlagen, kein Remote-Lock möglich.</value></data>
+    <data name="Log_Lock_RemoteLockWriteFailed" xml:space="preserve"><value>Schreiben der remote Lock-Datei fehlgeschlagen.</value></data>
+    <data name="Log_Lock_StaleLocalLockOverwritten" xml:space="preserve"><value>Veraltete lokale Lock File erkannt, überschreibe {0}.</value></data>
+    <data name="Log_Lock_LocalLockActive" xml:space="preserve"><value>Lokaler Lock ist noch aktiv (jünger als {0} min).</value></data>
+    <data name="Log_Lock_BothLocksAcquired" xml:space="preserve"><value>Beide Locks akquiriert (SyncGuid: {0}).</value></data>
+    <data name="Log_Lock_AcquireFailed" xml:space="preserve"><value>Fehler beim Akquirieren der Locks: {0}</value></data>
+    <data name="Log_Lock_LightroomStatusSmbUnavailable" xml:space="preserve"><value>Lightroom-Status kann mangels SMB-Verbindung nicht veröffentlicht werden.</value></data>
+    <data name="Log_Lock_LightroomStatusWriteFailed" xml:space="preserve"><value>Lightroom-Status konnte nicht geschrieben werden.</value></data>
+    <data name="Log_Lock_LightroomStatusPublished" xml:space="preserve"><value>Lightroom-Status veröffentlicht (SyncGuid: {0}).</value></data>
+    <data name="Log_Lock_LightroomStatusPublishFailed" xml:space="preserve"><value>Fehler beim Veröffentlichen des Lightroom-Status: {0}</value></data>
+    <data name="Log_Lock_HeartbeatError" xml:space="preserve"><value>Heartbeat-Fehler: {0}</value></data>
+    <data name="Log_Lock_HeartbeatStarted" xml:space="preserve"><value>Heartbeat gestartet (Intervall: {0} sec).</value></data>
+    <data name="Log_Lock_RemoteHeartbeatFailed" xml:space="preserve"><value>Remote Heartbeat fehlgeschlagen: {0}</value></data>
+    <data name="Log_Lock_HeartbeatUpdateFailed" xml:space="preserve"><value>Heartbeat-Update fehlgeschlagen: {0}</value></data>
+    <data name="Log_Lock_LocalLockCloseFailed" xml:space="preserve"><value>Fehler beim Schließen des lokalen Locks: {0}</value></data>
+    <data name="Log_Lock_LocalLockDeleted" xml:space="preserve"><value>Lokale Lock-Datei gelöscht: {0}</value></data>
+    <data name="Log_Lock_LocalLockDeleteFailed" xml:space="preserve"><value>Fehler beim Löschen der lokalen Lock-Datei: {0}</value></data>
+    <data name="Log_Lock_ReleaseFailed" xml:space="preserve"><value>Fehler beim Freigeben der Locks: {0}</value></data>
+    <data name="Log_Lock_RemoteLockDeleteSmbUnavailable" xml:space="preserve"><value>Keine SMB-Verbindung, Remote-Lock wurde nicht gelöscht.</value></data>
+    <data name="Log_Lock_OwnRemoteLockDeleted" xml:space="preserve"><value>Eigene Remote-Lock-Datei gelöscht.</value></data>
+    <data name="Log_Lock_OwnRemoteLockDeleteFailed" xml:space="preserve"><value>Fehler beim Löschen der eigenen Remote-Lock-Datei: {0}</value></data>
+    <data name="Log_Lock_HeartbeatStopped" xml:space="preserve"><value>Heartbeat gestoppt.</value></data>
+    <data name="Log_Smb_InvalidateTreeDisconnectFailed" xml:space="preserve"><value>InvalidateSession - TreeDisconnect fehlgeschlagen: {0}</value></data>
+    <data name="Log_Smb_InvalidateDisconnectFailed" xml:space="preserve"><value>InvalidateSession - Disconnect fehlgeschlagen: {0}</value></data>
+    <data name="Log_Smb_DisconnectTreeFailed" xml:space="preserve"><value>Disconnect - TreeDisconnect fehlgeschlagen: {0}</value></data>
+    <data name="Log_Smb_DisconnectLogoffFailed" xml:space="preserve"><value>Disconnect - Logoff fehlgeschlagen: {0}</value></data>
+    <data name="Log_Smb_DisconnectFailed" xml:space="preserve"><value>Disconnect fehlgeschlagen: {0}</value></data>
+    <data name="Log_Smb_PasswordDecryptFailed" xml:space="preserve"><value>Passwort-Entschlüsselung fehlgeschlagen: {0}</value></data>
+    <data name="Log_Smb_LogoffFailed" xml:space="preserve"><value>Logoff fehlgeschlagen: {0}</value></data>
+    <data name="Log_Smb_TreeDisconnectFailed" xml:space="preserve"><value>TreeDisconnect fehlgeschlagen: {0}</value></data>
+    <data name="Log_Smb_HardResetInvalidateFailed" xml:space="preserve"><value>HardReset - InvalidateSession fehlgeschlagen: {0}</value></data>
+    <data name="Log_Smb_HardResetDisconnectFailed" xml:space="preserve"><value>HardReset - Disconnect fehlgeschlagen: {0}</value></data>
+    <data name="Log_Smb_ListSharesInvalid" xml:space="preserve"><value>ListShares ungültig ({0}), starte Reset und Reconnect.</value></data>
+    <data name="Log_Smb_PreReconnectReset" xml:space="preserve"><value>Vor dem Reconnect wird die Verbindung hart zurückgesetzt.</value></data>
+    <data name="Log_Smb_ListSharesFailed" xml:space="preserve"><value>ListShares fehlgeschlagen: {0}, starte Reset und Reconnect.</value></data>
+    <data name="Log_Smb_ConfigChangedReconnect" xml:space="preserve"><value>Konfiguration geändert, verbinde neu.</value></data>
+    <data name="Log_Smb_NoValidConnectionReconnect" xml:space="preserve"><value>Keine gültige Verbindung erkannt, starte Reconnect.</value></data>
+    <data name="Log_Smb_ConnectAttempt" xml:space="preserve"><value>Verbindungsversuch {0}/{1}.</value></data>
+    <data name="Log_Smb_ConnectRetryDelay" xml:space="preserve"><value>Verbindung fehlgeschlagen, warte {0}ms vor erneutem Versuch.</value></data>
+    <data name="Log_Smb_ConnectRetriesExhausted" xml:space="preserve"><value>Verbindung nach {0} Versuchen fehlgeschlagen.</value></data>
+    <data name="Log_Smb_ResetInvalidateFailed" xml:space="preserve"><value>ResetBeforeReconnect - InvalidateSession fehlgeschlagen: {0}</value></data>
+    <data name="Log_Smb_ResetDisconnectFailed" xml:space="preserve"><value>ResetBeforeReconnect - Disconnect fehlgeschlagen: {0}</value></data>
+    <data name="Log_Smb_Connecting" xml:space="preserve"><value>Verbinden mit Server={0}, Share={1}.</value></data>
+    <data name="Log_Smb_TcpConnectFailed" xml:space="preserve"><value>TCP-Verbindung zu {0} fehlgeschlagen.</value></data>
+    <data name="Log_Smb_LoginFailed" xml:space="preserve"><value>Anmeldung als {0} fehlgeschlagen.</value></data>
+    <data name="Log_Smb_TreeConnectFailed" xml:space="preserve"><value>TreeConnect zu Freigabe '{0}' fehlgeschlagen.</value></data>
+    <data name="Log_Smb_TreeConnectLogoffIgnored" xml:space="preserve"><value>TreeConnect-Fehler - Logoff-Fehler ignoriert: {0}</value></data>
+    <data name="Log_Smb_TreeConnectInvalidateFailed" xml:space="preserve"><value>TreeConnect-Fehler - InvalidateSession fehlgeschlagen: {0}</value></data>
+    <data name="Log_Smb_TreeConnectDisconnectFailed" xml:space="preserve"><value>TreeConnect-Fehler - Disconnect fehlgeschlagen: {0}</value></data>
+    <data name="Log_Smb_Connected" xml:space="preserve"><value>Verbindung zu {0}/{1} hergestellt.</value></data>
+    <data name="Log_Tray_UnknownStatus" xml:space="preserve"><value>Unbekannter Status-Key '{0}'.</value></data>
+    <data name="Log_Tray_TooltipTruncated" xml:space="preserve"><value>Tooltip mit {0} Zeichen wird auf {1} Zeichen gekürzt.</value></data>
+</root>
