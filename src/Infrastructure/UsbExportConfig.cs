@@ -8,7 +8,7 @@ namespace LrCatalogSync.Infrastructure
         public string TargetPath { get; set; } = "LrBackup";
         public UsbExportDirection Direction { get; set; } = UsbExportDirection.ComputerToExternal;
         public List<string> Sources { get; set; } = new();
-        public string ExcludePatterns { get; set; } = "Thumbs.db;*.lrcat.lock;*.lrcat-shm;*.lrcat-wal";
+        public string UserExcludePatterns { get; set; } = string.Empty;
         public bool UseHashComparison { get; set; }
         public bool TransferMetadata { get; set; }
 
@@ -41,8 +41,9 @@ namespace LrCatalogSync.Infrastructure
                     case "Sources":
                         config.Sources = value.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
                         break;
-                    case "ExcludePatterns":
-                        config.ExcludePatterns = value;
+                    case "UserExcludePatterns":
+                    case "ExcludePatterns": // alter Schlüssel
+                        config.UserExcludePatterns = value;
                         break;
                     case "UseHashComparison":
                         config.UseHashComparison = bool.TryParse(value, out bool useHashComparison) && useHashComparison;
@@ -68,7 +69,7 @@ namespace LrCatalogSync.Infrastructure
                 "TargetPath=" + TargetPath,
                 "Direction=" + Direction,
                 "Sources=" + string.Join('|', Sources),
-                "ExcludePatterns=" + ExcludePatterns,
+                "UserExcludePatterns=" + UserExcludePatterns,
                 "UseHashComparison=" + UseHashComparison,
                 "TransferMetadata=" + TransferMetadata
             };

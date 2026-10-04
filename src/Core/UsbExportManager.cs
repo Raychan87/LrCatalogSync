@@ -16,7 +16,7 @@ namespace LrCatalogSync.Core
         public string TargetPath { get; init; } = string.Empty;
         public UsbExportDirection Direction { get; init; }
         public IReadOnlyList<string> Sources { get; init; } = Array.Empty<string>();
-        public IReadOnlyList<string> ExcludePatterns { get; init; } = Array.Empty<string>();
+        public IReadOnlyList<string> UserExcludePatterns { get; init; } = Array.Empty<string>();
         public bool UseHashComparison { get; init; }
         public bool TransferMetadata { get; init; }
     }
@@ -39,6 +39,36 @@ namespace LrCatalogSync.Core
             ".lrcat-shm",
             ".lrcat-wal"
         };
+
+        // Programmspezifisch: werden immer ausgeschlossen und dem Nutzer nicht angezeigt
+        private static readonly string[] ProgramExcludePatterns =
+        {
+            "*.lrcat.lock",
+            "*.lrcat-shm",
+            "*.lrcat-wal",
+            "*.lock",
+            "Thumbs.db"
+        };
+
+        // Windows-Systemordner im Wurzelverzeichnis: weder kopieren noch löschen
+        private static readonly string[] SystemExcludeNames =
+        {
+            "System Volume Information",
+            "$RECYCLE.BIN",
+            "Recovery"
+        };
+
+        public static bool IsSystemExcludeName(string name) =>
+            SystemExcludeNames.Any(systemName => systemName.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+        // Entfernt Einträge, die intern ohnehin gelten, aus der Nutzerliste
+        public static string RemoveBuiltInPatterns(string patterns)
+        {
+            return string.Join(';', patterns
+                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(pattern => !ProgramExcludePatterns.Contains(pattern, StringComparer.OrdinalIgnoreCase)
+                    && !IsSystemExcludeName(pattern.Trim('/', '\\'))));
+        }
 
         public static UsbExportValidationResult ValidateRequest(UsbExportRequest request)
         {
@@ -188,17 +218,17 @@ namespace LrCatalogSync.Core
                     appConfig.RclonePath,
                     source,
                     destination,
-                    request.ExcludePatterns,
+                    request.UserExcludePatterns,
                     request.UseHashComparison,
                     request.TransferMetadata,
                     progress,
                     transferProgress,
                     cancellationToken);
 
-                progress?.Report(result.Message);
-
                 if (!result.Succeeded)
                     return result;
+
+                progress?.Report(result.Message);
             }
 
             if (request.UseHashComparison)
@@ -262,13 +292,12 @@ namespace LrCatalogSync.Core
                 transferProgress?.Report(new UsbExportProgress(0, string.Empty));
                 sectionProgress?.Report(new UsbExportSectionProgress(sectionOffset + sourceIndex + 1, totalSections));
                 string destination = CreateSourceDestination(targetRoot, source, usedDestinationNames);
-                progress?.Report($"Quelle: {source}");
-                progress?.Report($"Ziel: {destination}");
+                progress?.Report($"Quelle: {source} -> Ziel: {destination}");
                 int exitCode = await RunRcloneCheckAsync(
                     appConfig.RclonePath,
                     source,
                     destination,
-                    request.ExcludePatterns,
+                    request.UserExcludePatterns,
                     request.UseHashComparison,
                     progress,
                     transferProgress,
@@ -278,8 +307,8 @@ namespace LrCatalogSync.Core
             }
 
             return allEqual
-                ? new UsbExportResult(true, false, "Checksummen-Vergleich erfolgreich: Quelle und Ziel stimmen überein.")
-                : new UsbExportResult(false, false, "Checksummen-Vergleich abgeschlossen: Es wurden Unterschiede gefunden.");
+                ? new UsbExportResult(true, false, "Checksummen-Vergleich erfolgreich abgeschlossen.")
+                : new UsbExportResult(false, false, "Checksummen-Vergleich fehlerhaft abgeschlossen!");
         }
 
         private static UsbExportResult? ValidatePrerequisites(AppConfig appConfig)
@@ -374,8 +403,7 @@ namespace LrCatalogSync.Core
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 string entryName = Path.GetFileName(entry.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-                if (clearingDriveRoot && (entryName.Equals("System Volume Information", StringComparison.OrdinalIgnoreCase)
-                    || entryName.Equals("$RECYCLE.BIN", StringComparison.OrdinalIgnoreCase)))
+                if (clearingDriveRoot && IsSystemExcludeName(entryName))
                     continue;
 
                 try
@@ -415,14 +443,14 @@ namespace LrCatalogSync.Core
             if (!File.Exists(rclonePath))
                 return new UsbExportResult(false, false, $"rclone wurde nicht gefunden: {rclonePath}");
 
-            progress?.Report("rclone sync wird gestartet. Das Ziel wird an die Quelle angepasst.");
-
             var startInfo = new ProcessStartInfo
             {
                 FileName = rclonePath,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                StandardOutputEncoding = System.Text.Encoding.UTF8,
+                StandardErrorEncoding = System.Text.Encoding.UTF8,
                 CreateNoWindow = true
             };
             startInfo.ArgumentList.Add("--config");
@@ -453,8 +481,26 @@ namespace LrCatalogSync.Core
 
                 RcloneProcessManager.Register(process);
 
+                string? lastRcloneError = null;
+                bool diskFull = false;
+
                 void ReportOutput(string line)
                 {
+                    if (diskFull)
+                        return;
+
+                    var rcloneError = System.Text.RegularExpressions.Regex.Match(line, @"\bERROR\s*:\s*(.*)$");
+                    if (rcloneError.Success)
+                    {
+                        lastRcloneError = rcloneError.Groups[1].Value.Trim();
+                        if (IsDiskFullMessage(line))
+                        {
+                            diskFull = true;
+                            TryKillProcess(process);
+                            return;
+                        }
+                    }
+
                     if (TryParseRcloneProgress(line, out UsbExportProgress parsedProgress))
                         transferProgress?.Report(parsedProgress);
 
@@ -466,9 +512,18 @@ namespace LrCatalogSync.Core
                 await process.WaitForExitAsync(cancellationToken);
                 await Task.WhenAll(outputTask, errorTask);
 
-                return process.ExitCode == 0
-                    ? new UsbExportResult(true, false, "Quelle erfolgreich übertragen.")
-                    : new UsbExportResult(false, false, $"rclone wurde mit Exitcode {process.ExitCode} beendet.");
+                if (process.ExitCode == 0)
+                    return new UsbExportResult(true, false, "Quelle erfolgreich übertragen.");
+
+                if (diskFull)
+                {
+                    string missingInfo = await GetMissingSpaceInfoAsync(rclonePath, source, destination, excludePatterns);
+                    return new UsbExportResult(false, false, $"Abbruch: Es ist nicht genügend Speicherplatz vorhanden.{missingInfo}");
+                }
+
+                return new UsbExportResult(false, false, string.IsNullOrEmpty(lastRcloneError)
+                    ? $"rclone wurde mit Exitcode {process.ExitCode} beendet."
+                    : $"rclone wurde mit Exitcode {process.ExitCode} beendet. Letzter Fehler: {lastRcloneError}");
             }
             catch (OperationCanceledException)
             {
@@ -486,6 +541,74 @@ namespace LrCatalogSync.Core
             }
         }
 
+        // Fehlmenge = (Quellgröße - bereits vorhandene Zielgröße) - freier Zielspeicher
+        private static async Task<string> GetMissingSpaceInfoAsync(string rclonePath, string source, string destination, IReadOnlyList<string> excludePatterns)
+        {
+            try
+            {
+                string? root = Path.GetPathRoot(Path.GetFullPath(destination));
+                if (string.IsNullOrEmpty(root))
+                    return string.Empty;
+
+                long free = new DriveInfo(root).AvailableFreeSpace;
+                long sourceBytes = await GetRcloneSizeAsync(rclonePath, source, excludePatterns, "bytes");
+                long destinationBytes = await GetRcloneSizeAsync(rclonePath, destination, excludePatterns, "bytes");
+                long missing = sourceBytes - destinationBytes - free;
+                if (missing <= 0)
+                    return string.Empty;
+
+                return $" Fehlt: {(missing / 1024d / 1024d / 1024d).ToString("0.00", CultureInfo.CurrentCulture)} GB";
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        private static async Task<long> GetRcloneSizeAsync(string rclonePath, string path, IReadOnlyList<string> excludePatterns, string property)
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = rclonePath,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                StandardOutputEncoding = System.Text.Encoding.UTF8,
+                CreateNoWindow = true
+            };
+            startInfo.ArgumentList.Add("--config");
+            startInfo.ArgumentList.Add(GlobalData.UsbExportRcloneConfigPath);
+            startInfo.ArgumentList.Add("size");
+            startInfo.ArgumentList.Add(path);
+            startInfo.ArgumentList.Add("--json");
+            foreach (string pattern in GetExcludePatterns(excludePatterns))
+            {
+                startInfo.ArgumentList.Add("--exclude");
+                startInfo.ArgumentList.Add(pattern);
+            }
+
+            using var process = Process.Start(startInfo) ?? throw new InvalidOperationException("rclone size konnte nicht gestartet werden.");
+            Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+            Task<string> errorTask = process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
+            string output = await outputTask;
+            await errorTask;
+
+            if (process.ExitCode != 0)
+                return 0;
+
+            using var json = System.Text.Json.JsonDocument.Parse(output);
+            return json.RootElement.GetProperty(property).GetInt64();
+        }
+
+        private static bool IsDiskFullMessage(string line) =>
+            line.Contains("nicht genug Speicherplatz", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("not enough space on the disk", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("no space left on device", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("disk is full", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("ERROR_DISK_FULL", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("ERROR_HANDLE_DISK_FULL", StringComparison.OrdinalIgnoreCase);
+
         private static bool TryFormatRcloneOutput(string line, out string formattedLine)
         {
             var differencesMatch = System.Text.RegularExpressions.Regex.Match(line, @":\s*(\d+)\s+differences found\b");
@@ -498,11 +621,11 @@ namespace LrCatalogSync.Core
             var matchingFilesMatch = System.Text.RegularExpressions.Regex.Match(line, @":\s*(\d+)\s+matching files\b");
             if (matchingFilesMatch.Success)
             {
-                formattedLine = $"{matchingFilesMatch.Groups[1].Value} identische Daten";
+                formattedLine = $"{matchingFilesMatch.Groups[1].Value} identische Dateien";
                 return true;
             }
 
-            var errorMatch = System.Text.RegularExpressions.Regex.Match(line, @"\bERROR:\s*(.*)$");
+            var errorMatch = System.Text.RegularExpressions.Regex.Match(line, @"\bERROR\s*:\s*(.*)$");
             if (errorMatch.Success)
             {
                 formattedLine = $"rclone-Fehler: {errorMatch.Groups[1].Value}";
@@ -576,6 +699,8 @@ namespace LrCatalogSync.Core
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                StandardOutputEncoding = System.Text.Encoding.UTF8,
+                StandardErrorEncoding = System.Text.Encoding.UTF8,
                 CreateNoWindow = true
             };
             startInfo.ArgumentList.Add("--config");
@@ -587,6 +712,9 @@ namespace LrCatalogSync.Core
             startInfo.ArgumentList.Add("1s");
             startInfo.ArgumentList.Add("--stats-log-level");
             startInfo.ArgumentList.Add("NOTICE");
+            string combinedFile = Path.Combine(Path.GetTempPath(), $"LrCatSync_check_{Guid.NewGuid():N}.txt");
+            startInfo.ArgumentList.Add("--combined");
+            startInfo.ArgumentList.Add(combinedFile);
             if (useHashComparison)
                 startInfo.ArgumentList.Add("--checksum");
             foreach (string pattern in GetExcludePatterns(excludePatterns))
@@ -604,18 +732,34 @@ namespace LrCatalogSync.Core
                 RcloneProcessManager.Register(process);
                 Stopwatch checkStopwatch = Stopwatch.StartNew();
 
+                // rclone kennt die Gesamtzahl erst nach dem Auflisten; daher vorab die Quell-Dateianzahl nutzen
+                long totalFiles = 0;
+                try { totalFiles = await GetRcloneSizeAsync(rclonePath, source, excludePatterns, "count"); }
+                catch (Exception ex) when (ex is not OperationCanceledException) { }
+
                 void ReportOutput(string line)
                 {
-                    if (TryParseRcloneProgress(line, out UsbExportProgress parsedProgress))
-                    {
-                        var checksMatch = System.Text.RegularExpressions.Regex.Match(line, @"Checks:\s*(\d+)\s*/\s*\d+");
-                        if (checksMatch.Success && int.TryParse(checksMatch.Groups[1].Value, out int completedChecks))
-                        {
-                            double checksPerSecond = completedChecks / Math.Max(checkStopwatch.Elapsed.TotalSeconds, 0.1);
-                            parsedProgress = new UsbExportProgress(parsedProgress.Percent, $"{checksPerSecond:0.#} Checks/s");
-                        }
+                    if (line.Contains("differences found", StringComparison.OrdinalIgnoreCase))
+                        return;
 
-                        checkProgress?.Report(parsedProgress);
+                    var checkError = System.Text.RegularExpressions.Regex.Match(line, @"\bERROR\s*:\s*(.*)$");
+                    if (checkError.Success)
+                    {
+                        string message = checkError.Groups[1].Value;
+                        if (message.Contains(": file not in ", StringComparison.OrdinalIgnoreCase)
+                            || message.Contains(" differ", StringComparison.OrdinalIgnoreCase))
+                            return;
+                    }
+
+                    var checksMatch = System.Text.RegularExpressions.Regex.Match(line, @"Checks:\s*(\d+)\s*/\s*(\d+)");
+                    if (checksMatch.Success
+                        && int.TryParse(checksMatch.Groups[1].Value, out int completedChecks)
+                        && long.TryParse(checksMatch.Groups[2].Value, out long reportedTotal))
+                    {
+                        long total = Math.Max(totalFiles, reportedTotal);
+                        int percent = total > 0 ? (int)Math.Min(100, completedChecks * 100L / total) : 0;
+                        double checksPerSecond = completedChecks / Math.Max(checkStopwatch.Elapsed.TotalSeconds, 0.1);
+                        checkProgress?.Report(new UsbExportProgress(percent, $"{checksPerSecond:0} Chk/s"));
                     }
 
                     if (line.Equals("Checking:", StringComparison.OrdinalIgnoreCase)
@@ -630,7 +774,48 @@ namespace LrCatalogSync.Core
                 Task errorTask = ForwardOutputAsync(process.StandardError, ReportOutput, cancellationToken);
                 await process.WaitForExitAsync(cancellationToken);
                 await Task.WhenAll(outputTask, errorTask);
-                return process.ExitCode;
+
+                var missingPaths = new List<string>();
+                var differingPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var errorPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                if (File.Exists(combinedFile))
+                {
+                    foreach (string combinedLine in File.ReadLines(combinedFile))
+                    {
+                        if (combinedLine.Length < 3)
+                            continue;
+
+                        // rclone --combined: + fehlt im Ziel, * unterschiedlich, ! Fehler; - (nur im Ziel) wird ignoriert
+                        string path = combinedLine[2..];
+                        switch (combinedLine[0])
+                        {
+                            case '+': missingPaths.Add(path); break;
+                            case '*': differingPaths.Add(path); break;
+                            case '!': errorPaths.Add(path); break;
+                        }
+                    }
+                }
+
+                // Dateien, die auch als unterschiedlich/fehlerhaft gemeldet werden, nicht doppelt als fehlend zählen
+                int missingOnDestination = missingPaths.Count(p => !differingPaths.Contains(p) && !errorPaths.Contains(p));
+                int differing = differingPaths.Count;
+                int readErrors = errorPaths.Count;
+
+                if (missingOnDestination + differing + readErrors == 0)
+                {
+                    progress?.Report("Keine Unterschiede gefunden");
+                    return 0;
+                }
+
+                if (missingOnDestination > 0)
+                    progress?.Report($"{missingOnDestination} fehlende Dateien");
+                if (differing > 0)
+                    progress?.Report($"{differing} unterschiedliche Dateien");
+                if (readErrors > 0)
+                    progress?.Report($"{readErrors} Dateien konnten nicht gelesen werden");
+                progress?.Report("Unterschiede gefunden!");
+
+                return process.ExitCode == 0 ? 1 : process.ExitCode;
             }
             catch (OperationCanceledException)
             {
@@ -645,6 +830,7 @@ namespace LrCatalogSync.Core
             finally
             {
                 RcloneProcessManager.Unregister(process);
+                try { File.Delete(combinedFile); } catch { }
             }
         }
 
@@ -693,21 +879,17 @@ namespace LrCatalogSync.Core
             return fullPath;
         }
 
-        private static IEnumerable<string> GetExcludePatterns(IEnumerable<string> customPatterns)
+        private static IEnumerable<string> GetExcludePatterns(IEnumerable<string> userPatterns)
         {
-            yield return "Thumbs.db";
-
-            foreach (string pattern in LightroomLockSuffixes.Select(suffix => $"*{suffix}"))
+            foreach (string pattern in ProgramExcludePatterns)
                 yield return pattern;
 
-            foreach (string pattern in customPatterns.Where(pattern => !string.IsNullOrWhiteSpace(pattern)))
-            {
-                string trimmedPattern = pattern.Trim();
-                bool isLightroomLockPattern = LightroomLockSuffixes.Any(suffix =>
-                    string.Equals(trimmedPattern, $"*{suffix}", StringComparison.OrdinalIgnoreCase));
-                if (!isLightroomLockPattern && !string.Equals(trimmedPattern, "Thumbs.db", StringComparison.OrdinalIgnoreCase))
-                    yield return trimmedPattern;
-            }
+            foreach (string systemName in SystemExcludeNames)
+                yield return $"/{systemName}/**";
+
+            foreach (string pattern in RemoveBuiltInPatterns(string.Join(';', userPatterns))
+                .Split(';', StringSplitOptions.RemoveEmptyEntries))
+                yield return pattern;
         }
 
         private static bool IsWithinDirectory(string path, string directory)

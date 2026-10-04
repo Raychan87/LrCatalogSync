@@ -92,11 +92,11 @@ namespace LrCatalogSync.UI
             //
             // TextBox für Zielpfad
             //
-            this.targetPathTextBox.Location = new System.Drawing.Point(82, 24);
+            this.targetPathTextBox.Location = new System.Drawing.Point(84, 25);
             this.targetPathTextBox.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.targetPathTextBox.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.targetPathTextBox.Name = "targetPathTextBox";
-            this.targetPathTextBox.Size = new System.Drawing.Size(331, 25);
+            this.targetPathTextBox.Size = new System.Drawing.Size(329, 20);
             this.targetPathTextBox.TabIndex = 1;
             this.targetPathTextBox.TextChanged += new System.EventHandler(this.TargetPathTextBox_TextChanged);
             //
@@ -136,9 +136,9 @@ namespace LrCatalogSync.UI
             this.driveDetailsLabel.AutoSize = true;
             this.driveDetailsLabel.Dock = System.Windows.Forms.DockStyle.None;
             this.driveDetailsLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.driveDetailsLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.driveDetailsLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.driveDetailsLabel.DetectUrls = false;
-            this.driveDetailsLabel.Location = new System.Drawing.Point(85, 60);
+            this.driveDetailsLabel.Location = new System.Drawing.Point(85, 58);
             this.driveDetailsLabel.Multiline = false;
             this.driveDetailsLabel.Name = "driveDetailsLabel";
             this.driveDetailsLabel.ReadOnly = true;
@@ -164,7 +164,7 @@ namespace LrCatalogSync.UI
             // CheckBox für Metadaten
             //
             this.metadataCheckBox.AutoSize = false;
-            this.metadataCheckBox.Location = new System.Drawing.Point(82, 87);
+            this.metadataCheckBox.Location = new System.Drawing.Point(87, 87);
             this.metadataCheckBox.Name = "metadataCheckBox";
             this.metadataCheckBox.Size = new System.Drawing.Size(300, 20);
             this.metadataCheckBox.TabIndex = 7;
@@ -175,7 +175,7 @@ namespace LrCatalogSync.UI
             // CheckBox für Hash-Vergleich
             //
             this.hashComparisonCheckBox.AutoSize = false;
-            this.hashComparisonCheckBox.Location = new System.Drawing.Point(82, 113);
+            this.hashComparisonCheckBox.Location = new System.Drawing.Point(87, 111);
             this.hashComparisonCheckBox.Name = "hashComparisonCheckBox";
             this.hashComparisonCheckBox.Size = new System.Drawing.Size(330, 20);
             this.hashComparisonCheckBox.TabIndex = 8;
@@ -237,10 +237,10 @@ namespace LrCatalogSync.UI
             //
             // Ausschließen-TextBox
             //
-            this.excludePatternsTextBox.Location = new System.Drawing.Point(271, 176);
+            this.excludePatternsTextBox.Location = new System.Drawing.Point(271, 178);
             this.excludePatternsTextBox.Name = "excludePatternsTextBox";
             this.excludePatternsTextBox.PlaceholderText = "Beispiel: *.tmp;*.partial;*Previews.lrdata";
-            this.excludePatternsTextBox.Size = new System.Drawing.Size(327, 25);
+            this.excludePatternsTextBox.Size = new System.Drawing.Size(327, 20);
             this.excludePatternsTextBox.TabIndex = 4;
             this.excludePatternsTextBox.TextChanged += new System.EventHandler(this.ExcludePatternsTextBox_TextChanged);
             //
@@ -282,28 +282,31 @@ namespace LrCatalogSync.UI
             this.transferProgressLabel.Text = "0%";
             this.transferProgressLabel.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.transferProgressLabel.BackColor = System.Drawing.Color.Transparent;
-            this.transferProgressLabel.Location = new System.Drawing.Point(11, 174);
+            this.transferProgressLabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.transferProgressLabel.Location = new System.Drawing.Point(13, 173);
             this.transferProgressLabel.Name = "transferProgressLabel";
-            this.transferProgressLabel.Size = new System.Drawing.Size(33, 25);
+            this.transferProgressLabel.Size = new System.Drawing.Size(37, 25);
             this.transferProgressLabel.TabIndex = 4;
             this.transferProgressLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             //
             // Fortschrittsbalken
             //
-            this.transferProgressBar.Location = new System.Drawing.Point(45, 173);
+            this.transferProgressBar.Location = new System.Drawing.Point(51, 173);
             this.transferProgressBar.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.transferProgressBar.Maximum = 100;
             this.transferProgressBar.Minimum = 0;
             this.transferProgressBar.Name = "transferProgressBar";
-            this.transferProgressBar.Size = new System.Drawing.Size(400, 25);
+            this.transferProgressBar.Size = new System.Drawing.Size(402, 25);
             this.transferProgressBar.TabIndex = 1;
             //
             // Abschnitt (z.B. 1/2)
             //
             this.sectionProgressLabel.AutoSize = false;
-            this.sectionProgressLabel.Location = new System.Drawing.Point(444, 172);
+            this.sectionProgressLabel.BackColor = System.Drawing.Color.Transparent;
+            this.sectionProgressLabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.sectionProgressLabel.Location = new System.Drawing.Point(453, 173);
             this.sectionProgressLabel.Name = "sectionProgressLabel";
-            this.sectionProgressLabel.Size = new System.Drawing.Size(25, 25);
+            this.sectionProgressLabel.Size = new System.Drawing.Size(33, 25);
             this.sectionProgressLabel.TabIndex = 2;
             this.sectionProgressLabel.Text = "0/0";
             this.sectionProgressLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -311,7 +314,11 @@ namespace LrCatalogSync.UI
             // Übertragungsrate
             //
             this.transferRateLabel.AutoSize = false;
-            this.transferRateLabel.Location = new System.Drawing.Point(491, 177);
+            this.transferRateLabel.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.transferRateLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.transferRateLabel.BackColor = System.Drawing.Color.Transparent;
+            this.transferRateLabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.transferRateLabel.Location = new System.Drawing.Point(486, 173);
             this.transferRateLabel.Name = "transferRateLabel";
             this.transferRateLabel.Size = new System.Drawing.Size(74, 25);
             this.transferRateLabel.TabIndex = 3;
@@ -321,6 +328,8 @@ namespace LrCatalogSync.UI
             //
             this.elapsedTimeLabel.AutoSize = false;
             this.elapsedTimeLabel.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.elapsedTimeLabel.BackColor = System.Drawing.Color.Transparent;
+            this.elapsedTimeLabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.elapsedTimeLabel.Location = new System.Drawing.Point(560, 173);
             this.elapsedTimeLabel.Name = "elapsedTimeLabel";
             this.elapsedTimeLabel.Size = new System.Drawing.Size(36, 25);

@@ -49,7 +49,7 @@ namespace LrCatalogSync.UI
                 LoadSources();
                 hashComparisonCheckBox.Checked = usbExportConfig.UseHashComparison;
                 metadataCheckBox.Checked = usbExportConfig.TransferMetadata;
-                excludePatternsTextBox.Text = RemoveHiddenLockPatterns(usbExportConfig.ExcludePatterns);
+                excludePatternsTextBox.Text = usbExportConfig.UserExcludePatterns;
                 UpdateDriveDetails();
                 UpdateAvailability();
             }
@@ -166,15 +166,6 @@ namespace LrCatalogSync.UI
             return string.Empty;
         }
 
-        private static string RemoveHiddenLockPatterns(string patterns)
-        {
-            return string.Join(';', patterns
-                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Where(pattern => !pattern.Equals("*.lrcat.lock", StringComparison.OrdinalIgnoreCase)
-                    && !pattern.Equals("*.lrcat-shm", StringComparison.OrdinalIgnoreCase)
-                    && !pattern.Equals("*.lrcat-wal", StringComparison.OrdinalIgnoreCase)));
-        }
-
         private void LoadSources()
         {
             foreach (string source in usbExportConfig.Sources)
@@ -206,7 +197,8 @@ namespace LrCatalogSync.UI
                 TargetPath = targetPathTextBox.Text,
                 Direction = UsbExportDirection.ComputerToExternal,
                 Sources = sourceListBox.Items.Cast<string>().ToArray(),
-                ExcludePatterns = excludePatternsTextBox.Text.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                UserExcludePatterns = UsbExportManager.RemoveBuiltInPatterns(excludePatternsTextBox.Text)
+                    .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
                 UseHashComparison = hashComparisonCheckBox.Checked,
                 TransferMetadata = metadataCheckBox.Checked && SupportsMetadataTarget()
             };
@@ -267,7 +259,7 @@ namespace LrCatalogSync.UI
             operationRunning = false;
             if (result.Succeeded)
                 SetTransferProgress(100);
-            AddLogEntry(result.Message);
+            ((IProgress<string>)progress).Report(result.Message);
             UpdateAvailability(updateStatus: false);
         }
 
@@ -355,7 +347,7 @@ namespace LrCatalogSync.UI
             operationRunning = false;
             if (result.Succeeded)
                 SetTransferProgress(100);
-            AddLogEntry(result.Message);
+            ((IProgress<string>)progress).Report(result.Message);
             UpdateAvailability(updateStatus: false);
         }
 
@@ -383,8 +375,7 @@ namespace LrCatalogSync.UI
             int entryCount = Directory.Exists(targetPath)
                 ? Directory.EnumerateFileSystemEntries(targetPath).Count(entry =>
                     !isDriveRoot
-                    || (!Path.GetFileName(entry).Equals("System Volume Information", StringComparison.OrdinalIgnoreCase)
-                        && !Path.GetFileName(entry).Equals("$RECYCLE.BIN", StringComparison.OrdinalIgnoreCase)))
+                    || !UsbExportManager.IsSystemExcludeName(Path.GetFileName(entry)))
                 : 0;
             string prompt = isDriveRoot
                 ? "Soll das gesamte externe Laufwerk wirklich geleert werden?"
@@ -450,11 +441,22 @@ namespace LrCatalogSync.UI
             bool isCritical = entry.Contains("Fehler", StringComparison.OrdinalIgnoreCase)
                 || entry.Contains("fehlgeschlagen", StringComparison.OrdinalIgnoreCase)
                 || entry.Contains("abgebrochen", StringComparison.OrdinalIgnoreCase)
-                || entry.Contains("blockiert", StringComparison.OrdinalIgnoreCase);
+                || entry.Contains("blockiert", StringComparison.OrdinalIgnoreCase)
+                || entry.Contains("fehlende Dateien", StringComparison.OrdinalIgnoreCase)
+                || entry.Contains("unterschiedliche Dateien", StringComparison.OrdinalIgnoreCase)
+                || entry.Contains("nur im Ziel vorhanden", StringComparison.OrdinalIgnoreCase)
+                || entry.Contains("nicht gelesen", StringComparison.OrdinalIgnoreCase)
+                || entry.Contains("fehlerhaft abgeschlossen", StringComparison.OrdinalIgnoreCase)
+                || entry.EndsWith("Unterschiede gefunden!", StringComparison.OrdinalIgnoreCase)
+                || entry.Contains("Speicherplatz", StringComparison.OrdinalIgnoreCase);
+            bool isPositive = entry.Contains("Keine Unterschiede gefunden", StringComparison.OrdinalIgnoreCase)
+                || entry.Contains("Vergleich erfolgreich abgeschlossen", StringComparison.OrdinalIgnoreCase);
 
             statusLabel.SelectionStart = statusLabel.TextLength;
             statusLabel.SelectionLength = 0;
-            statusLabel.SelectionColor = isCritical ? Color.Firebrick : Color.FromArgb(35, 35, 35);
+            statusLabel.SelectionColor = isCritical ? Color.Firebrick
+                : isPositive ? Color.ForestGreen
+                : Color.FromArgb(35, 35, 35);
             statusLabel.AppendText(entry + Environment.NewLine);
             statusLabel.SelectionColor = Color.FromArgb(35, 35, 35);
             displayedLogEntryCount++;
@@ -486,7 +488,7 @@ namespace LrCatalogSync.UI
             usbExportConfig.TargetPath = targetPathTextBox.Text;
             usbExportConfig.Direction = UsbExportDirection.ComputerToExternal;
             usbExportConfig.Sources = sourceListBox.Items.Cast<string>().ToList();
-            usbExportConfig.ExcludePatterns = excludePatternsTextBox.Text;
+            usbExportConfig.UserExcludePatterns = UsbExportManager.RemoveBuiltInPatterns(excludePatternsTextBox.Text);
             usbExportConfig.UseHashComparison = hashComparisonCheckBox.Checked;
             usbExportConfig.TransferMetadata = metadataCheckBox.Checked;
             usbExportConfig.Save(GlobalData.UsbExportConfigPath);
