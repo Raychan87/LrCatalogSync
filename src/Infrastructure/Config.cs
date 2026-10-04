@@ -157,14 +157,11 @@ namespace LrCatalogSync.Infrastructure
 
             string configuredRclonePath = Path.TrimEndingDirectorySeparator(
                 Path.GetFullPath(GetAbsoluteRclonePath(RcloneFolder, baseDir)));
-            string legacyRclonePath = Path.TrimEndingDirectorySeparator(
-                Path.GetFullPath(GetAbsoluteRclonePath("./rclone", baseDir)));
-            if (string.IsNullOrWhiteSpace(RcloneFolder) ||
-                (!File.Exists(configuredRclonePath) && string.Equals(configuredRclonePath, legacyRclonePath, StringComparison.OrdinalIgnoreCase)))
+            if (string.IsNullOrWhiteSpace(RcloneFolder) || !File.Exists(configuredRclonePath))
             {
                 RcloneFolder = GlobalData.DefaultRcloneFolder;
                 RcloneFolderWasMigrated = true;
-                Log.Info("Config: Fehlenden alten rclone-Standardpfad auf data/rclone umgestellt.");
+                Log.Info("Config: rclone.exe im konfigurierten Ordner fehlt, Standardordner data/rclone wird verwendet (Download beim Start).");
             }
 
             // Berechne absolute Pfade
