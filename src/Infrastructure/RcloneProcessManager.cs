@@ -7,9 +7,21 @@ namespace LrCatalogSync.Infrastructure
     {
         private static readonly ConcurrentDictionary<int, Process> activeProcesses = new();
         private static int shutdownStarted;
+        private const int SM_SHUTTINGDOWN = 0x2000;
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern int GetSystemMetrics(int index);
+
+        // Auch true, wenn Windows bereits herunterfährt, ohne dass SessionEnding ankam.
+        public static bool IsShuttingDown =>
+            Volatile.Read(ref shutdownStarted) != 0 || GetSystemMetrics(SM_SHUTTINGDOWN) != 0;
 
         public static Process? Start(ProcessStartInfo startInfo)
         {
+            // Beim Herunterfahren keine neuen Prozesse starten (sonst Fehler 0xc0000142).
+            if (IsShuttingDown)
+                return null;
+
             Process? process = Process.Start(startInfo);
             if (process != null)
                 Register(process);

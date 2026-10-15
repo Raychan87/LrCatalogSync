@@ -266,7 +266,7 @@ namespace LrCatalogSync.Core
             if (disposing)
             {
                 SystemEvents.SessionEnding -= OnSessionEnding;
-                RcloneProcessManager.StopAll();
+                RcloneProcessManager.BeginShutdown();
 
                 usbExportForm?.Close();
 
@@ -290,7 +290,7 @@ namespace LrCatalogSync.Core
 
         private void OnSessionEnding(object? sender, SessionEndingEventArgs e)
         {
-            Log.Info($"LrCatSync: {string.Format(Strings.Get("Log_LrCatSync_SessionEnding"), e.Reason)}");
+            Log.Debug($"LrCatSync: {string.Format(Strings.Get("Log_LrCatSync_SessionEnding"), e.Reason)}");
             LrCatSyncEnabled = false;
             MainCycleTimer?.Dispose();
             RcloneProcessManager.BeginShutdown();
