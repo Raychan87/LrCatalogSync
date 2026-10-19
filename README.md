@@ -9,7 +9,9 @@
 ## How it works
 
 ### Copied files
+
 The following Lightroom files and folders are synchronized:
+
 - `*.lrcat` – the main catalog file (SQL)
 - `*.lrcat-data/` – catalog database (masks, AI selections)
 - `* Sync.lrdata/` – for Adobe Creative Cloud
@@ -17,13 +19,17 @@ The following Lightroom files and folders are synchronized:
 - `* Helper.lrdata/` – helper data for catalog functions
 
 Optional (see settings):
+
 - `* Previews.lrdata/` – standard and 1:1 previews (option **Sync \*Previews.lrdata?**)
 
 Backup folder (option **Sync backup folder?**):
+
 - The Lightroom backup folder (catalog backups) is synchronized separately and in both directions (rclone `bisync`).
 
 ### Lock files (Lightroom detection)
+
 The program detects automatically when Lightroom is open and skips the sync:
+
 - `*.lrcat.lock` – main lock file
 - `*.lrcat-shm` – shared memory segment
 - `*.lrcat-wal` – write-ahead log
@@ -31,10 +37,12 @@ The program detects automatically when Lightroom is open and skips the sync:
 Lightroom Classic creates these files when the catalog is opened and deletes them when it is closed.
 
 ## Requirements
+
 - Windows 10 or Windows Server 2016 or newer
 - Internet connection on first start if rclone is not yet available
 
 ## Installation
+
 1. Download LrCatalogSync from GitHub and start `LrCatalogSync.exe` – the icon appears in the tray.
 2. If no rclone version is available yet, LrCatalogSync automatically downloads the current stable Windows AMD64 release from [rclone.org](https://downloads.rclone.org/rclone-current-windows-amd64.zip) on startup and stores `rclone.exe` in `data/rclone/`.
 3. On later starts it checks for a newer version. If rclone is already present, it stays usable when the download site cannot be reached.
@@ -42,31 +50,34 @@ Lightroom Classic creates these files when the catalog is opened and deletes the
 If the automatic download is not available, download rclone manually from [rclone.org](https://rclone.org/downloads/), unpack it and enter the folder containing `rclone.exe` in the settings. A manually configured path is kept and is not replaced automatically.
 
 ## Usage
+
 *Start:* double-click `LrCatalogSync.exe` (can be enabled at system start).
 
 *Stop:* right-click the tray icon → **Exit**.
 
 ## Configuration (GUI)
+
 Right-click the tray icon → **Settings**
 
 ![LrCatalogSync settings](docs/images/LrCatSyncConfig.en.png)
-| Field | Description |
-|-------|-------------|
-| **Start automatically with Windows** | Run the program automatically at Windows startup |
-| **Rclone folder** | Folder containing `rclone.exe`; default is `data/rclone/`. Another folder can be entered manually. |
-| **Log level** | `DEBUG`, `INFO`, `NOTICE`, `ERROR` |
-| **Language** | `System` (Windows display language), `English` or `Deutsch`. Unsupported Windows languages use English. |
-| **Check interval** | Check interval in seconds (1 to 999, default 10) |
-| **Sync \*Previews.lrdata?** | Whether the `* Previews.lrdata` folder (standard and 1:1 previews) is synchronized as well |
-| **Local catalog file** | Path to the local `.lrcat` file |
-| **Remote catalog path** | Target path on the SMB server (e.g. `//192.168.1.1/Lightroom/` -> `/Lightroom/`) |
-| **Keep last catalog?** | Before syncing, stores a copy of the previous catalog in an extra folder (on the server for uploads, locally for downloads) |
-| **Folder name** | Name of the folder for this copy |
-| **Sync backup folder?** | Optional, synchronizes the Lightroom backup folder locally and remotely |
-| **Local backup path** | Local path where Lightroom stores its backups |
-| **Remote backup path** | Target path on the SMB server for the backups |
-| **Server IP/name** | IP or host name of the SMB server |
-| **Username / Password** | Credentials (stored encrypted) |
+
+| Field                                      | Description                                                                                                                 |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| **Start automatically with Windows** | Run the program automatically at Windows startup                                                                            |
+| **Rclone folder**                    | Folder containing `rclone.exe`; default is `data/rclone/`. Another folder can be entered manually.                      |
+| **Log level**                        | `DEBUG`, `INFO`, `NOTICE`, `ERROR`                                                                                  |
+| **Language**                         | `System` (Windows display language), `English` or `Deutsch`. Unsupported Windows languages use English.               |
+| **Check interval**                   | Check interval in seconds (1 to 999, default 10)                                                                            |
+| **Sync \*Previews.lrdata?**          | Whether the `* Previews.lrdata` folder (standard and 1:1 previews) is synchronized as well                                |
+| **Local catalog file**               | Path to the local `.lrcat` file                                                                                           |
+| **Remote catalog path**              | Target path on the SMB server (e.g. `//192.168.1.1/Lightroom/` -> `/Lightroom/`)                                        |
+| **Keep last catalog?**               | Before syncing, stores a copy of the previous catalog in an extra folder (on the server for uploads, locally for downloads) |
+| **Folder name**                      | Name of the folder for this copy                                                                                            |
+| **Sync backup folder?**              | Optional, synchronizes the Lightroom backup folder locally and remotely                                                     |
+| **Local backup path**                | Local path where Lightroom stores its backups                                                                               |
+| **Remote backup path**               | Target path on the SMB server for the backups                                                                               |
+| **Server IP/name**                   | IP or host name of the SMB server                                                                                           |
+| **Username / Password**              | Credentials (stored encrypted)                                                                                              |
 
 Settings are stored in `data/config/`.
 The user interface and the log messages generated by LrCatalogSync follow the selected language. `System` uses German or English according to the Windows display language; other languages fall back to English. rclone's own log messages stay in the language provided by rclone.
@@ -74,6 +85,7 @@ The user interface and the log messages generated by LrCatalogSync follow the se
 ## Tray icon
 
 Tray icon status:
+
 - 🟢 --> ready, no sync active
 - 🟠 --> synchronizing the Lightroom backup folder
 - 🟡 --> synchronizing the Lightroom catalog
@@ -83,9 +95,9 @@ Tray icon status:
 - 🟣 --> Lightroom Classic was started on another computer
 - 🔴 --> error (e.g. no Samba connection, rclone missing, stale remote lock), see log (set to Debug if necessary)
 - ⚪ --> configuration file missing
-- <img src="docs/images/Logo.png" height="16" alt="Program icon" style="vertical-align: middle;"> --> sync is switched off (tray menu **Turn off** or USB export open)
+-  --> sync is switched off (tray menu **Turn off** or USB export open)
 
-Tray menu: **USB export**, **Turn off/Turn on**, **Settings**, **Exit**.
+Tray menu: **USB export**, **Turn off/Turn on**, **Settings**, **Exit**. The sync state is stored in the config and restored after a restart. Windows startup remains independent: the program can start in the tray while sync stays switched off.
 
 Logs are located in `data/logs/`.
 
@@ -96,26 +108,29 @@ The USB export copies arbitrary folders (e.g. photo library, Lightroom catalog, 
 ![USB export](docs/images/UsbExport.en.png)
 
 ### Opening
+
 Right-click the tray icon → **USB export**. While the window is open, the normal sync is paused (the menu entry shows "USB export open"). After closing, the previous state (sync on/off) is restored. If a normal sync cycle is running, all inputs and actions are locked until it has finished; the window cannot be closed in that case.
 
 ### Areas and controls
-| Area / element | Description |
-|----------------|-------------|
-| **Target** | Target folder on the external drive (**Browse** / **Remove**). The drive is derived from the path. |
-| **Drive** | Drive, file system, total size, used (red) and free (green) space; updated automatically |
-| **Clear target folder** | Empties the target folder after a confirmation. For a drive root, the whole drive is emptied (Windows system folders are kept). |
-| **Transfer metadata** | Additionally transfers file metadata. Only selectable if the target is NTFS-formatted. |
-| **Use hash comparison and verify** | Compares files by checksum instead of size/date and automatically runs a checksum comparison after the transfer |
-| **Data sources** | List of folders to copy (**Add** / **Remove**) |
-| **Exclude** | Custom exclude patterns separated by `;` (e.g. `*.tmp;*.partial;*Previews.lrdata`) |
-| **Status log** | Messages of the running action (errors in red, successful verification in green) |
-| **Progress display** | Percentage, current section (e.g. 1/2), speed and elapsed time |
-| **Copy to external** | Starts the transfer of all data sources into the target folder |
-| **Checksum compare** | Compares sources and target by checksum without copying anything |
-| **Cancel** | Cancels the running action |
-| **Exit** | Closes the window (not possible during an action; closing via the window asks whether to cancel) |
+
+| Area / element                           | Description                                                                                                                     |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Target**                         | Target folder on the external drive (**Browse** / **Remove**). The drive is derived from the path.                  |
+| **Drive**                          | Drive, file system, total size, used (red) and free (green) space; updated automatically                                        |
+| **Clear target folder**            | Empties the target folder after a confirmation. For a drive root, the whole drive is emptied (Windows system folders are kept). |
+| **Transfer metadata**              | Additionally transfers file metadata. Only selectable if the target is NTFS-formatted.                                          |
+| **Use hash comparison and verify** | Compares files by checksum instead of size/date and automatically runs a checksum comparison after the transfer                 |
+| **Data sources**                   | List of folders to copy (**Add** / **Remove**)                                                                      |
+| **Exclude**                        | Custom exclude patterns separated by `;` (e.g. `*.tmp;*.partial;*Previews.lrdata`)                                          |
+| **Status log**                     | Messages of the running action (errors in red, successful verification in green)                                                |
+| **Progress display**               | Percentage, current section (e.g. 1/2), speed and elapsed time                                                                  |
+| **Copy to external**               | Starts the transfer of all data sources into the target folder                                                                  |
+| **Checksum compare**               | Compares sources and target by checksum without copying anything                                                                |
+| **Cancel**                         | Cancels the running action                                                                                                      |
+| **Exit**                           | Closes the window (not possible during an action; closing via the window asks whether to cancel)                                |
 
 ### Transfer procedure
+
 1. Select the target folder on the external drive.
 2. Add one or more data sources. Optionally set exclude patterns, metadata and hash comparison.
 3. Click **Copy to external**.
@@ -126,23 +141,28 @@ Right-click the tray icon → **USB export**. While the window is open, the norm
 > **Warning:** The transfer is a synchronization (`rclone sync`). Files in the target subfolder that no longer exist in the source are deleted. The source is never modified.
 
 ### Automatically excluded
+
 Regardless of custom patterns, the following are never transferred or deleted:
+
 - `*.lrcat.lock`, `*.lrcat-shm`, `*.lrcat-wal`, `*.lock`, `Thumbs.db`
 - Windows system folders in the drive root: `System Volume Information`, `$RECYCLE.BIN`, `Recovery`
 
 ### Notes
+
 - If the drive is full, the transfer is aborted and the missing space (in GB) is reported in the log.
 - Settings (target, sources, excludes, options) are saved automatically in `data/config/USBExport.conf`. A separate rclone configuration is stored in `data/config/USBExportRclone.conf`.
 - The log is written to `data/logs/USBExport.log`.
 - An existing `rclone.exe` is required (see Installation).
 
 ## Troubleshooting (short)
+
 - *rclone.exe not found*: check the internet connection on first start. With a manual path, the selected folder must contain `rclone.exe`.
 - *Samba connection failed*: check IP, user, password and network.
 
 ## Resources
+
 - GitHub: https://github.com/Raychan87/LrCatalogSync
 - rclone: https://rclone.org
 - Lightroom Classic: https://www.adobe.com/products/photoshop-lightroom-classic.html
 
-*Version **1.0.0** – as of: October 2026*
+*Version **1.0.1** – as of: October 2026*

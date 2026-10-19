@@ -16,7 +16,7 @@ namespace LrCatalogSync.Core
         private SettingsForm? settingsForm;                 // Bereits geöffnetes Einstellungsfenster
         private UsbExportForm? usbExportForm;                    // Bereits geöffnetes USB-Export-Fenster
         private System.Threading.Timer? MainCycleTimer;     // Timer für Sync-Zyklus (Backup + Katalog)
-        private bool LrCatSyncEnabled = true;               // Sync aktiv (beim Start immer an)
+        private bool LrCatSyncEnabled;
         private bool syncEnabledBeforeUsbExport;               // Zustand vor dem Öffnen von USB-Export
         private ToolStripMenuItem? toggleItem;              // Menü-Eintrag für Sync ein/aus
 
@@ -33,6 +33,7 @@ namespace LrCatalogSync.Core
 
             // Config aus Datei laden (falls vorhanden, sonst Standard-Einstellungen)
             config = AppConfig.LoadFromFile(GlobalData.LrCatSyncConfigPath, GlobalData.BaseDir);
+            LrCatSyncEnabled = config.SyncEnabled;
             Log.SetLogLevel(config.LogLevel);
             Localization.Apply(config.Language);
             RcloneInstaller.EnsureManagedRclone(config.RclonePath);
@@ -256,6 +257,19 @@ namespace LrCatalogSync.Core
                 toggleItem.Text = Strings.Tray_Menu_TurnOff;
                 trayManager.UpdateStatus("Standby");
                 Log.Info($"LrCatSync: {Strings.Get("Log_LrCatSync_ManuallyStarted")}");
+            }
+
+            config.SyncEnabled = LrCatSyncEnabled;
+            if (File.Exists(GlobalData.LrCatSyncConfigPath))
+            {
+                try
+                {
+                    config.Save(GlobalData.LrCatSyncConfigPath);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"LrCatSync: {string.Format(Strings.Get("Log_LrCatSync_SyncStateSaveFailed"), ex.Message)}");
+                }
             }
         }
         

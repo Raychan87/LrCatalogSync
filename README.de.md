@@ -85,7 +85,7 @@ Tray‑Icon‑Status:
 - ⚪ --> Konfigurationsdatei fehlt
 - <img src="docs/images/Logo.png" height="16" alt="Programm-Icon" style="vertical-align: middle;"> --> Sync ist ausgeschaltet (Tray-Menü **Ausschalten** bzw. USB-Export geöffnet)
 
-Tray-Menü: **USB-Export**, **Ausschalten/Einschalten**, **Einstellungen**, **Beenden**.
+Tray-Menü: **USB-Export**, **Ausschalten/Einschalten**, **Einstellungen**, **Beenden**. Der Sync-Zustand wird in der Config gespeichert und nach einem Neustart wiederhergestellt. Der Windows-Autostart bleibt davon unabhängig: Das Programm kann im Tray starten, während der Sync ausgeschaltet bleibt.
 
 Logs finden Sie unter `data/logs/`.
 
@@ -145,5 +145,5 @@ Unabhängig von den eigenen Mustern werden nie übertragen oder gelöscht:
 - rclone: https://rclone.org
 - Lightroom Classic: https://www.adobe.com/de/products/photoshop-lightroom-classic.html
 
-*Version **1.0.0** – Stand: Oktober 2026*
+*Version **1.0.1** – Stand: Oktober 2026*
 

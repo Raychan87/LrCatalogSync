@@ -67,6 +67,9 @@ namespace LrCatalogSync.Infrastructure
         // Autorun beim Systemstart
         public bool AutoRun { get; set; } = false;
 
+        // Sync beim Programmstart aktiviert
+        public bool SyncEnabled { get; set; } = true;
+
         // ==================== BERECHNETE EIGENSCHAFTEN (Read-Only) ====================
 
         // Extrahiert den lokalen Pfad ohne Dateiname (z.B. "C:/Benutzer/[Benutzername]/Bilder/Lightroom/")
@@ -157,6 +160,7 @@ namespace LrCatalogSync.Infrastructure
                         if (key == "Language") Language = value is "System" or "en" or "de" ? value : "System";
                         if (key == "GlobalCycleInterval" && int.TryParse(value, out int globalCycleInterval)) GlobalCycleInterval = globalCycleInterval;
                         if (key == "AutoRun") AutoRun = bool.TryParse(value, out bool result4) && result4;
+                        if (key == "SyncEnabled") SyncEnabled = bool.TryParse(value, out bool result5) && result5;
                     }
                 }
             }
@@ -222,7 +226,8 @@ namespace LrCatalogSync.Infrastructure
                 "LogLevel=" + LogLevel,
                 "Language=" + (Language is "System" or "en" or "de" ? Language : "System"),
                 "GlobalCycleInterval=" + GlobalCycleInterval,
-                "AutoRun=" + AutoRun
+                "AutoRun=" + AutoRun,
+                "SyncEnabled=" + SyncEnabled
             };
 
             // Schreibe in die Datei

@@ -246,6 +246,7 @@
     <data name="Log_RcloneInstaller_Installed" xml:space="preserve"><value>rclone {0} installed.</value></data>
     <data name="Log_LrCatSync_Started" xml:space="preserve"><value>Started.</value></data>
     <data name="Log_LrCatSync_MigratedPathSaveFailed" xml:space="preserve"><value>Could not save the migrated rclone path: {0}</value></data>
+    <data name="Log_LrCatSync_SyncStateSaveFailed" xml:space="preserve"><value>Could not save the sync state: {0}</value></data>
     <data name="Log_LrCatSync_CrashRecoveryDone" xml:space="preserve"><value>Crash recovery completed; sync will resume in the next cycle.</value></data>
     <data name="Log_LrCatSync_MainCycleInitialized" xml:space="preserve"><value>Initializing main cycle (interval: {0} sec).</value></data>
     <data name="Log_LrCatSync_CoordinatorDisabled" xml:space="preserve"><value>Coordinator is disabled; skipping cycle.</value></data>
