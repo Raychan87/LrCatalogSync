@@ -911,7 +911,13 @@ namespace LrCatalogSync.Core
 
             foreach (string pattern in RemoveBuiltInPatterns(string.Join(';', userPatterns))
                 .Split(';', StringSplitOptions.RemoveEmptyEntries))
+            {
                 yield return pattern;
+
+                string directoryPattern = pattern.TrimEnd('/');
+                if (!directoryPattern.EndsWith("/**", StringComparison.Ordinal))
+                    yield return $"{directoryPattern}/**";
+            }
         }
 
         private static bool IsWithinDirectory(string path, string directory)
