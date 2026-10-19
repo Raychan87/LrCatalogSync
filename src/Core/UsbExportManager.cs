@@ -228,8 +228,7 @@ namespace LrCatalogSync.Core
                 sectionProgress?.Report(new UsbExportSectionProgress(sourceIndex + 1, totalSections));
                 string destination = CreateSourceDestination(targetRoot, source, usedDestinationNames);
                 Directory.CreateDirectory(destination);
-                ReportProgress(progress, string.Format(Strings.Get("Usb_Log_Source"), source));
-                ReportProgress(progress, string.Format(Strings.Get("Usb_Log_Destination"), destination));
+                ReportProgress(progress, string.Format(Strings.Get("Usb_Log_SourceToDestination"), source, destination));
 
                 UsbExportResult result = await RunRcloneSyncAsync(
                     appConfig.RclonePath,
