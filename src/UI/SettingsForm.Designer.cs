@@ -40,6 +40,8 @@ namespace LrCatalogSync.UI
             this.logLevelLabel = new System.Windows.Forms.Label();
             this.cmbLogLevel = new System.Windows.Forms.ComboBox();
             this.languageLabel = new System.Windows.Forms.Label();
+            this.themeLabel = new System.Windows.Forms.Label();
+            this.cmbTheme = new System.Windows.Forms.ComboBox();
             this.cmbLanguage = new System.Windows.Forms.ComboBox();
             this.updateIntervalLabel = new System.Windows.Forms.Label();
             this.txtGlobalCycleInterval = new System.Windows.Forms.TextBox();
@@ -89,6 +91,8 @@ namespace LrCatalogSync.UI
             this.generalGroup.Controls.Add(this.cmbLogLevel);
             this.generalGroup.Controls.Add(this.languageLabel);
             this.generalGroup.Controls.Add(this.cmbLanguage);
+            this.generalGroup.Controls.Add(this.themeLabel);
+            this.generalGroup.Controls.Add(this.cmbTheme);
             this.generalGroup.Controls.Add(this.updateIntervalLabel);
             this.generalGroup.Controls.Add(this.txtGlobalCycleInterval);
             this.generalGroup.Controls.Add(this.secondsLabel);
@@ -199,6 +203,27 @@ namespace LrCatalogSync.UI
             this.cmbLanguage.Name = "cmbLanguage";
             this.cmbLanguage.Size = new System.Drawing.Size(123, 23);
             this.cmbLanguage.TabIndex = 8;
+            //
+            // Label für Farbmodus
+            //
+            this.themeLabel.AutoSize = false;
+            this.themeLabel.Location = new System.Drawing.Point(260, 114);
+            this.themeLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.themeLabel.Name = "themeLabel";
+            this.themeLabel.Size = new System.Drawing.Size(74, 23);
+            this.themeLabel.TabIndex = 12;
+            this.themeLabel.Text = "Darstellung:";
+            this.themeLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            //
+            // Auswahl des Farbmodus
+            //
+            this.cmbTheme.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbTheme.FormattingEnabled = true;
+            this.cmbTheme.Location = new System.Drawing.Point(335, 114);
+            this.cmbTheme.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.cmbTheme.Name = "cmbTheme";
+            this.cmbTheme.Size = new System.Drawing.Size(123, 23);
+            this.cmbTheme.TabIndex = 13;
             //
             // Label für Aktualisierungszeit
             //
@@ -599,6 +624,8 @@ namespace LrCatalogSync.UI
         private System.Windows.Forms.ComboBox cmbLogLevel = null!;
         private System.Windows.Forms.Label languageLabel = null!;
         private System.Windows.Forms.ComboBox cmbLanguage = null!;
+        private System.Windows.Forms.Label themeLabel = null!;
+        private System.Windows.Forms.ComboBox cmbTheme = null!;
         private System.Windows.Forms.Label updateIntervalLabel = null!;
         private System.Windows.Forms.TextBox txtGlobalCycleInterval = null!;
         private System.Windows.Forms.Label secondsLabel = null!;

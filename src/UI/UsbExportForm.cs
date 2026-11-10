@@ -36,6 +36,8 @@ namespace LrCatalogSync.UI
         {
             InitializeComponent();
             ApplyLocalization();
+            Theme.ApplyTo(this);
+            Theme.StyleAccentButton(transferToExternalButton);
 
             isCoordinatorRunning = coordinatorRunning;
             appConfig = config;
@@ -160,7 +162,7 @@ namespace LrCatalogSync.UI
             }
             catch
             {
-                MessageBox.Show(Strings.Get("Usb_Dialog_LinkError"), Strings.Get("Usb_Dialog_Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageForm.Show(Strings.Get("Usb_Dialog_LinkError"), Strings.Get("Usb_Dialog_Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -406,7 +408,7 @@ namespace LrCatalogSync.UI
                 ? Strings.Get("Usb_Dialog_DeleteDriveConfirm")
                 : Strings.Get("Usb_Dialog_DeleteFolderConfirm");
             string confirmationMessage = string.Format(Strings.Get("Usb_Dialog_DeleteBody"), prompt, targetPath, entryCount);
-            DialogResult confirmation = MessageBox.Show(
+            DialogResult confirmation = MessageForm.Show(
                 this,
                 confirmationMessage,
                 Strings.Get("Usb_Dialog_DeleteTitle"),
@@ -471,11 +473,11 @@ namespace LrCatalogSync.UI
         {
             statusLabel.SelectionStart = statusLabel.TextLength;
             statusLabel.SelectionLength = 0;
-            statusLabel.SelectionColor = severity == UsbLogSeverity.Error ? Color.Firebrick
-                : severity == UsbLogSeverity.Success ? Color.ForestGreen
-                : Color.FromArgb(35, 35, 35);
+            statusLabel.SelectionColor = severity == UsbLogSeverity.Error ? Theme.Current.Error
+                : severity == UsbLogSeverity.Success ? Theme.Current.Success
+                : Theme.Current.Text;
             statusLabel.AppendText(entry + Environment.NewLine);
-            statusLabel.SelectionColor = Color.FromArgb(35, 35, 35);
+            statusLabel.SelectionColor = Theme.Current.Text;
             displayedLogEntryCount++;
             hasLogEntries = true;
             displayedStatusText = string.Empty;
@@ -537,17 +539,17 @@ namespace LrCatalogSync.UI
                 long freeSpace = drive.AvailableFreeSpace;
                 long usedSpace = drive.TotalSize - drive.AvailableFreeSpace;
                 driveDetailsLabel.Clear();
-                driveDetailsLabel.SelectionColor = SystemColors.ControlText;
+                driveDetailsLabel.SelectionColor = Theme.Current.Text;
                 driveDetailsLabel.AppendText(string.Format(Strings.Get("Usb_Drive_DetailsHeader"), drive.Name.TrimEnd('\\'), drive.DriveFormat, FormatBytes(drive.TotalSize)));
-                driveDetailsLabel.SelectionColor = Color.Firebrick;
+                driveDetailsLabel.SelectionColor = Theme.Current.Error;
                 driveDetailsLabel.AppendText(string.Format(Strings.Get("Usb_Drive_Used"), FormatBytes(usedSpace)));
-                driveDetailsLabel.SelectionColor = SystemColors.ControlText;
+                driveDetailsLabel.SelectionColor = Theme.Current.Text;
                 driveDetailsLabel.AppendText(", ");
-                driveDetailsLabel.SelectionColor = Color.ForestGreen;
+                driveDetailsLabel.SelectionColor = Theme.Current.Success;
                 driveDetailsLabel.AppendText(string.Format(Strings.Get("Usb_Drive_Free"), FormatBytes(freeSpace)));
                 driveDetailsLabel.SelectionStart = 0;
                 driveDetailsLabel.SelectionLength = 0;
-                driveDetailsLabel.SelectionColor = SystemColors.ControlText;
+                driveDetailsLabel.SelectionColor = Theme.Current.Text;
             }
             catch (Exception)
             {
@@ -558,7 +560,7 @@ namespace LrCatalogSync.UI
         private void SetDriveDetailsText(string text)
         {
             driveDetailsLabel.Clear();
-            driveDetailsLabel.SelectionColor = SystemColors.ControlText;
+            driveDetailsLabel.SelectionColor = Theme.Current.Text;
             driveDetailsLabel.AppendText(text);
             driveDetailsLabel.SelectionStart = 0;
             driveDetailsLabel.SelectionLength = 0;
@@ -626,7 +628,7 @@ namespace LrCatalogSync.UI
         {
             if (operationRunning)
             {
-                DialogResult result = MessageBox.Show(this, Strings.Get("Usb_Dialog_ConfirmCancel"), Strings.Get("Usb_Dialog_Title"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                DialogResult result = MessageForm.Show(this, Strings.Get("Usb_Dialog_ConfirmCancel"), Strings.Get("Usb_Dialog_Title"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                 if (result == DialogResult.Yes)
                 {
                     exportCancellationSource?.Cancel();
@@ -642,7 +644,7 @@ namespace LrCatalogSync.UI
             if (isCoordinatorRunning())
             {
                 e.Cancel = true;
-                MessageBox.Show(this, Strings.Get("Usb_Dialog_CloseWhileSync"), Strings.Get("Usb_Dialog_Title"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageForm.Show(this, Strings.Get("Usb_Dialog_CloseWhileSync"), Strings.Get("Usb_Dialog_Title"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 

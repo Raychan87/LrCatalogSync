@@ -37,6 +37,7 @@ namespace LrCatalogSync.Core
             LrCatSyncEnabled = config.SyncEnabled;
             Log.SetLogLevel(config.LogLevel);
             Localization.Apply(config.Language);
+            Theme.Apply(config.Theme);
             RcloneInstaller.EnsureManagedRclone(config.RclonePath);
             if (config.RcloneFolderWasMigrated && File.Exists(GlobalData.LrCatSyncConfigPath))
             {
@@ -171,6 +172,7 @@ namespace LrCatalogSync.Core
                         config = AppConfig.LoadFromFile(GlobalData.LrCatSyncConfigPath, GlobalData.BaseDir);
                         Log.SetLogLevel(config.LogLevel);
                         Localization.Apply(config.Language);
+                        Theme.Apply(config.Theme);
                         trayManager.RefreshText();
                         SetupContextMenu();
                         RcloneInstaller.EnsureManagedRclone(config.RclonePath);
@@ -194,6 +196,8 @@ namespace LrCatalogSync.Core
                 Application.Exit(); 
             };
             menu.Items.Add(exitItem);
+
+            Theme.ApplyTo(menu);
 
             // Binde Menü an Tray-Icon
             trayManager.GetTrayIcon().ContextMenuStrip = menu;

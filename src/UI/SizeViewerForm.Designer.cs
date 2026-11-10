@@ -219,9 +219,9 @@ namespace LrCatalogSync.UI
             //
             this.exitButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.exitButton.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.exitButton.Location = new System.Drawing.Point(887, 490);
+            this.exitButton.Location = new System.Drawing.Point(887, 488);
             this.exitButton.Name = "exitButton";
-            this.exitButton.Size = new System.Drawing.Size(85, 25);
+            this.exitButton.Size = new System.Drawing.Size(85, 28);
             this.exitButton.TabIndex = 6;
             this.exitButton.Text = "Beenden";
             this.exitButton.UseVisualStyleBackColor = true;

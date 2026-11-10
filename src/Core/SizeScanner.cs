@@ -11,6 +11,7 @@ namespace LrCatalogSync.Core
         public List<SizeNode>? Children { get; set; }
         public bool IsDirectory { get; init; }
         public bool IsFileGroup { get; init; }               // Sammelzeile für die Dateien eines Verzeichnisses
+        public bool IsLink { get; init; }                    // Verknüpfung (Junction, Symlink): Inhalt wird nicht gelesen
         public bool AccessDenied { get; set; }               // Verzeichnis konnte nicht gelesen werden
         public long Size { get; set; }                       // Logische Größe in Bytes
         public long Allocated { get; set; }                  // Belegter Platz auf dem Datenträger in Bytes
@@ -28,6 +29,13 @@ namespace LrCatalogSync.Core
     // Fortschritt eines laufenden Scans. Wird vom Scan-Thread geschrieben und vom UI-Timer gelesen.
     public sealed class SizeScanProgress
     {
+        private volatile SizeNode? root;
+
+        // Wurzel des entstehenden Baums. Größen und Kindknoten wachsen während des Scans;
+        // das Fenster darf sie lesen und die Kindlisten sortieren, aber nichts daran ändern.
+        public SizeNode? Root => root;
+        internal void SetRoot(SizeNode node) => root = node;
+
         private long fileCount;
         private int inaccessibleCount;
         private volatile string currentDirectory = string.Empty;
@@ -79,11 +87,12 @@ namespace LrCatalogSync.Core
             {
                 root.LastModified = Directory.GetLastWriteTime(rootPath);
             }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentOutOfRangeException)
             {
                 // Zeitstempel ist nur Zusatzinfo, der eigentliche Zugriffsfehler wird in ScanDirectory behandelt
             }
 
+            progress.SetRoot(root);
             ScanDirectory(root, rootPath, clusterSize, !IsNetworkPath(rootPath), progress, cancellationToken);
             return new SizeScanResult(root, cancellationToken.IsCancellationRequested, progress.InaccessibleCount);
         }
@@ -100,8 +109,8 @@ namespace LrCatalogSync.Core
 
             var directories = new List<SizeNode>();
             var files = new List<SizeNode>();
-            DateTime newestChange = DateTime.MinValue;
 
+            // ========== EINTRÄGE DIESES VERZEICHNISSES LESEN ==========
             try
             {
                 var entries = new FileSystemEnumerable<Entry>(
@@ -110,7 +119,7 @@ namespace LrCatalogSync.Core
                         entry.FileName.ToString(),
                         entry.Attributes,
                         entry.Length,
-                        entry.LastWriteTimeUtc.LocalDateTime),
+                        GetLastWriteTime(ref entry)),
                     enumerationOptions);
 
                 foreach (Entry entry in entries)
@@ -121,19 +130,16 @@ namespace LrCatalogSync.Core
 
                     if ((entry.Attributes & FileAttributes.Directory) != 0)
                     {
-                        var child = new SizeNode
+                        directories.Add(new SizeNode
                         {
                             Name = entry.Name,
                             IsDirectory = true,
                             Parent = node,
-                            LastModified = entry.LastWrite
-                        };
+                            LastModified = entry.LastWrite,
 
-                        // Verknüpfungen (Junctions, Symlinks) nicht verfolgen, sonst würde doppelt gezählt
-                        if ((entry.Attributes & FileAttributes.ReparsePoint) == 0)
-                            ScanDirectory(child, Path.Combine(path, entry.Name), clusterSize, queryAllocation, progress, cancellationToken);
-
-                        directories.Add(child);
+                            // Verknüpfungen (Junctions, Symlinks) nicht verfolgen, sonst würde doppelt gezählt
+                            IsLink = (entry.Attributes & FileAttributes.ReparsePoint) != 0
+                        });
                     }
                     else
                     {
@@ -156,7 +162,7 @@ namespace LrCatalogSync.Core
 
             progress.AddFiles(files.Count);
 
-            // ========== SUMMEN BILDEN ==========
+            // ========== DATEIEN SUMMIEREN ==========
             long fileSize = 0;
             long fileAllocated = 0;
             DateTime newestFile = DateTime.MinValue;
@@ -168,26 +174,22 @@ namespace LrCatalogSync.Core
                     newestFile = file.LastModified;
             }
 
-            node.Size = fileSize;
-            node.Allocated = fileAllocated;
-            node.FileCount = files.Count;
-            node.DirCount = directories.Count;
-            newestChange = newestFile;
+            DateTime newestChange = newestFile;
 
-            foreach (SizeNode directory in directories)
+            // Summen sofort bis zur Wurzel weitergeben: so wächst die Anzeige schon während des Scans
+            for (SizeNode? current = node; current != null; current = current.Parent)
             {
-                node.Size += directory.Size;
-                node.Allocated += directory.Allocated;
-                node.FileCount += directory.FileCount;
-                node.DirCount += directory.DirCount;
-                if (directory.LastModified > newestChange)
-                    newestChange = directory.LastModified;
+                current.Size += fileSize;
+                current.Allocated += fileAllocated;
+                current.FileCount += files.Count;
+                current.DirCount += directories.Count;
             }
 
-            if (newestChange > DateTime.MinValue)
-                node.LastModified = newestChange;
-
             // ========== KINDKNOTEN AUFBAUEN ==========
+            // Die Liste der Unterverzeichnisse wird hier weiterverwendet. Das Fenster bekommt eine eigene
+            // Liste, die es während des Scans gefahrlos sortieren kann.
+            SizeNode[] subdirectories = directories.ToArray();
+
             // Gibt es Unterverzeichnisse, werden die Dateien in einer Sammelzeile zusammengefasst
             if (directories.Count > 0 && files.Count > 0)
             {
@@ -218,6 +220,36 @@ namespace LrCatalogSync.Core
                     file.Parent = node;
 
                 node.Children = files;
+            }
+
+            // ========== UNTERVERZEICHNISSE LESEN ==========
+            foreach (SizeNode directory in subdirectories)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    break;
+
+                if (!directory.IsLink)
+                    ScanDirectory(directory, Path.Combine(path, directory.Name), clusterSize, queryAllocation, progress, cancellationToken);
+
+                if (directory.LastModified > newestChange)
+                    newestChange = directory.LastModified;
+            }
+
+            if (newestChange > DateTime.MinValue)
+                node.LastModified = newestChange;
+        }
+
+        // Manche Datenträger (vor allem Netzlaufwerke) liefern ungültige Zeitstempel.
+        // Solche Einträge werden ohne Datum gezählt statt den Scan abzubrechen.
+        private static DateTime GetLastWriteTime(ref FileSystemEntry entry)
+        {
+            try
+            {
+                return entry.LastWriteTimeUtc.LocalDateTime;
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return DateTime.MinValue;
             }
         }
 

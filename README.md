@@ -67,6 +67,7 @@ Right-click the tray icon → **Settings**
 | **Rclone folder**                    | Folder containing `rclone.exe`; default is `data/rclone/`. Another folder can be entered manually.                      |
 | **Log level**                        | `DEBUG`, `INFO`, `NOTICE`, `ERROR`                                                                                  |
 | **Language**                         | `System` (Windows display language), `English` or `Deutsch`. Unsupported Windows languages use English.               |
+| **Appearance**                       | `Automatic` (follows the Windows light/dark setting), `Light`, `Dark purple` or `Dark system color` (uses the Windows accent color). Applies to windows opened after saving. |
 | **Check interval**                   | Check interval in seconds (1 to 999, default 10). After program start, the first cycle runs with a delay of 60 seconds.    |
 | **Sync \*Previews.lrdata?**          | Whether the `* Previews.lrdata` folder (standard and 1:1 previews) is synchronized as well                                |
 | **Local catalog file**               | Path to the local `.lrcat` file                                                                                           |
@@ -97,7 +98,7 @@ Tray icon status:
 - ⚪ --> configuration file missing
 -  --> sync is switched off (tray menu **Turn off** or USB export open)
 
-Tray menu: **USB export**, **SizeViewer**, **Turn off/Turn on**, **Settings**, **Exit**. The sync state is stored in the config and restored after a restart. Windows startup remains independent: the program can start in the tray while sync stays switched off.
+Tray menu: **USB export**, **Size-Viewer**, **Turn off/Turn on**, **Settings**, **Exit**. The sync state is stored in the config and restored after a restart. Windows startup remains independent: the program can start in the tray while sync stays switched off.
 
 Logs are located in `data/logs/`.
 
@@ -154,13 +155,15 @@ Regardless of custom patterns, the following are never transferred or deleted:
 - The log is written to `data/logs/USBExport.log`.
 - An existing `rclone.exe` is required (see Installation).
 
-## SizeViewer (additional tool)
+## Size-Viewer (additional tool)
 
-The SizeViewer shows which folders and files use how much disk space. The tool is part of LrCatalogSync, is read-only and never modifies files.
+The Size-Viewer shows which folders and files use how much disk space. The tool is part of LrCatalogSync, is read-only and never modifies files.
+
+![Size-Viewer](docs/images/SizeViewer.en.png)
 
 ### Opening
 
-Right-click the tray icon → **SizeViewer**. The normal sync keeps running in the meantime. No directory is selected when the window opens.
+Right-click the tray icon → **Size-Viewer**. The normal sync keeps running in the meantime. No directory is selected when the window opens.
 
 ### Controls
 
@@ -169,7 +172,7 @@ Right-click the tray icon → **SizeViewer**. The normal sync keeps running in t
 | **Select directory** | Selects the directory to scan and starts the scan                    |
 | **Cancel scan**      | Cancels the running scan; the partial result read so far is shown    |
 | **Refresh**          | Scans the last selected directory again                              |
-| **Scan as administrator** | Restarts the SizeViewer with administrator rights after the Windows security prompt and scans the selected directory again so protected folders can be read |
+| **Scan as administrator** | Restarts the Size-Viewer with administrator rights after the Windows security prompt and scans the selected directory again so protected folders can be read |
 | **Exit**             | Closes the window                                                    |
 
 ### Columns

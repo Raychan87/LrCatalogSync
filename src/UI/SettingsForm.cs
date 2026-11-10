@@ -29,7 +29,13 @@ namespace LrCatalogSync.UI
             cmbLanguage.DisplayMember = nameof(LanguageOption.DisplayName);
             cmbLanguage.ValueMember = nameof(LanguageOption.Code);
             cmbLanguage.SelectedValue = cfg.Language;
+            cmbTheme.DataSource = Theme.Options.ToArray();
+            cmbTheme.DisplayMember = nameof(ThemeOption.DisplayName);
+            cmbTheme.ValueMember = nameof(ThemeOption.Code);
+            cmbTheme.SelectedValue = cfg.Theme;
             ApplyLocalization();
+            Theme.ApplyTo(this);
+            Theme.StyleAccentButton(saveButton);
 
             Icon = LoadIcon("LrCatalogSync.Resources.Icons.app_icon.ico");
             txtRcloneFolder.Text = cfg.RcloneFolder;
@@ -115,7 +121,7 @@ namespace LrCatalogSync.UI
             }
             catch
             {
-                MessageBox.Show(Strings.Settings_Dialog_LinkError, Strings.Settings_Title_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageForm.Show(Strings.Settings_Dialog_LinkError, Strings.Settings_Title_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private string BrowseFolder()
@@ -158,6 +164,7 @@ namespace LrCatalogSync.UI
                 config.SambaUser = GetControlValue("txtSambaUser");
                 config.LogLevel = GetControlValue("cmbLogLevel");
                 config.Language = cmbLanguage.SelectedValue?.ToString() ?? Localization.SystemCode;
+                config.Theme = cmbTheme.SelectedValue?.ToString() ?? Theme.SystemCode;
                 config.AutoRun = GetCheckBoxValue("chkAutoRun");
 
                 if (!ValidateRemotePath(ref config.CatalogRemotePath, "Remote Katalog Pfad") ||
@@ -166,7 +173,7 @@ namespace LrCatalogSync.UI
 
                 if (!int.TryParse(GetControlValue("txtGlobalCycleInterval"), out int globalCycleInterval) || globalCycleInterval <= 0)
                 {
-                    MessageBox.Show(
+                    MessageForm.Show(
                         Strings.Settings_Dialog_InvalidInterval,
                         Strings.Settings_Dialog_InvalidIntervalTitle,
                         MessageBoxButtons.OK,
@@ -176,7 +183,7 @@ namespace LrCatalogSync.UI
 
                 if (globalCycleInterval > 999)
                 {
-                    MessageBox.Show(
+                    MessageForm.Show(
                         Strings.Settings_Dialog_IntervalRange,
                         Strings.Settings_Dialog_IntervalRangeTitle,
                         MessageBoxButtons.OK,
@@ -194,7 +201,7 @@ namespace LrCatalogSync.UI
 
                 if (!File.Exists(absoluteRclonePath))
                 {
-                    MessageBox.Show(
+                    MessageForm.Show(
                         string.Format(Strings.Settings_Dialog_RcloneMissing, absoluteRclonePath),
                         Strings.Settings_Dialog_RcloneMissingTitle,
                         MessageBoxButtons.OK,
@@ -204,13 +211,13 @@ namespace LrCatalogSync.UI
 
                 if (string.IsNullOrEmpty(config.CatalogLocalFile))
                 {
-                    MessageBox.Show(Strings.Settings_Dialog_CatalogRequired, Strings.Settings_Dialog_CatalogRequiredTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageForm.Show(Strings.Settings_Dialog_CatalogRequired, Strings.Settings_Dialog_CatalogRequiredTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
                 if (!File.Exists(config.CatalogLocalFile))
                 {
-                    MessageBox.Show(
+                    MessageForm.Show(
                         string.Format(Strings.Settings_Dialog_CatalogMissing, config.CatalogLocalFile),
                         Strings.Settings_Dialog_CatalogMissingTitle,
                         MessageBoxButtons.OK,
@@ -220,7 +227,7 @@ namespace LrCatalogSync.UI
 
                 if (!config.CatalogLocalFile.EndsWith(".lrcat", StringComparison.OrdinalIgnoreCase))
                 {
-                    MessageBox.Show(
+                    MessageForm.Show(
                         string.Format(Strings.Settings_Dialog_CatalogInvalid, config.CatalogLocalFile),
                         Strings.Settings_Dialog_CatalogInvalidTitle,
                         MessageBoxButtons.OK,
@@ -232,13 +239,13 @@ namespace LrCatalogSync.UI
                 {
                     if (string.IsNullOrEmpty(config.BackupsLocalPath))
                     {
-                        MessageBox.Show(Strings.Settings_Dialog_BackupLocalRequired, Strings.Settings_Dialog_BackupLocalRequiredTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageForm.Show(Strings.Settings_Dialog_BackupLocalRequired, Strings.Settings_Dialog_BackupLocalRequiredTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
 
                     if (!Directory.Exists(config.BackupsLocalPath))
                     {
-                        MessageBox.Show(
+                        MessageForm.Show(
                             string.Format(Strings.Settings_Dialog_BackupLocalMissing, config.BackupsLocalPath),
                             Strings.Settings_Dialog_BackupLocalMissingTitle,
                             MessageBoxButtons.OK,
@@ -248,14 +255,14 @@ namespace LrCatalogSync.UI
 
                     if (string.IsNullOrEmpty(config.BackupsRemotePath))
                     {
-                        MessageBox.Show(Strings.Settings_Dialog_BackupRemoteRequired, Strings.Settings_Dialog_BackupRemoteRequiredTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageForm.Show(Strings.Settings_Dialog_BackupRemoteRequired, Strings.Settings_Dialog_BackupRemoteRequiredTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
                 }
 
                 if (config.EnableRcloneCopy && string.IsNullOrEmpty(config.RcloneCopyFolderName))
                 {
-                    MessageBox.Show(Strings.Settings_Dialog_CopyFolderRequired, Strings.Settings_Dialog_CopyFolderRequiredTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageForm.Show(Strings.Settings_Dialog_CopyFolderRequired, Strings.Settings_Dialog_CopyFolderRequiredTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
@@ -284,13 +291,13 @@ namespace LrCatalogSync.UI
                 else
                     Autorun.Disable();
 
-                MessageBox.Show(Strings.Settings_Dialog_SaveSuccess, Strings.Settings_Title_Success, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageForm.Show(Strings.Settings_Dialog_SaveSuccess, Strings.Settings_Title_Success, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 DialogResult = DialogResult.OK;
                 Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(string.Format(Strings.Settings_Dialog_SaveFailure, ex.Message), Strings.Settings_Title_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageForm.Show(string.Format(Strings.Settings_Dialog_SaveFailure, ex.Message), Strings.Settings_Title_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private string GetControlValue(string controlName)
@@ -322,7 +329,7 @@ namespace LrCatalogSync.UI
                 char.IsLetter(trimmedRemotePath[0]) &&
                 trimmedRemotePath[1] == ':')
             {
-                MessageBox.Show(
+                MessageForm.Show(
                     string.Format(Strings.Settings_Dialog_RemotePathInvalid, fieldName),
                     string.Format(Strings.Settings_Dialog_RemotePathInvalidTitle, fieldName),
                     MessageBoxButtons.OK,
@@ -346,6 +353,7 @@ namespace LrCatalogSync.UI
             rcloneDownloadLabel.Text = Strings.Settings_RcloneDownload;
             logLevelLabel.Text = Strings.Settings_LogLevel;
             languageLabel.Text = Strings.Settings_Language;
+            themeLabel.Text = Strings.Get("Settings_Theme");
             updateIntervalLabel.Text = Strings.Settings_UpdateInterval;
             secondsLabel.Text = Strings.Settings_Seconds;
             catalogGroup.Text = Strings.Settings_Group_Catalog;

@@ -38,6 +38,7 @@ namespace LrCatalogSync
             AppConfig config = AppConfig.LoadFromFile(GlobalData.LrCatSyncConfigPath, GlobalData.BaseDir);
             Log.SetLogLevel(config.LogLevel);
             Localization.Apply(config.Language);
+            Theme.Apply(config.Theme);
 
             // Mit Administratorrechten auch Ordner lesen, die nur für SYSTEM freigegeben sind
             if (Environment.IsPrivilegedProcess)

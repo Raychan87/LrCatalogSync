@@ -26,6 +26,7 @@ namespace LrCatalogSync.UI
         private const int IconSize = 16;
         private const int CellPadding = 4;
         private const int SizeBoxWidth = 68;        // Feld mit Größe und Balken zwischen Symbol und Name
+        private const int ColumnLineOffset = 2;     // Abstand der Spaltenlinie vom rechten Zellenrand (wie Windows)
 
         // Symbole der Schaltflächen aus der Windows-Symbolschrift
         private const string GlyphFontName = "Segoe MDL2 Assets";
@@ -33,20 +34,13 @@ namespace LrCatalogSync.UI
         private const string GlyphSelectFolder = "\uE838";
         private const string GlyphCancel = "\uE711";
         private const string GlyphRefresh = "\uE72C";
-        private static readonly Color GlyphSelectFolderColor = Color.FromArgb(185, 125, 0);
-        private static readonly Color GlyphCancelColor = Color.FromArgb(200, 50, 50);
-        private static readonly Color GlyphRefreshColor = Color.FromArgb(0, 120, 215);
+        private static readonly Color GlyphSelectFolderColor = Color.FromArgb(210, 153, 34);
 
         // Windows-Fehlercode: Abfrage der Benutzerkontensteuerung abgelehnt (ERROR_CANCELLED)
         private const int ErrorCancelled = 1223;
 
         private const string SortArrowAscending = " ▲";
         private const string SortArrowDescending = " ▼";
-
-        // Farben des Prozentbalkens (bei einem späteren Dark-Mode zentral ersetzen)
-        private static readonly Color PercentBarColor = Color.FromArgb(150, 170, 235);
-        private static readonly Color PercentBarBackColor = SystemColors.Window;
-        private static readonly Color PercentBarBorderColor = SystemColors.ControlDark;
 
         private readonly List<SizeNode> visibleRows = new();    // Aktuell sichtbare Zeilen (aufgeklappter Baum)
         private readonly Stopwatch scanStopwatch = new();
@@ -86,8 +80,8 @@ namespace LrCatalogSync.UI
             statusTimer.Interval = GlobalConst.SIZEVIEWER_STATUS_INTERVAL_MS;
 
             SetButtonImage(selectFolderButton, CreateGlyphImage(GlyphSelectFolder, GlyphSelectFolderColor));
-            SetButtonImage(cancelScanButton, CreateGlyphImage(GlyphCancel, GlyphCancelColor));
-            SetButtonImage(refreshButton, CreateGlyphImage(GlyphRefresh, GlyphRefreshColor));
+            SetButtonImage(cancelScanButton, CreateGlyphImage(GlyphCancel, Theme.Current.Error));
+            SetButtonImage(refreshButton, CreateGlyphImage(GlyphRefresh, Theme.Current.Link));
             SetButtonImage(adminButton, LoadStockImage(StockIconId.Shield));
 
             // Mit Administratorrechten gibt es nichts mehr anzufordern
@@ -104,6 +98,8 @@ namespace LrCatalogSync.UI
 
             ApplyViewConfig();
             ApplyLocalization();
+            Theme.ApplyTo(this);
+            Theme.ApplyTo(rowContextMenu);
             UpdateCommandState();
         }
 
@@ -170,7 +166,7 @@ namespace LrCatalogSync.UI
             catch (Exception ex)
             {
                 Log.Error($"SizeViewer: {string.Format(Strings.Get("Log_SizeViewer_AdminFailed"), ex.Message)}");
-                MessageBox.Show(
+                MessageForm.Show(
                     this,
                     string.Format(Strings.Get("Size_Dialog_AdminFailed"), ex.Message),
                     Strings.Get("Size_Dialog_Error"),
@@ -208,6 +204,16 @@ namespace LrCatalogSync.UI
                     Strings.Get("Size_Status_Scanning"),
                     scanProgress.FileCount.ToString("N0"),
                     scanProgress.CurrentDirectory);
+
+                // Zwischenstand anzeigen: der Baum wächst, während der Scan läuft
+                if (rootNode == null && scanProgress.Root != null)
+                {
+                    rootNode = scanProgress.Root;
+                    rootNode.Expanded = true;
+                }
+
+                if (rootNode != null)
+                    RefreshVisibleRows();
             }
         }
 
@@ -240,7 +246,30 @@ namespace LrCatalogSync.UI
 
         private void ResultListView_DrawColumnHeader(object? sender, DrawListViewColumnHeaderEventArgs e)
         {
-            e.DrawDefault = true;
+            // Im hellen Modus zeichnet Windows die Spaltenköpfe wie gewohnt
+            if (!Theme.Current.IsDark)
+            {
+                e.DrawDefault = true;
+                return;
+            }
+
+            using (var backBrush = new SolidBrush(Theme.Current.Raised))
+                e.Graphics.FillRectangle(backBrush, e.Bounds);
+
+            using (var borderPen = new Pen(Theme.Current.Border))
+            {
+                int lineX = e.Bounds.Right - ColumnLineOffset;
+                e.Graphics.DrawLine(borderPen, lineX, e.Bounds.Top, lineX, e.Bounds.Bottom);
+                e.Graphics.DrawLine(borderPen, e.Bounds.Left, e.Bounds.Bottom - 1, e.Bounds.Right, e.Bounds.Bottom - 1);
+            }
+
+            TextFormatFlags alignment = e.Header?.TextAlign switch
+            {
+                HorizontalAlignment.Right => TextFormatFlags.Right,
+                HorizontalAlignment.Center => TextFormatFlags.HorizontalCenter,
+                _ => TextFormatFlags.Left
+            };
+            DrawCellText(e.Graphics, e.Header?.Text ?? string.Empty, e.Bounds, Theme.Current.Text, alignment);
         }
 
         private void ResultListView_DrawSubItem(object? sender, DrawListViewSubItemEventArgs e)
@@ -254,12 +283,13 @@ namespace LrCatalogSync.UI
             // Für die erste Spalte liefert Windows die ganze Zeile: Position und Breite selbst bestimmen
             Rectangle bounds = e.ColumnIndex == ColumnName ? GetNameCellBounds(e.ItemIndex) : e.Bounds;
 
-            Color backColor = SystemColors.Window;
-            Color foreColor = node.AccessDenied ? SystemColors.GrayText : SystemColors.WindowText;
+            ThemePalette palette = Theme.Current;
+            Color backColor = palette.Surface;
+            Color foreColor = node.AccessDenied ? palette.Muted : palette.Text;
             if (selected)
             {
-                backColor = resultListView.Focused ? SystemColors.Highlight : SystemColors.Control;
-                foreColor = resultListView.Focused ? SystemColors.HighlightText : SystemColors.ControlText;
+                backColor = resultListView.Focused ? palette.Selection : palette.InactiveSelection;
+                foreColor = resultListView.Focused ? palette.OnSelection : palette.Text;
             }
 
             using (var backBrush = new SolidBrush(backColor))
@@ -268,7 +298,7 @@ namespace LrCatalogSync.UI
             switch (e.ColumnIndex)
             {
                 case ColumnName:
-                    DrawNameCell(e.Graphics, node, bounds, foreColor, selected);
+                    DrawNameCell(e.Graphics, node, bounds, foreColor);
                     break;
                 case ColumnPercent:
                     DrawPercentCell(e.Graphics, node, bounds);
@@ -279,6 +309,15 @@ namespace LrCatalogSync.UI
                 default:
                     DrawCellText(e.Graphics, GetCellText(node, e.ColumnIndex), bounds, foreColor, TextFormatFlags.Right);
                     break;
+            }
+
+            // Spaltenlinie am rechten Zellenrand: setzt die Linien fort, die Windows im dunklen Modus
+            // in den leeren Bereich unter den Zeilen zeichnet
+            if (palette.IsDark && !selected)
+            {
+                using var linePen = new Pen(palette.ColumnLine);
+                int lineX = bounds.Right - ColumnLineOffset;
+                e.Graphics.DrawLine(linePen, lineX, bounds.Top, lineX, bounds.Bottom - 1);
             }
         }
 
@@ -367,7 +406,7 @@ namespace LrCatalogSync.UI
             catch (Exception ex)
             {
                 Log.Error($"SizeViewer: {string.Format(Strings.Get("Log_SizeViewer_ExplorerFailed"), ex.Message)}");
-                MessageBox.Show(
+                MessageForm.Show(
                     this,
                     Strings.Get("Size_Dialog_ExplorerFailed"),
                     Strings.Get("Size_Dialog_Error"),
@@ -415,7 +454,7 @@ namespace LrCatalogSync.UI
                 if (!IsDisposed)
                 {
                     statusLabel.Text = Strings.Get("Size_Status_Empty");
-                    MessageBox.Show(
+                    MessageForm.Show(
                         this,
                         string.Format(Strings.Get("Size_Dialog_ScanFailed"), ex.Message),
                         Strings.Get("Size_Dialog_Error"),
@@ -440,9 +479,14 @@ namespace LrCatalogSync.UI
 
         private void ShowResult(SizeScanResult result)
         {
-            rootNode = result.Root;
-            rootNode.Expanded = true;
-            RebuildVisibleRows(null);
+            // Derselbe Baum wie in der Live-Anzeige: Auswahl und aufgeklappte Ordner bleiben erhalten
+            if (rootNode != result.Root)
+            {
+                rootNode = result.Root;
+                rootNode.Expanded = true;
+            }
+
+            RefreshVisibleRows();
 
             string status = string.Format(
                 Strings.Get(result.Cancelled ? "Size_Status_Cancelled" : "Size_Status_Done"),
@@ -561,6 +605,32 @@ namespace LrCatalogSync.UI
             resultListView.Invalidate();
         }
 
+        // Aktualisiert die Zeilenliste, ohne Auswahl und Scrollposition zu verlieren (Live-Anzeige beim Scan)
+        private void RefreshVisibleRows()
+        {
+            SizeNode? selectedNode = GetSelectedNode();
+            int topIndex = resultListView.TopItem?.Index ?? 0;
+
+            visibleRows.Clear();
+            if (rootNode != null)
+                AppendNode(rootNode, 0, visibleRows);
+
+            resultListView.SelectedIndices.Clear();
+            resultListView.VirtualListSize = visibleRows.Count;
+
+            if (topIndex > 0 && topIndex < visibleRows.Count)
+                resultListView.TopItem = resultListView.Items[topIndex];
+
+            int selectIndex = selectedNode != null ? visibleRows.IndexOf(selectedNode) : -1;
+            if (selectIndex >= 0)
+            {
+                resultListView.SelectedIndices.Add(selectIndex);
+                resultListView.FocusedItem = resultListView.Items[selectIndex];
+            }
+
+            resultListView.Invalidate();
+        }
+
         private void AppendNode(SizeNode node, int depth, List<SizeNode> target)
         {
             node.Depth = depth;
@@ -575,9 +645,36 @@ namespace LrCatalogSync.UI
             if (node.Children == null)
                 return;
 
-            node.Children.Sort(CompareNodes);
+            SortChildren(node.Children);
             foreach (SizeNode child in node.Children)
                 AppendNode(child, node.Depth + 1, target);
+        }
+
+        // Sortiert mit einer Momentaufnahme der Werte: während eines Scans ändern sich die Größen
+        // laufend, und ein Vergleich mit wechselnden Werten würde die Sortierung abbrechen lassen.
+        private void SortChildren(List<SizeNode> children)
+        {
+            var snapshot = new (SizeNode Node, long Key)[children.Count];
+            for (int i = 0; i < snapshot.Length; i++)
+                snapshot[i] = (children[i], GetSortKey(children[i]));
+
+            Array.Sort(snapshot, CompareSnapshots);
+            for (int i = 0; i < snapshot.Length; i++)
+                children[i] = snapshot[i].Node;
+        }
+
+        private long GetSortKey(SizeNode node)
+        {
+            return sortColumn switch
+            {
+                ColumnName => 0,
+                ColumnSize => node.Size,
+                ColumnFiles => node.FileCount,
+                ColumnFolders => node.DirCount,
+                ColumnModified => node.LastModified.Ticks,
+                // Der Prozentanteil bezieht sich auf den belegten Platz: gleiche Reihenfolge
+                _ => node.Allocated
+            };
         }
 
         // Klappt eine Zeile auf oder zu und passt die Zeilenliste an
@@ -619,18 +716,11 @@ namespace LrCatalogSync.UI
             resultListView.Invalidate();
         }
 
-        private int CompareNodes(SizeNode first, SizeNode second)
+        private int CompareSnapshots((SizeNode Node, long Key) first, (SizeNode Node, long Key) second)
         {
-            int result = sortColumn switch
-            {
-                ColumnName => string.Compare(GetDisplayName(first), GetDisplayName(second), StringComparison.CurrentCultureIgnoreCase),
-                ColumnSize => first.Size.CompareTo(second.Size),
-                ColumnFiles => first.FileCount.CompareTo(second.FileCount),
-                ColumnFolders => first.DirCount.CompareTo(second.DirCount),
-                ColumnModified => first.LastModified.CompareTo(second.LastModified),
-                // Der Prozentanteil bezieht sich auf den belegten Platz: gleiche Reihenfolge
-                _ => first.Allocated.CompareTo(second.Allocated)
-            };
+            int result = sortColumn == ColumnName
+                ? string.Compare(GetDisplayName(first.Node), GetDisplayName(second.Node), StringComparison.CurrentCultureIgnoreCase)
+                : first.Key.CompareTo(second.Key);
 
             if (sortDescending)
                 result = -result;
@@ -638,7 +728,7 @@ namespace LrCatalogSync.UI
             // Bei Gleichstand immer nach Name, damit die Reihenfolge stabil bleibt
             return result != 0
                 ? result
-                : string.Compare(first.Name, second.Name, StringComparison.CurrentCultureIgnoreCase);
+                : string.Compare(first.Node.Name, second.Node.Name, StringComparison.CurrentCultureIgnoreCase);
         }
 
         private int GetSelectedIndex()
@@ -717,7 +807,7 @@ namespace LrCatalogSync.UI
 
         // ==================== ZEICHNEN ====================
 
-        private void DrawNameCell(Graphics graphics, SizeNode node, Rectangle bounds, Color foreColor, bool selected)
+        private void DrawNameCell(Graphics graphics, SizeNode node, Rectangle bounds, Color foreColor)
         {
             Region? previousClip = graphics.Clip;
             graphics.SetClip(bounds, CombineMode.Intersect);
@@ -738,14 +828,11 @@ namespace LrCatalogSync.UI
 
             // Belegter Platz mit Balken (Anteil am übergeordneten Ordner) vor dem Namen
             var sizeBounds = new Rectangle(x, bounds.Y + 1, ScaleToDpi(SizeBoxWidth), bounds.Height - 2);
-            if (!selected)
+            int barWidth = (int)Math.Round(sizeBounds.Width * Math.Clamp(GetPercent(node), 0, 100) / 100);
+            if (barWidth > 0)
             {
-                int barWidth = (int)Math.Round(sizeBounds.Width * Math.Clamp(GetPercent(node), 0, 100) / 100);
-                if (barWidth > 0)
-                {
-                    using var barBrush = new SolidBrush(PercentBarColor);
-                    graphics.FillRectangle(barBrush, sizeBounds.X, sizeBounds.Y, barWidth, sizeBounds.Height);
-                }
+                using var barBrush = new SolidBrush(Theme.Current.Bar);
+                graphics.FillRectangle(barBrush, sizeBounds.X, sizeBounds.Y, barWidth, sizeBounds.Height);
             }
 
             TextRenderer.DrawText(
@@ -801,17 +888,17 @@ namespace LrCatalogSync.UI
             if (barBounds.Width <= 2 || barBounds.Height <= 2)
                 return;
 
-            using (var backBrush = new SolidBrush(PercentBarBackColor))
+            using (var backBrush = new SolidBrush(Theme.Current.Surface))
                 graphics.FillRectangle(backBrush, barBounds);
 
             int fillWidth = (int)Math.Round((barBounds.Width - 1) * Math.Clamp(percent, 0, 100) / 100);
             if (fillWidth > 0)
             {
-                using var fillBrush = new SolidBrush(PercentBarColor);
+                using var fillBrush = new SolidBrush(Theme.Current.Bar);
                 graphics.FillRectangle(fillBrush, barBounds.X, barBounds.Y, fillWidth, barBounds.Height);
             }
 
-            using (var borderPen = new Pen(PercentBarBorderColor))
+            using (var borderPen = new Pen(Theme.Current.Border))
                 graphics.DrawRectangle(borderPen, barBounds.X, barBounds.Y, barBounds.Width - 1, barBounds.Height - 1);
 
             TextRenderer.DrawText(
@@ -819,7 +906,7 @@ namespace LrCatalogSync.UI
                 FormatPercent(percent),
                 resultListView.Font,
                 barBounds,
-                SystemColors.WindowText,
+                Theme.Current.Text,
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine);
         }
 
@@ -953,7 +1040,7 @@ namespace LrCatalogSync.UI
             }
             catch
             {
-                MessageBox.Show(this, Strings.Get("Usb_Dialog_LinkError"), Strings.Get("Size_Dialog_Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageForm.Show(this, Strings.Get("Usb_Dialog_LinkError"), Strings.Get("Size_Dialog_Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

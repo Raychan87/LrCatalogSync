@@ -56,6 +56,7 @@ Rechtsklick auf das Tray‑Icon → **Einstellungen**
 | **Rclone folder** | Ordner mit `rclone.exe`; Standard ist `data/rclone/`. Ein anderer Ordner kann manuell eingetragen werden. |
 | **Log‑Level** | `DEBUG`, `INFO`, `NOTICE`, `ERROR` |
 | **Sprache** | `System` (Windows-Anzeigesprache), `English` oder `Deutsch`. Nicht unterstützte Windows-Sprachen verwenden Englisch. |
+| **Darstellung** | `Automatisch` (folgt der Windows-Einstellung Hell/Dunkel), `Hell`, `Dunkel Lila` oder `Dunkel Systemfarbe` (nutzt die Windows-Akzentfarbe). Gilt für Fenster, die nach dem Speichern geöffnet werden. |
 | **Aktualisierungszeit** | Prüfintervall in Sekunden (1 bis 999, Standard 10). Nach dem Programmstart läuft der erste Zyklus mit 60 Sekunden Verzögerung. |
 | **\*Previews.lrdata synchronisieren?** | Auswahl, ob der Ordner `* Previews.lrdata` (Standard- und 1:1-Vorschauen) auch synchronisiert werden soll |
 | **Lokale Katalog Datei** | Pfad zur `.lrcat`‑Datei (lokal) |
@@ -85,7 +86,7 @@ Tray‑Icon‑Status:
 - ⚪ --> Konfigurationsdatei fehlt
 - <img src="docs/images/Logo.png" height="16" alt="Programm-Icon" style="vertical-align: middle;"> --> Sync ist ausgeschaltet (Tray-Menü **Ausschalten** bzw. USB-Export geöffnet)
 
-Tray-Menü: **USB-Export**, **SizeViewer**, **Ausschalten/Einschalten**, **Einstellungen**, **Beenden**. Der Sync-Zustand wird in der Config gespeichert und nach einem Neustart wiederhergestellt. Der Windows-Autostart bleibt davon unabhängig: Das Programm kann im Tray starten, während der Sync ausgeschaltet bleibt.
+Tray-Menü: **USB-Export**, **Size-Viewer**, **Ausschalten/Einschalten**, **Einstellungen**, **Beenden**. Der Sync-Zustand wird in der Config gespeichert und nach einem Neustart wiederhergestellt. Der Windows-Autostart bleibt davon unabhängig: Das Programm kann im Tray starten, während der Sync ausgeschaltet bleibt.
 
 Logs finden Sie unter `data/logs/`.
 
@@ -136,12 +137,14 @@ Unabhängig von den eigenen Mustern werden nie übertragen oder gelöscht:
 - Das Protokoll steht in `data/logs/USBExport.log`.
 - Voraussetzung ist eine vorhandene `rclone.exe` (siehe Installation).
 
-## SizeViewer (Zusatztool)
+## Size-Viewer (Zusatztool)
 
-Der SizeViewer zeigt, welche Ordner und Dateien wie viel Speicherplatz belegen. Das Tool ist Teil von LrCatalogSync, liest nur und verändert keine Dateien.
+Der Size-Viewer zeigt, welche Ordner und Dateien wie viel Speicherplatz belegen. Das Tool ist Teil von LrCatalogSync, liest nur und verändert keine Dateien.
+
+![Size-Viewer](docs/images/SizeViewer.de.png)
 
 ### Öffnen
-Rechtsklick auf das Tray‑Icon → **SizeViewer**. Der normale Sync läuft währenddessen weiter. Beim Öffnen ist kein Verzeichnis ausgewählt.
+Rechtsklick auf das Tray‑Icon → **Size-Viewer**. Der normale Sync läuft währenddessen weiter. Beim Öffnen ist kein Verzeichnis ausgewählt.
 
 ### Bedienelemente
 | Element | Beschreibung |
@@ -149,7 +152,7 @@ Rechtsklick auf das Tray‑Icon → **SizeViewer**. Der normale Sync läuft wäh
 | **Verzeichnis auswählen** | Wählt das zu scannende Verzeichnis und startet den Scan |
 | **Scan abbrechen** | Bricht den laufenden Scan ab; das bis dahin gelesene Teilergebnis wird angezeigt |
 | **Aktualisieren** | Scannt das zuletzt gewählte Verzeichnis erneut |
-| **Als Administrator scannen** | Startet den SizeViewer nach der Windows-Sicherheitsabfrage mit Administratorrechten neu und scannt das gewählte Verzeichnis erneut, damit auch geschützte Ordner gelesen werden |
+| **Als Administrator scannen** | Startet den Size-Viewer nach der Windows-Sicherheitsabfrage mit Administratorrechten neu und scannt das gewählte Verzeichnis erneut, damit auch geschützte Ordner gelesen werden |
 | **Beenden** | Schließt das Fenster |
 
 ### Spalten

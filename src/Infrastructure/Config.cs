@@ -61,6 +61,9 @@ namespace LrCatalogSync.Infrastructure
         // Sprache: "System" | "en" | "de"
         public string Language { get; set; } = "System";
 
+        // Farbmodus: "System" (automatisch nach Windows) | "Light" | "DarkPurple" | "DarkAccent"
+        public string Theme { get; set; } = "System";
+
         // Intervall für die Prüfzyklen in Sekunden
         public int GlobalCycleInterval { get; set; } = 10;
 
@@ -158,6 +161,7 @@ namespace LrCatalogSync.Infrastructure
                         if (key == "SambaPasswordAes") SambaPasswordAes = value;
                         if (key == "LogLevel") LogLevel = value;
                         if (key == "Language") Language = value is "System" or "en" or "de" ? value : "System";
+                        if (key == "Theme") Theme = value is "System" or "Light" or "DarkPurple" or "DarkAccent" ? value : "System";
                         if (key == "GlobalCycleInterval" && int.TryParse(value, out int globalCycleInterval)) GlobalCycleInterval = globalCycleInterval;
                         if (key == "AutoRun") AutoRun = bool.TryParse(value, out bool result4) && result4;
                         if (key == "SyncEnabled") SyncEnabled = bool.TryParse(value, out bool result5) && result5;
@@ -225,6 +229,7 @@ namespace LrCatalogSync.Infrastructure
                 "SambaPasswordAes=" + SambaPasswordAes,
                 "LogLevel=" + LogLevel,
                 "Language=" + (Language is "System" or "en" or "de" ? Language : "System"),
+                "Theme=" + (Theme is "System" or "Light" or "DarkPurple" or "DarkAccent" ? Theme : "System"),
                 "GlobalCycleInterval=" + GlobalCycleInterval,
                 "AutoRun=" + AutoRun,
                 "SyncEnabled=" + SyncEnabled

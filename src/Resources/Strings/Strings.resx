@@ -386,8 +386,8 @@
     <data name="Log_Smb_Connected" xml:space="preserve"><value>Connected to {0}/{1}.</value></data>
     <data name="Log_Tray_UnknownStatus" xml:space="preserve"><value>Unknown status key '{0}'.</value></data>
     <data name="Log_Tray_TooltipTruncated" xml:space="preserve"><value>Tooltip with {0} characters will be shortened to {1} characters.</value></data>
-    <data name="Tray_Menu_SizeViewer" xml:space="preserve"><value>SizeViewer</value></data>
-    <data name="Size_Title" xml:space="preserve"><value>LrCatalogSync v{0} - SizeViewer - Fototour-und-Technik.de</value></data>
+    <data name="Tray_Menu_SizeViewer" xml:space="preserve"><value>Size-Viewer</value></data>
+    <data name="Size_Title" xml:space="preserve"><value>LrCatalogSync v{0} - Size-Viewer - Fototour-und-Technik.de</value></data>
     <data name="Size_Button_SelectFolder" xml:space="preserve"><value>Select directory</value></data>
     <data name="Size_Button_Cancel" xml:space="preserve"><value>Cancel scan</value></data>
     <data name="Size_Button_Refresh" xml:space="preserve"><value>Refresh</value></data>
@@ -416,16 +416,26 @@
     <data name="Log_SizeViewer_ScanCancelled" xml:space="preserve"><value>Scan cancelled: {0} ({1} files, {2} s).</value></data>
     <data name="Log_SizeViewer_ScanFailed" xml:space="preserve"><value>Scan of {0} failed: {1}</value></data>
     <data name="Log_SizeViewer_ExplorerFailed" xml:space="preserve"><value>Explorer could not be opened: {0}</value></data>
-    <data name="Size_Title_Admin" xml:space="preserve"><value>LrCatalogSync v{0} - SizeViewer (Administrator) - Fototour-und-Technik.de</value></data>
+    <data name="Size_Title_Admin" xml:space="preserve"><value>LrCatalogSync v{0} - Size-Viewer (Administrator) - Fototour-und-Technik.de</value></data>
     <data name="Size_Button_Admin" xml:space="preserve"><value>Scan as administrator</value></data>
     <data name="Size_Button_Exit" xml:space="preserve"><value>Exit</value></data>
     <data name="Size_Group_Result" xml:space="preserve"><value>Disk usage</value></data>
     <data name="Size_Status_AdminHint" xml:space="preserve"><value> (use "Scan as administrator" for a complete scan)</value></data>
     <data name="Size_Dialog_AdminFailed" xml:space="preserve"><value>Restarting with administrator rights failed: {0}</value></data>
-    <data name="Log_SizeViewer_AdminStarted" xml:space="preserve"><value>SizeViewer restarted with administrator rights.</value></data>
+    <data name="Log_SizeViewer_AdminStarted" xml:space="preserve"><value>Size-Viewer restarted with administrator rights.</value></data>
     <data name="Log_SizeViewer_AdminFailed" xml:space="preserve"><value>Restarting with administrator rights failed: {0}</value></data>
     <data name="Log_SizeViewer_ConfigSaveFailed" xml:space="preserve"><value>View settings could not be saved: {0}</value></data>
     <data name="Size_Status_Allocated" xml:space="preserve"><value>{0} allocated</value></data>
     <data name="Size_Status_AllocatedOf" xml:space="preserve"><value>{0} allocated of {1}</value></data>
     <data name="Log_SizeViewer_BackupPrivilegeFailed" xml:space="preserve"><value>Read access to protected system folders could not be enabled (error {0}).</value></data>
+    <data name="Settings_Theme" xml:space="preserve"><value>Appearance:</value></data>
+    <data name="Theme_System" xml:space="preserve"><value>Automatic</value></data>
+    <data name="Theme_Light" xml:space="preserve"><value>Light</value></data>
+    <data name="Theme_DarkPurple" xml:space="preserve"><value>Dark purple</value></data>
+    <data name="Theme_DarkAccent" xml:space="preserve"><value>Dark system color</value></data>
+    <data name="Log_Theme_ColorModeFailed" xml:space="preserve"><value>Color mode could not be switched: {0}</value></data>
+    <data name="Dialog_Button_Ok" xml:space="preserve"><value>OK</value></data>
+    <data name="Dialog_Button_Cancel" xml:space="preserve"><value>Cancel</value></data>
+    <data name="Dialog_Button_Yes" xml:space="preserve"><value>Yes</value></data>
+    <data name="Dialog_Button_No" xml:space="preserve"><value>No</value></data>
 </root>
