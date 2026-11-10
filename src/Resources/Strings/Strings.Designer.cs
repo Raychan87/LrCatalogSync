@@ -39,6 +39,7 @@ namespace LrCatalogSync.Resources.Strings
         internal static string Tray_Tip_CrashRecovery => GetString(nameof(Tray_Tip_CrashRecovery));
         internal static string Tray_Tip_SyncDisabled => GetString(nameof(Tray_Tip_SyncDisabled));
         internal static string Tray_Menu_UsbExport => GetString(nameof(Tray_Menu_UsbExport));
+        internal static string Tray_Menu_SizeViewer => GetString(nameof(Tray_Menu_SizeViewer));
         internal static string Tray_Menu_TurnOff => GetString(nameof(Tray_Menu_TurnOff));
         internal static string Tray_Menu_TurnOn => GetString(nameof(Tray_Menu_TurnOn));
         internal static string Tray_Menu_UsbExportOpen => GetString(nameof(Tray_Menu_UsbExportOpen));

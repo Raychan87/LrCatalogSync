@@ -85,7 +85,7 @@ Tray‑Icon‑Status:
 - ⚪ --> Konfigurationsdatei fehlt
 - <img src="docs/images/Logo.png" height="16" alt="Programm-Icon" style="vertical-align: middle;"> --> Sync ist ausgeschaltet (Tray-Menü **Ausschalten** bzw. USB-Export geöffnet)
 
-Tray-Menü: **USB-Export**, **Ausschalten/Einschalten**, **Einstellungen**, **Beenden**. Der Sync-Zustand wird in der Config gespeichert und nach einem Neustart wiederhergestellt. Der Windows-Autostart bleibt davon unabhängig: Das Programm kann im Tray starten, während der Sync ausgeschaltet bleibt.
+Tray-Menü: **USB-Export**, **SizeViewer**, **Ausschalten/Einschalten**, **Einstellungen**, **Beenden**. Der Sync-Zustand wird in der Config gespeichert und nach einem Neustart wiederhergestellt. Der Windows-Autostart bleibt davon unabhängig: Das Programm kann im Tray starten, während der Sync ausgeschaltet bleibt.
 
 Logs finden Sie unter `data/logs/`.
 
@@ -135,6 +135,41 @@ Unabhängig von den eigenen Mustern werden nie übertragen oder gelöscht:
 - Einstellungen (Ziel, Quellen, Ausschlüsse, Optionen) werden automatisch gespeichert in `data/config/USBExport.conf`. Eine eigene rclone-Konfiguration liegt in `data/config/USBExportRclone.conf`.
 - Das Protokoll steht in `data/logs/USBExport.log`.
 - Voraussetzung ist eine vorhandene `rclone.exe` (siehe Installation).
+
+## SizeViewer (Zusatztool)
+
+Der SizeViewer zeigt, welche Ordner und Dateien wie viel Speicherplatz belegen. Das Tool ist Teil von LrCatalogSync, liest nur und verändert keine Dateien.
+
+### Öffnen
+Rechtsklick auf das Tray‑Icon → **SizeViewer**. Der normale Sync läuft währenddessen weiter. Beim Öffnen ist kein Verzeichnis ausgewählt.
+
+### Bedienelemente
+| Element | Beschreibung |
+|---------|--------------|
+| **Verzeichnis auswählen** | Wählt das zu scannende Verzeichnis und startet den Scan |
+| **Scan abbrechen** | Bricht den laufenden Scan ab; das bis dahin gelesene Teilergebnis wird angezeigt |
+| **Aktualisieren** | Scannt das zuletzt gewählte Verzeichnis erneut |
+| **Als Administrator scannen** | Startet den SizeViewer nach der Windows-Sicherheitsabfrage mit Administratorrechten neu und scannt das gewählte Verzeichnis erneut, damit auch geschützte Ordner gelesen werden |
+| **Beenden** | Schließt das Fenster |
+
+### Spalten
+| Spalte | Beschreibung |
+|--------|--------------|
+| **Name** | Ordner oder Datei, davor der belegte Platz mit Balken (Anteil am übergeordneten Ordner). Aufklappen per Pfeil, Doppelklick oder Pfeiltasten. Liegen in einem Ordner Unterordner und Dateien, stehen die Dateien zusammengefasst unter `[n Dateien]`. |
+| **Größe** | Summe der Dateigrößen |
+| **Belegt** | Tatsächlich belegter Platz auf dem Datenträger |
+| **Dateien** / **Ordner** | Anzahl der enthaltenen Dateien bzw. Ordner (inklusive Unterordner) |
+| **% Anteil** | Anteil am belegten Platz des übergeordneten Ordners |
+| **Letzte Änderung** | Datum der neuesten Änderung im Ordner |
+
+Ein Klick auf einen Spaltentitel sortiert nach dieser Spalte, ein weiterer Klick kehrt die Reihenfolge um. Spalten lassen sich am Titel verschieben. Rechtsklick auf eine Zeile → **Im Explorer öffnen**.
+
+### Besonderheiten
+- Ordner ohne Leserecht (z. B. `System Volume Information`) werden mit „(kein Zugriff)“ markiert und mit 0 gezählt.
+- Verknüpfungen (Junctions, symbolische Links) werden nicht verfolgt, damit nichts doppelt zählt.
+- Auf Netzlaufwerken entspricht **Belegt** der auf die Clustergröße aufgerundeten Dateigröße (Komprimierung auf dem Server wird nicht berücksichtigt).
+- Mit Administratorrechten sind verbundene Netzlaufwerke (Laufwerksbuchstaben) unter Umständen nicht sichtbar. Netzlaufwerke daher ohne Administratorrechte scannen.
+- Spaltenreihenfolge, Spaltenbreiten und Sortierung werden beim Schließen in `data/config/SizeViewer.conf` gespeichert. Das gescannte Verzeichnis und die Ergebnisse werden nicht gespeichert.
 
 ## Fehlersuche (Kurz)
 - *rclone.exe nicht gefunden*: Internetverbindung beim ersten Start prüfen. Bei einem manuellen Pfad muss der ausgewählte Ordner die `rclone.exe` enthalten.

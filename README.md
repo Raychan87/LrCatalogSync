@@ -97,7 +97,7 @@ Tray icon status:
 - ⚪ --> configuration file missing
 -  --> sync is switched off (tray menu **Turn off** or USB export open)
 
-Tray menu: **USB export**, **Turn off/Turn on**, **Settings**, **Exit**. The sync state is stored in the config and restored after a restart. Windows startup remains independent: the program can start in the tray while sync stays switched off.
+Tray menu: **USB export**, **SizeViewer**, **Turn off/Turn on**, **Settings**, **Exit**. The sync state is stored in the config and restored after a restart. Windows startup remains independent: the program can start in the tray while sync stays switched off.
 
 Logs are located in `data/logs/`.
 
@@ -153,6 +153,45 @@ Regardless of custom patterns, the following are never transferred or deleted:
 - Settings (target, sources, excludes, options) are saved automatically in `data/config/USBExport.conf`. A separate rclone configuration is stored in `data/config/USBExportRclone.conf`.
 - The log is written to `data/logs/USBExport.log`.
 - An existing `rclone.exe` is required (see Installation).
+
+## SizeViewer (additional tool)
+
+The SizeViewer shows which folders and files use how much disk space. The tool is part of LrCatalogSync, is read-only and never modifies files.
+
+### Opening
+
+Right-click the tray icon → **SizeViewer**. The normal sync keeps running in the meantime. No directory is selected when the window opens.
+
+### Controls
+
+| Element              | Description                                                          |
+| -------------------- | -------------------------------------------------------------------- |
+| **Select directory** | Selects the directory to scan and starts the scan                    |
+| **Cancel scan**      | Cancels the running scan; the partial result read so far is shown    |
+| **Refresh**          | Scans the last selected directory again                              |
+| **Scan as administrator** | Restarts the SizeViewer with administrator rights after the Windows security prompt and scans the selected directory again so protected folders can be read |
+| **Exit**             | Closes the window                                                    |
+
+### Columns
+
+| Column                  | Description                                                                                                                                                          |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Name**                | Folder or file, preceded by the allocated space with a bar (share of the parent folder). Expand via the arrow, a double-click or the arrow keys. If a folder contains subfolders and files, the files are grouped under `[n files]`.           |
+| **Size**                | Sum of the file sizes                                                                                                                                                |
+| **Allocated**           | Space actually used on the drive                                                                                                                                     |
+| **Files** / **Folders** | Number of contained files or folders (including subfolders)                                                                                                          |
+| **% of parent**         | Share of the allocated space of the parent folder                                                                                                                    |
+| **Last modified**       | Date of the most recent change in the folder                                                                                                                         |
+
+Clicking a column header sorts by that column, clicking again reverses the order. Columns can be moved by dragging their header. Right-click a row → **Open in Explorer**.
+
+### Notes
+
+- Folders without read permission (e.g. `System Volume Information`) are marked "(access denied)" and counted as 0.
+- Links (junctions, symbolic links) are not followed so nothing is counted twice.
+- On network drives, **Allocated** equals the file size rounded up to the cluster size (compression on the server is not taken into account).
+- With administrator rights, mapped network drives (drive letters) may not be visible. Scan network drives without administrator rights.
+- Column order, column widths and sorting are saved to `data/config/SizeViewer.conf` when the window is closed. The scanned directory and the results are not stored.
 
 ## Troubleshooting (short)
 

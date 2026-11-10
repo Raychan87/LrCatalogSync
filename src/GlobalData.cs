@@ -9,6 +9,7 @@
         public static string DefaultRcloneFolder { get; } = Path.GetRelativePath(GlobalData.BaseDir, RcloneFolderPath);
                 public static string UsbExportRcloneConfigPath { get; private set; } = Path.Combine(GlobalData.BaseDir, "data", "config", "USBExportRclone.conf");
         public static string UsbExportConfigPath { get; private set; } = Path.Combine(GlobalData.BaseDir, "data", "config", "USBExport.conf");
+        public static string SizeViewerConfigPath { get; private set; } = Path.Combine(GlobalData.BaseDir, "data", "config", "SizeViewer.conf");
     }
 
     public static class GlobalConst
@@ -41,6 +42,25 @@
         // Eindeutiger Lock-Typ für einen lokal laufenden Lightroom-Prozess.
         // Upload und Download bleiben ausschließlich für Katalog-Synchronisationen reserviert.
         public const string LIGHTROOM_LOCK_TYPE = "Lightroom";
+
+        // SizeViewer: angenommene Clustergröße, wenn Windows sie für das Laufwerk nicht liefert (4 KB)
+        public const long SIZEVIEWER_DEFAULT_CLUSTER_BYTES = 4096;
+
+        // SizeViewer: Intervall, in dem die Statuszeile während eines Scans aktualisiert wird
+        public const int SIZEVIEWER_STATUS_INTERVAL_MS = 250;
+
+        // SizeViewer: Standard-Sortierspalte (2 = "Belegt")
+        public const int SIZEVIEWER_DEFAULT_SORT_COLUMN = 2;
+
+        // SizeViewer: kleinste Spaltenbreite, die aus der Config übernommen wird
+        public const int SIZEVIEWER_MIN_COLUMN_WIDTH = 20;
+
+        // Startparameter für den eigenständigen SizeViewer (Scan mit Administratorrechten)
+        public const string SIZEVIEWER_ARG = "--sizeviewer";
+
+        // Links in den Fenstern
+        public const string GITHUB_URL = "https://github.com/Raychan87/LrCatalogSync";
+        public const string WEBSITE_URL = "https://Fototour-und-Technik.de";
     }    
 }
 

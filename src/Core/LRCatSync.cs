@@ -15,7 +15,8 @@ namespace LrCatalogSync.Core
         private TrayManager trayManager;                    // Manager für Tray-Icon und Status
         private SettingsForm? settingsForm;                 // Bereits geöffnetes Einstellungsfenster
         private UsbExportForm? usbExportForm;                    // Bereits geöffnetes USB-Export-Fenster
-        private System.Threading.Timer? MainCycleTimer;     // Timer für Sync-Zyklus (Backup + Katalog)
+        private SizeViewerForm? sizeViewerForm;             // Bereits geöffnetes SizeViewer-Fenster
+        private System.Threading.Timer? MainCycleTimer;    // Timer für Sync-Zyklus (Backup + Katalog)
         private bool LrCatSyncEnabled;
         private bool syncEnabledBeforeUsbExport;               // Zustand vor dem Öffnen von USB-Export
         private ToolStripMenuItem? toggleItem;              // Menü-Eintrag für Sync ein/aus
@@ -131,6 +132,11 @@ namespace LrCatalogSync.Core
             usbExportItem.Click += (s, e) => OpenUsbExportForm();
             menu.Items.Add(usbExportItem);
 
+            // ========== MENÜ-EINTRAG: SIZEVIEWER ==========
+            var sizeViewerItem = new ToolStripMenuItem(Strings.Tray_Menu_SizeViewer);
+            sizeViewerItem.Click += (s, e) => OpenSizeViewerForm();
+            menu.Items.Add(sizeViewerItem);
+
             // ========== MENÜ-TRENNLINIE ==========
             menu.Items.Add(new ToolStripSeparator());
 
@@ -222,6 +228,30 @@ namespace LrCatalogSync.Core
             usbExportForm = new UsbExportForm(config, () => Coordinator.IsCycleRunning);
             usbExportForm.FormClosed += UsbExportFormClosed;
             usbExportForm.Show();
+        }
+
+        // Öffnet den SizeViewer modeless. Er liest nur und pausiert den Sync deshalb nicht.
+        private void OpenSizeViewerForm()
+        {
+            if (sizeViewerForm is { IsDisposed: false })
+            {
+                sizeViewerForm.Activate();
+                return;
+            }
+
+            sizeViewerForm = new SizeViewerForm();
+            sizeViewerForm.FormClosed += SizeViewerFormClosed;
+            sizeViewerForm.Show();
+        }
+
+        private void SizeViewerFormClosed(object? sender, FormClosedEventArgs e)
+        {
+            if (sender is Form form)
+            {
+                form.FormClosed -= SizeViewerFormClosed;
+            }
+
+            sizeViewerForm = null;
         }
 
         private void UsbExportFormClosed(object? sender, FormClosedEventArgs e)

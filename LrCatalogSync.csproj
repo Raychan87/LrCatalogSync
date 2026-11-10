@@ -27,9 +27,9 @@
 	    <Company>Fototour-und-Technik.de</Company>
 	    <Product>LrCatalogSync</Product>
 	    <Copyright>© 2026 Fototour-und-Technik.de</Copyright>
-	    <AssemblyVersion>1.0.1</AssemblyVersion>
-	    <FileVersion>1.0.1</FileVersion>
-	    <Version>1.0.1</Version>
+	    <AssemblyVersion>1.1.0</AssemblyVersion>
+	    <FileVersion>1.1.0</FileVersion>
+	    <Version>1.1.0</Version>
     </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -67,6 +67,12 @@
     <SubType>Form</SubType>
   </Compile>
 </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="src\UI\SizeViewerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="src\Resources\Icons\*.ico">
