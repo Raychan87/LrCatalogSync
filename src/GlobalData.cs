@@ -20,6 +20,10 @@
         
         // Heartbeat-Intervall für Lock-Aktualisierung (2,5 Minuten)
         public const int HEARTBEAT_INTERVAL_SEC = 150;
+
+        // Verzögerung des ersten Sync-Zyklus nach Programmstart (1 Minute)
+        // Entlastet die Windows-Anmeldung und gibt Netzwerk/Laufwerken Zeit zum Verbinden
+        public const int STARTUP_DELAY_SEC = 60;
         
         // Rclone-Verbindungs-Timeout (Go-Duration-Format, z.B. "30s")
         public const string RCLONE_CONNECT_TIMEOUT = "20s";

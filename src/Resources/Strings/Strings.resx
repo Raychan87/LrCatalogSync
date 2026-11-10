@@ -249,6 +249,7 @@
     <data name="Log_LrCatSync_SyncStateSaveFailed" xml:space="preserve"><value>Could not save the sync state: {0}</value></data>
     <data name="Log_LrCatSync_CrashRecoveryDone" xml:space="preserve"><value>Crash recovery completed; sync will resume in the next cycle.</value></data>
     <data name="Log_LrCatSync_MainCycleInitialized" xml:space="preserve"><value>Initializing main cycle (interval: {0} sec).</value></data>
+    <data name="Log_LrCatSync_StartupDelay" xml:space="preserve"><value>First sync cycle starts in {0} sec (startup delay).</value></data>
     <data name="Log_LrCatSync_CoordinatorDisabled" xml:space="preserve"><value>Coordinator is disabled; skipping cycle.</value></data>
     <data name="Log_LrCatSync_SettingsUpdated" xml:space="preserve"><value>Settings updated.</value></data>
     <data name="Log_LrCatSync_UsbExportClosed" xml:space="preserve"><value>USB export window closed; previous sync state restored.</value></data>

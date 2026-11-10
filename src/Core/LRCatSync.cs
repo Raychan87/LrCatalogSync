@@ -66,17 +66,21 @@ namespace LrCatalogSync.Core
                 Log.Debug($"LrCatSync: {Strings.Get("Log_LrCatSync_CrashRecoveryDone")}");
 
             // ========== INITIALISIERE MAIN-CYCLE ==========
-            InitMain();
+            // Erster Zyklus erst nach der Startverzögerung (Windows-Anmeldung entlasten)
+            InitMain(GlobalConst.STARTUP_DELAY_SEC);
         }
 
         // ==================== INITIALISIERE MAIN-CYCLE-TIMER ===================
-        private void InitMain()
+        // startDelaySec: Verzögerung bis zum ersten Zyklus in Sekunden (0 = sofort)
+        private void InitMain(int startDelaySec = 0)
         {
             // Stoppe vorherigen Timer (falls vorhanden)
-            MainCycleTimer?.Dispose();    
+            MainCycleTimer?.Dispose();
             Log.Debug($"LrCatSync: {string.Format(Strings.Get("Log_LrCatSync_MainCycleInitialized"), config.GlobalCycleInterval)}");
-            // Timer führt alle GlobalCycleInterval Sekunden kompletten Zyklus aus (Backup → Katalog)     
-            MainCycleTimer = new System.Threading.Timer(MainCycle, null, 0, config.GlobalCycleInterval * 1000);
+            if (startDelaySec > 0)
+                Log.Info($"LrCatSync: {string.Format(Strings.Get("Log_LrCatSync_StartupDelay"), startDelaySec)}");
+            // Timer führt alle GlobalCycleInterval Sekunden kompletten Zyklus aus (Backup → Katalog)
+            MainCycleTimer = new System.Threading.Timer(MainCycle, null, startDelaySec * 1000, config.GlobalCycleInterval * 1000);
         }
 
         // ==================== MAIN-CYCLE ====================

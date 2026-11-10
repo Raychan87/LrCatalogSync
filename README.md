@@ -67,7 +67,7 @@ Right-click the tray icon → **Settings**
 | **Rclone folder**                    | Folder containing `rclone.exe`; default is `data/rclone/`. Another folder can be entered manually.                      |
 | **Log level**                        | `DEBUG`, `INFO`, `NOTICE`, `ERROR`                                                                                  |
 | **Language**                         | `System` (Windows display language), `English` or `Deutsch`. Unsupported Windows languages use English.               |
-| **Check interval**                   | Check interval in seconds (1 to 999, default 10)                                                                            |
+| **Check interval**                   | Check interval in seconds (1 to 999, default 10). After program start, the first cycle runs with a delay of 60 seconds.    |
 | **Sync \*Previews.lrdata?**          | Whether the `* Previews.lrdata` folder (standard and 1:1 previews) is synchronized as well                                |
 | **Local catalog file**               | Path to the local `.lrcat` file                                                                                           |
 | **Remote catalog path**              | Target path on the SMB server (e.g. `//192.168.1.1/Lightroom/` -> `/Lightroom/`)                                        |

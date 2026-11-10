@@ -56,7 +56,7 @@ Rechtsklick auf das Tray‑Icon → **Einstellungen**
 | **Rclone folder** | Ordner mit `rclone.exe`; Standard ist `data/rclone/`. Ein anderer Ordner kann manuell eingetragen werden. |
 | **Log‑Level** | `DEBUG`, `INFO`, `NOTICE`, `ERROR` |
 | **Sprache** | `System` (Windows-Anzeigesprache), `English` oder `Deutsch`. Nicht unterstützte Windows-Sprachen verwenden Englisch. |
-| **Aktualisierungszeit** | Prüfintervall in Sekunden (1 bis 999, Standard 10) |
+| **Aktualisierungszeit** | Prüfintervall in Sekunden (1 bis 999, Standard 10). Nach dem Programmstart läuft der erste Zyklus mit 60 Sekunden Verzögerung. |
 | **\*Previews.lrdata synchronisieren?** | Auswahl, ob der Ordner `* Previews.lrdata` (Standard- und 1:1-Vorschauen) auch synchronisiert werden soll |
 | **Lokale Katalog Datei** | Pfad zur `.lrcat`‑Datei (lokal) |
 | **Remote Katalog Pfad** | Zielpfad auf dem SMB‑Server (z. B. `//192.168.1.1/Lightroom/` -> `/Lightroom/`) |
