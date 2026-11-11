@@ -44,6 +44,7 @@ namespace LrCatalogSync.UI
             this.modifiedColumn = new System.Windows.Forms.ColumnHeader();
             this.rowContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.openInExplorerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.deleteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusLabel = new System.Windows.Forms.Label();
             this.exitButton = new System.Windows.Forms.Button();
             this.gitHubLinkLabel = new System.Windows.Forms.LinkLabel();
@@ -190,9 +191,10 @@ namespace LrCatalogSync.UI
             // Kontextmenü der Zeilen
             //
             this.rowContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.openInExplorerMenuItem});
+            this.openInExplorerMenuItem,
+            this.deleteMenuItem});
             this.rowContextMenu.Name = "rowContextMenu";
-            this.rowContextMenu.Size = new System.Drawing.Size(180, 26);
+            this.rowContextMenu.Size = new System.Drawing.Size(180, 48);
             this.rowContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.RowContextMenu_Opening);
             //
             // Kontextmenü: Im Explorer öffnen
@@ -201,6 +203,14 @@ namespace LrCatalogSync.UI
             this.openInExplorerMenuItem.Size = new System.Drawing.Size(179, 22);
             this.openInExplorerMenuItem.Text = "Im Explorer öffnen";
             this.openInExplorerMenuItem.Click += new System.EventHandler(this.OpenInExplorerMenuItem_Click);
+            //
+            // Kontextmenü: Löschen (in den Papierkorb)
+            //
+            this.deleteMenuItem.Name = "deleteMenuItem";
+            this.deleteMenuItem.ShortcutKeyDisplayString = "Entf";
+            this.deleteMenuItem.Size = new System.Drawing.Size(179, 22);
+            this.deleteMenuItem.Text = "Löschen";
+            this.deleteMenuItem.Click += new System.EventHandler(this.DeleteMenuItem_Click);
             //
             // Statuszeile (einzeilig, mittig zum Beenden-Button)
             //
@@ -308,6 +318,7 @@ namespace LrCatalogSync.UI
         private System.Windows.Forms.ColumnHeader modifiedColumn;
         private System.Windows.Forms.ContextMenuStrip rowContextMenu;
         private System.Windows.Forms.ToolStripMenuItem openInExplorerMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem deleteMenuItem;
         private System.Windows.Forms.Label statusLabel;
         private System.Windows.Forms.Button exitButton;
         private System.Windows.Forms.LinkLabel gitHubLinkLabel;

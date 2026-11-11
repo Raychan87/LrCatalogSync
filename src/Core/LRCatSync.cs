@@ -234,7 +234,7 @@ namespace LrCatalogSync.Core
             usbExportForm.Show();
         }
 
-        // Öffnet den SizeViewer modeless. Er liest nur und pausiert den Sync deshalb nicht.
+        // Öffnet den SizeViewer modeless. Er pausiert den Sync nicht: er liest nur, gelöscht wird ausschließlich auf Wunsch des Benutzers.
         private void OpenSizeViewerForm()
         {
             if (sizeViewerForm is { IsDisposed: false })

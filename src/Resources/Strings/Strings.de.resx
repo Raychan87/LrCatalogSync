@@ -402,6 +402,12 @@
     <data name="Size_NoAccess" xml:space="preserve"><value>(kein Zugriff)</value></data>
     <data name="Size_Unit_Bytes" xml:space="preserve"><value>Bytes</value></data>
     <data name="Size_Menu_OpenInExplorer" xml:space="preserve"><value>Im Explorer öffnen</value></data>
+    <data name="Size_Menu_Delete" xml:space="preserve"><value>Löschen</value></data>
+    <data name="Size_Menu_DeleteShortcut" xml:space="preserve"><value>Entf</value></data>
+    <data name="Size_Dialog_DeleteFailed" xml:space="preserve"><value>"{0}" konnte nicht gelöscht werden: {1}</value></data>
+    <data name="Size_Dialog_DeleteErrorCode" xml:space="preserve"><value>Windows-Fehlercode {0}</value></data>
+    <data name="Log_SizeViewer_Deleted" xml:space="preserve"><value>Gelöscht (Papierkorb): {0}</value></data>
+    <data name="Log_SizeViewer_DeleteFailed" xml:space="preserve"><value>Löschen von {0} fehlgeschlagen: {1}</value></data>
     <data name="Size_Status_Empty" xml:space="preserve"><value>Kein Verzeichnis ausgewählt.</value></data>
     <data name="Size_Status_Scanning" xml:space="preserve"><value>Scanne... {0} Dateien - {1}</value></data>
     <data name="Size_Status_Done" xml:space="preserve"><value>{0} Dateien, {1} Ordner, {2} - Dauer {3} s</value></data>

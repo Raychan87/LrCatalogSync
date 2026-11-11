@@ -402,6 +402,12 @@
     <data name="Size_NoAccess" xml:space="preserve"><value>(access denied)</value></data>
     <data name="Size_Unit_Bytes" xml:space="preserve"><value>Bytes</value></data>
     <data name="Size_Menu_OpenInExplorer" xml:space="preserve"><value>Open in Explorer</value></data>
+    <data name="Size_Menu_Delete" xml:space="preserve"><value>Delete</value></data>
+    <data name="Size_Menu_DeleteShortcut" xml:space="preserve"><value>Del</value></data>
+    <data name="Size_Dialog_DeleteFailed" xml:space="preserve"><value>"{0}" could not be deleted: {1}</value></data>
+    <data name="Size_Dialog_DeleteErrorCode" xml:space="preserve"><value>Windows error code {0}</value></data>
+    <data name="Log_SizeViewer_Deleted" xml:space="preserve"><value>Deleted (Recycle Bin): {0}</value></data>
+    <data name="Log_SizeViewer_DeleteFailed" xml:space="preserve"><value>Deleting {0} failed: {1}</value></data>
     <data name="Size_Status_Empty" xml:space="preserve"><value>No directory selected.</value></data>
     <data name="Size_Status_Scanning" xml:space="preserve"><value>Scanning... {0} files - {1}</value></data>
     <data name="Size_Status_Done" xml:space="preserve"><value>{0} files, {1} folders, {2} - duration {3} s</value></data>

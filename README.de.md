@@ -139,7 +139,7 @@ Unabhängig von den eigenen Mustern werden nie übertragen oder gelöscht:
 
 ## Size-Viewer (Zusatztool)
 
-Der Size-Viewer zeigt, welche Ordner und Dateien wie viel Speicherplatz belegen. Das Tool ist Teil von LrCatalogSync, liest nur und verändert keine Dateien.
+Der Size-Viewer zeigt, welche Ordner und Dateien wie viel Speicherplatz belegen. Das Tool ist Teil von LrCatalogSync. Es liest nur; Dateien werden nur verändert, wenn du selbst einen Eintrag löschst (siehe Löschen).
 
 ![Size-Viewer](docs/images/SizeViewer.de.png)
 
@@ -166,6 +166,14 @@ Rechtsklick auf das Tray‑Icon → **Size-Viewer**. Der normale Sync läuft wä
 | **Letzte Änderung** | Datum der neuesten Änderung im Ordner |
 
 Ein Klick auf einen Spaltentitel sortiert nach dieser Spalte, ein weiterer Klick kehrt die Reihenfolge um. Spalten lassen sich am Titel verschieben. Rechtsklick auf eine Zeile → **Im Explorer öffnen**.
+
+### Löschen
+Zeile markieren und <kbd>Entf</kbd> drücken oder Rechtsklick → **Löschen**. Das Löschen funktioniert wie im Windows-Explorer: Windows fragt nach und verschiebt die Datei oder den Ordner in den Papierkorb. Hat das Laufwerk keinen Papierkorb (z. B. Netzwerkfreigaben), fragt Windows, ob endgültig gelöscht werden soll.
+
+- Der gescannte Wurzelordner und die Sammelzeile `[n Dateien]` lassen sich nicht löschen; die Dateien in der Sammelzeile einzeln schon.
+- Während eines Scans ist das Löschen gesperrt.
+- Es gibt keine geschützten Ausnahmen: wie im Explorer lassen sich auch Lightroom-Katalogdateien löschen.
+- Pfade ab 260 Zeichen lassen sich nicht löschen.
 
 ### Besonderheiten
 - Ordner ohne Leserecht (z. B. `System Volume Information`) werden mit „(kein Zugriff)“ markiert und mit 0 gezählt.

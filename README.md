@@ -157,7 +157,7 @@ Regardless of custom patterns, the following are never transferred or deleted:
 
 ## Size-Viewer (additional tool)
 
-The Size-Viewer shows which folders and files use how much disk space. The tool is part of LrCatalogSync, is read-only and never modifies files.
+The Size-Viewer shows which folders and files use how much disk space. The tool is part of LrCatalogSync. It only reads; files are changed only when you delete an entry yourself (see Deleting).
 
 ![Size-Viewer](docs/images/SizeViewer.en.png)
 
@@ -187,6 +187,15 @@ Right-click the tray icon → **Size-Viewer**. The normal sync keeps running in 
 | **Last modified**       | Date of the most recent change in the folder                                                                                                                         |
 
 Clicking a column header sorts by that column, clicking again reverses the order. Columns can be moved by dragging their header. Right-click a row → **Open in Explorer**.
+
+### Deleting
+
+Select a row and press <kbd>Del</kbd>, or right-click → **Delete**. Deleting works like in Windows Explorer: Windows asks for confirmation and moves the file or folder to the Recycle Bin. If the drive has no Recycle Bin (e.g. network shares), Windows asks whether to delete permanently.
+
+- The scanned root folder and the group row `[n files]` cannot be deleted; the files inside the group can be deleted individually.
+- Deleting is disabled while a scan is running.
+- There are no protected exceptions: just like in Explorer, Lightroom catalog files can be deleted too.
+- Paths with 260 characters or more cannot be deleted.
 
 ### Notes
 

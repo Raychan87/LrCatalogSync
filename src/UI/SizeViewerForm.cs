@@ -8,7 +8,8 @@ using LrCatalogSync.Resources.Strings;
 
 namespace LrCatalogSync.UI
 {
-    // SizeViewer: zeigt die Größe von Verzeichnissen als Baumtabelle (rein lesend)
+    // SizeViewer: zeigt die Größe von Verzeichnissen als Baumtabelle.
+    // Verändert nichts, außer der Benutzer löscht einen Eintrag (Entf, über die Windows-Shell in den Papierkorb).
     public partial class SizeViewerForm : Form
     {
         // Spaltenindizes, entsprechen der Reihenfolge im Designer
@@ -39,6 +40,9 @@ namespace LrCatalogSync.UI
         // Windows-Fehlercode: Abfrage der Benutzerkontensteuerung abgelehnt (ERROR_CANCELLED)
         private const int ErrorCancelled = 1223;
 
+        // Fehlercode der Windows-Shell: Löschen vom Benutzer abgebrochen (DE_OPCANCELLED)
+        private const int ShellOperationCancelled = 0x75;
+
         private const string SortArrowAscending = " ▲";
         private const string SortArrowDescending = " ▼";
 
@@ -53,6 +57,7 @@ namespace LrCatalogSync.UI
         private CancellationTokenSource? scanCancellationSource;
         private SizeScanProgress? scanProgress;
         private SizeNode? rootNode;
+        private SizeScanResult? lastResult;                     // Letzter abgeschlossener Scan (für die Statuszeile)
         private string? scannedPath;
         private bool scanRunning;
         private int sortColumn = ColumnAllocated;
@@ -382,12 +387,28 @@ namespace LrCatalogSync.UI
 
                 e.Handled = true;
             }
+            else if (e.KeyCode == Keys.Delete)
+            {
+                DeleteSelectedNode();
+                e.Handled = true;
+            }
         }
 
         private void RowContextMenu_Opening(object? sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (GetSelectedNode() == null)
+            SizeNode? node = GetSelectedNode();
+            if (node == null)
+            {
                 e.Cancel = true;
+                return;
+            }
+
+            deleteMenuItem.Enabled = CanDelete(node);
+        }
+
+        private void DeleteMenuItem_Click(object? sender, EventArgs e)
+        {
+            DeleteSelectedNode();
         }
 
         private void OpenInExplorerMenuItem_Click(object? sender, EventArgs e)
@@ -415,6 +436,89 @@ namespace LrCatalogSync.UI
             }
         }
 
+        // ==================== LÖSCHEN ====================
+
+        // Der Wurzelordner des Scans und die Sammelzeile "[n Dateien]" (kein echter Ordner) sind nicht löschbar.
+        // Während eines Scans wird der Baum noch aufgebaut und darf nicht verändert werden.
+        private bool CanDelete(SizeNode node)
+        {
+            return !scanRunning && node.Parent != null && !node.IsFileGroup;
+        }
+
+        // Löscht die markierte Zeile wie der Explorer: Windows fragt nach, verschiebt in den Papierkorb
+        // und zeigt Fortschritt und Fehler selbst an.
+        private void DeleteSelectedNode()
+        {
+            SizeNode? node = GetSelectedNode();
+            if (node == null || !CanDelete(node))
+                return;
+
+            string path = GetFullPath(node);
+
+            try
+            {
+                int result = RecycleBin.Delete(Handle, path);
+
+                // Maßgeblich ist, ob der Eintrag noch existiert: bei "Nein" oder Abbruch bleibt alles unverändert
+                bool stillExists = node.IsDirectory ? Directory.Exists(path) : File.Exists(path);
+                if (stillExists)
+                {
+                    if (result != 0 && result != ErrorCancelled && result != ShellOperationCancelled)
+                        ReportDeleteFailed(path, string.Format(Strings.Get("Size_Dialog_DeleteErrorCode"), result));
+
+                    return;
+                }
+
+                Log.Info($"SizeViewer: {string.Format(Strings.Get("Log_SizeViewer_Deleted"), path)}");
+                RemoveNode(node);
+            }
+            catch (Exception ex)
+            {
+                ReportDeleteFailed(path, ex.Message);
+            }
+        }
+
+        private void ReportDeleteFailed(string path, string reason)
+        {
+            Log.Error($"SizeViewer: {string.Format(Strings.Get("Log_SizeViewer_DeleteFailed"), path, reason)}");
+            MessageForm.Show(
+                this,
+                string.Format(Strings.Get("Size_Dialog_DeleteFailed"), path, reason),
+                Strings.Get("Size_Dialog_Error"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+
+        // Entfernt einen gelöschten Eintrag aus dem Baum und zieht seine Werte bis zur Wurzel ab (kein neuer Scan)
+        private void RemoveNode(SizeNode node)
+        {
+            SizeNode? parent = node.Parent;
+            if (parent?.Children == null)
+                return;
+
+            int index = visibleRows.IndexOf(node);
+            parent.Children.Remove(node);
+
+            long directoryCount = node.IsDirectory ? node.DirCount + 1 : 0;
+            for (SizeNode? current = parent; current != null; current = current.Parent)
+            {
+                current.Size -= node.Size;
+                current.Allocated -= node.Allocated;
+                current.FileCount -= node.FileCount;
+                current.DirCount -= directoryCount;
+            }
+
+            // Eine leere Sammelzeile "[n Dateien]" verschwindet mit ihrer letzten Datei
+            if (parent.IsFileGroup && parent.Children.Count == 0)
+                parent.Parent?.Children?.Remove(parent);
+
+            RefreshVisibleRows();
+
+            // Die Zeile an derselben Stelle markieren, damit sich mit Entf mehrere Einträge nacheinander löschen lassen
+            SelectRow(Math.Min(index, visibleRows.Count - 1));
+            UpdateResultStatus();
+        }
+
         // ==================== SCAN ====================
 
         private async Task StartScanAsync(string path)
@@ -425,6 +529,7 @@ namespace LrCatalogSync.UI
             scanRunning = true;
             scannedPath = path;
             rootNode = null;
+            lastResult = null;
             RebuildVisibleRows(null);
 
             var cancellationSource = new CancellationTokenSource();
@@ -487,6 +592,17 @@ namespace LrCatalogSync.UI
             }
 
             RefreshVisibleRows();
+
+            lastResult = result;
+            UpdateResultStatus();
+        }
+
+        // Statuszeile mit den Summen des letzten Scans. Nach dem Löschen eines Eintrags neu berechnet.
+        private void UpdateResultStatus()
+        {
+            SizeScanResult? result = lastResult;
+            if (result == null)
+                return;
 
             string status = string.Format(
                 Strings.Get(result.Cancelled ? "Size_Status_Cancelled" : "Size_Status_Done"),
@@ -939,6 +1055,8 @@ namespace LrCatalogSync.UI
             cancelScanButton.Text = Strings.Get("Size_Button_Cancel");
             refreshButton.Text = Strings.Get("Size_Button_Refresh");
             openInExplorerMenuItem.Text = Strings.Get("Size_Menu_OpenInExplorer");
+            deleteMenuItem.Text = Strings.Get("Size_Menu_Delete");
+            deleteMenuItem.ShortcutKeyDisplayString = Strings.Get("Size_Menu_DeleteShortcut");
             statusLabel.Text = Strings.Get("Size_Status_Empty");
 
             columnTitles[ColumnName] = Strings.Get("Size_Column_Name");
