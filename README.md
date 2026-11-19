@@ -61,24 +61,24 @@ Right-click the tray icon → **Settings**
 
 ![LrCatalogSync settings](docs/images/LrCatSyncConfig.en.png)
 
-| Field                                      | Description                                                                                                                 |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| **Start automatically with Windows** | Run the program automatically at Windows startup                                                                            |
-| **Rclone folder**                    | Folder containing `rclone.exe`; default is `data/rclone/`. Another folder can be entered manually.                      |
-| **Log level**                        | `DEBUG`, `INFO`, `NOTICE`, `ERROR`                                                                                  |
-| **Language**                         | `System` (Windows display language), `English` or `Deutsch`. Unsupported Windows languages use English.               |
+| Field                                      | Description                                                                                                                                                                          |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Start automatically with Windows** | Run the program automatically at Windows startup                                                                                                                                     |
+| **Rclone folder**                    | Folder containing `rclone.exe`; default is `data/rclone/`. Another folder can be entered manually.                                                                               |
+| **Log level**                        | `DEBUG`, `INFO`, `NOTICE`, `ERROR`                                                                                                                                           |
+| **Language**                         | `System` (Windows display language), `English` or `Deutsch`. Unsupported Windows languages use English.                                                                        |
 | **Appearance**                       | `Automatic` (follows the Windows light/dark setting), `Light`, `Dark purple` or `Dark system color` (uses the Windows accent color). Applies to windows opened after saving. |
-| **Check interval**                   | Check interval in seconds (1 to 999, default 10). After program start, the first cycle runs with a delay of 60 seconds.    |
-| **Sync \*Previews.lrdata?**          | Whether the `* Previews.lrdata` folder (standard and 1:1 previews) is synchronized as well                                |
-| **Local catalog file**               | Path to the local `.lrcat` file                                                                                           |
-| **Remote catalog path**              | Target path on the SMB server (e.g. `//192.168.1.1/Lightroom/` -> `/Lightroom/`)                                        |
-| **Keep last catalog?**               | Before syncing, stores a copy of the previous catalog in an extra folder (on the server for uploads, locally for downloads) |
-| **Folder name**                      | Name of the folder for this copy                                                                                            |
-| **Sync backup folder?**              | Optional, synchronizes the Lightroom backup folder locally and remotely                                                     |
-| **Local backup path**                | Local path where Lightroom stores its backups                                                                               |
-| **Remote backup path**               | Target path on the SMB server for the backups                                                                               |
-| **Server IP/name**                   | IP or host name of the SMB server                                                                                           |
-| **Username / Password**              | Credentials (stored encrypted)                                                                                              |
+| **Check interval**                   | Check interval in seconds (1 to 999, default 10). After program start, the first cycle runs with a delay of 60 seconds.                                                              |
+| **Sync \*Previews.lrdata?**          | Whether the `* Previews.lrdata` folder (standard and 1:1 previews) is synchronized as well                                                                                         |
+| **Local catalog file**               | Path to the local `.lrcat` file                                                                                                                                                    |
+| **Remote catalog path**              | Target path on the SMB server (e.g. `//192.168.1.1/Lightroom/` -> `/Lightroom/`)                                                                                                 |
+| **Keep last catalog?**               | Before syncing, stores a copy of the previous catalog in an extra folder (on the server for uploads, locally for downloads)                                                          |
+| **Folder name**                      | Name of the folder for this copy                                                                                                                                                     |
+| **Sync backup folder?**              | Optional, synchronizes the Lightroom backup folder locally and remotely                                                                                                              |
+| **Local backup path**                | Local path where Lightroom stores its backups                                                                                                                                        |
+| **Remote backup path**               | Target path on the SMB server for the backups                                                                                                                                        |
+| **Server IP/name**                   | IP or host name of the SMB server                                                                                                                                                    |
+| **Username / Password**              | Credentials (stored encrypted)                                                                                                                                                       |
 
 Settings are stored in `data/config/`.
 The user interface and the log messages generated by LrCatalogSync follow the selected language. `System` uses German or English according to the Windows display language; other languages fall back to English. rclone's own log messages stay in the language provided by rclone.
@@ -96,7 +96,7 @@ Tray icon status:
 - 🟣 --> Lightroom Classic was started on another computer
 - 🔴 --> error (e.g. no Samba connection, rclone missing, stale remote lock), see log (set to Debug if necessary)
 - ⚪ --> configuration file missing
--  --> sync is switched off (tray menu **Turn off** or USB export open)
+- --> sync is switched off (tray menu **Turn off** or USB export open)
 
 Tray menu: **USB export**, **Size-Viewer**, **Turn off/Turn on**, **Settings**, **Exit**. The sync state is stored in the config and restored after a restart. Windows startup remains independent: the program can start in the tray while sync stays switched off.
 
@@ -167,24 +167,24 @@ Right-click the tray icon → **Size-Viewer**. The normal sync keeps running in 
 
 ### Controls
 
-| Element              | Description                                                          |
-| -------------------- | -------------------------------------------------------------------- |
-| **Select directory** | Selects the directory to scan and starts the scan                    |
-| **Cancel scan**      | Cancels the running scan; the partial result read so far is shown    |
-| **Refresh**          | Scans the last selected directory again                              |
+| Element                         | Description                                                                                                                                                  |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Select directory**      | Selects the directory to scan and starts the scan                                                                                                            |
+| **Cancel scan**           | Cancels the running scan; the partial result read so far is shown                                                                                            |
+| **Refresh**               | Scans the last selected directory again                                                                                                                      |
 | **Scan as administrator** | Restarts the Size-Viewer with administrator rights after the Windows security prompt and scans the selected directory again so protected folders can be read |
-| **Exit**             | Closes the window                                                    |
+| **Exit**                  | Closes the window                                                                                                                                            |
 
 ### Columns
 
-| Column                  | Description                                                                                                                                                          |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Name**                | Folder or file, preceded by the allocated space with a bar (share of the parent folder). Expand via the arrow, a double-click or the arrow keys. If a folder contains subfolders and files, the files are grouped under `[n files]`.           |
-| **Size**                | Sum of the file sizes                                                                                                                                                |
-| **Allocated**           | Space actually used on the drive                                                                                                                                     |
-| **Files** / **Folders** | Number of contained files or folders (including subfolders)                                                                                                          |
-| **% of parent**         | Share of the allocated space of the parent folder                                                                                                                    |
-| **Last modified**       | Date of the most recent change in the folder                                                                                                                         |
+| Column                              | Description                                                                                                                                                                                                                            |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Name**                      | Folder or file, preceded by the allocated space with a bar (share of the parent folder). Expand via the arrow, a double-click or the arrow keys. If a folder contains subfolders and files, the files are grouped under `[n files]`. |
+| **Size**                      | Sum of the file sizes                                                                                                                                                                                                                  |
+| **Allocated**                 | Space actually used on the drive                                                                                                                                                                                                       |
+| **Files** / **Folders** | Number of contained files or folders (including subfolders)                                                                                                                                                                            |
+| **% of parent**               | Share of the allocated space of the parent folder                                                                                                                                                                                      |
+| **Last modified**             | Date of the most recent change in the folder                                                                                                                                                                                           |
 
 Clicking a column header sorts by that column, clicking again reverses the order. Columns can be moved by dragging their header. Right-click a row → **Open in Explorer**.
 
@@ -216,4 +216,4 @@ Select a row and press <kbd>Del</kbd>, or right-click → **Delete**. Deleting w
 - rclone: https://rclone.org
 - Lightroom Classic: https://www.adobe.com/products/photoshop-lightroom-classic.html
 
-*Version **1.0.1** – as of: October 2026*
+*Version **1.1.0** – as of: November 2026*
